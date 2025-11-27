@@ -64,13 +64,12 @@ const Overview = ({ role, user }) => {
 
     const fetchPersonalAnalyses = async () => {
         try {
-            // Fetch personal analyses for sidebar widget
+            // Fetch ALL personal analyses (no limit for accurate chart)
             const { data, error } = await supabase
                 .from('analyses')
                 .select('*')
                 .eq('account_id', user.id)
-                .order('analyzed_at', { ascending: false })
-                .limit(4);
+                .order('analyzed_at', { ascending: false });
 
             if (error) throw error;
 
@@ -582,17 +581,123 @@ const Overview = ({ role, user }) => {
                 >
                     <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <Activity size={20} color="var(--color-primary)" />
-                        My Personal Analyses
+                        {role === 'lab_technician' ? 'Analysis Distribution' : 'My Personal Analyses'}
                     </h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {personalAnalyses.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-muted)' }}>
-                                <Activity size={32} style={{ opacity: 0.3, marginBottom: '0.5rem' }} />
-                                <div>No personal analyses yet</div>
-                                <div style={{ fontSize: '0.875rem', marginTop: '0.5rem' }}>Use AI Detector to analyze samples</div>
-                            </div>
-                        ) : (
-                            personalAnalyses.map((item, i) => (
+                    
+                    {personalAnalyses.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-muted)' }}>
+                            <Activity size={32} style={{ opacity: 0.3, marginBottom: '0.5rem' }} />
+                            <div>No analyses yet</div>
+                            <div style={{ fontSize: '0.875rem', marginTop: '0.5rem' }}>Use AI Detector to analyze samples</div>
+                        </div>
+                    ) : role === 'lab_technician' ? (
+                        <>
+                            {/* Simple Bar Chart - Only for Lab Technician */}
+                            {(() => {
+                                const positive = personalAnalyses.filter(a => a.isPositive).length;
+                                const negative = personalAnalyses.filter(a => !a.isPositive).length;
+                                const total = personalAnalyses.length;
+                                const maxValue = Math.max(positive, negative);
+                                
+                                return (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                        {/* Positive Bar */}
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.2 }}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ff0055' }} />
+                                                    <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>Positive</span>
+                                                </div>
+                                                <span style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#ff0055' }}>{positive}</span>
+                                            </div>
+                                            <div style={{ width: '100%', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', overflow: 'hidden', position: 'relative' }}>
+                                                <motion.div
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${maxValue > 0 ? (positive / maxValue) * 100 : 0}%` }}
+                                                    transition={{ duration: 1, delay: 0.3, ease: 'easeOut' }}
+                                                    style={{
+                                                        height: '100%',
+                                                        background: 'linear-gradient(90deg, #ff0055, #ff6b9d)',
+                                                        borderRadius: '8px',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'flex-end',
+                                                        paddingRight: '1rem',
+                                                        boxShadow: '0 0 20px rgba(255, 0, 85, 0.3)'
+                                                    }}
+                                                >
+                                                    <span style={{ fontSize: '0.875rem', fontWeight: '600', color: 'white' }}>
+                                                        {((positive / total) * 100).toFixed(1)}%
+                                                    </span>
+                                                </motion.div>
+                                            </div>
+                                        </motion.div>
+
+                                        {/* Negative Bar */}
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.4 }}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#00ff88' }} />
+                                                    <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>Negative</span>
+                                                </div>
+                                                <span style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#00ff88' }}>{negative}</span>
+                                            </div>
+                                            <div style={{ width: '100%', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', overflow: 'hidden', position: 'relative' }}>
+                                                <motion.div
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${maxValue > 0 ? (negative / maxValue) * 100 : 0}%` }}
+                                                    transition={{ duration: 1, delay: 0.5, ease: 'easeOut' }}
+                                                    style={{
+                                                        height: '100%',
+                                                        background: 'linear-gradient(90deg, #00ff88, #00d9ff)',
+                                                        borderRadius: '8px',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'flex-end',
+                                                        paddingRight: '1rem',
+                                                        boxShadow: '0 0 20px rgba(0, 255, 136, 0.3)'
+                                                    }}
+                                                >
+                                                    <span style={{ fontSize: '0.875rem', fontWeight: '600', color: 'white' }}>
+                                                        {((negative / total) * 100).toFixed(1)}%
+                                                    </span>
+                                                </motion.div>
+                                            </div>
+                                        </motion.div>
+
+                                        {/* Total Summary */}
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.6 }}
+                                            style={{
+                                                marginTop: '0.5rem',
+                                                padding: '1rem',
+                                                background: 'rgba(0, 240, 255, 0.05)',
+                                                border: '1px solid rgba(0, 240, 255, 0.2)',
+                                                borderRadius: '8px',
+                                                textAlign: 'center'
+                                            }}
+                                        >
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.25rem' }}>Total Analyses</div>
+                                            <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>{total}</div>
+                                        </motion.div>
+                                    </div>
+                                );
+                            })()}
+                        </>
+                    ) : (
+                        /* List view for other roles */
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            {personalAnalyses.map((item, i) => (
                                 <div key={i} style={{ 
                                     display: 'flex', 
                                     gap: '1rem', 
@@ -622,9 +727,9 @@ const Overview = ({ role, user }) => {
                                         </div>
                                     </div>
                                 </div>
-                            ))
-                        )}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </motion.div>
 
             </div>

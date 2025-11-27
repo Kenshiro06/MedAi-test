@@ -487,28 +487,144 @@ const Detector = ({ role, user, onNavigate }) => {
                                                     style={{ flex: 1, padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-glass-border)', borderRadius: '8px', color: 'white', appearance: 'none' }}
                                                 >
                                                     <option value="" disabled>Select Health Facility</option>
-                                                    {[
-                                                        "Hospital Kuala Lumpur",
-                                                        "Hospital Ampang",
-                                                        "Hospital Selayang",
-                                                        "Hospital Sungai Buloh",
-                                                        "Hospital Serdang",
-                                                        "Hospital Putrajaya",
-                                                        "Hospital Tengku Ampuan Rahimah, Klang",
-                                                        "Hospital Sultanah Aminah, Johor Bahru",
-                                                        "Hospital Pulau Pinang",
-                                                        "Hospital Raja Permaisuri Bainun, Ipoh",
-                                                        "Hospital Melaka",
-                                                        "Hospital Tuanku Ja'afar, Seremban",
-                                                        "Hospital Tengku Ampuan Afzan, Kuantan",
-                                                        "Hospital Sultanah Nur Zahirah, Kuala Terengganu",
-                                                        "Hospital Raja Perempuan Zainab II, Kota Bharu",
-                                                        "Hospital Umum Sarawak, Kuching",
-                                                        "Hospital Queen Elizabeth, Kota Kinabalu",
-                                                        "Klinik Kesihatan Kuala Lumpur",
-                                                        "Klinik Kesihatan Cheras",
-                                                        "Other / Private Clinic"
-                                                    ].map(h => <option key={h} value={h} style={{ background: '#1a1f2e', color: 'white' }}>{h}</option>)}
+                                                    <optgroup label="🏥 Major Government Hospitals - Kuala Lumpur & Selangor" style={{ background: '#1a1f2e', color: '#00f0ff' }}>
+                                                        {[
+                                                            "Hospital Kuala Lumpur",
+                                                            "Hospital Sungai Buloh",
+                                                            "Hospital Selayang",
+                                                            "Hospital Ampang",
+                                                            "Hospital Serdang",
+                                                            "Hospital Putrajaya",
+                                                            "Hospital Tengku Ampuan Rahimah, Klang",
+                                                            "Hospital Tengku Ampuan Jemah, Kajang",
+                                                            "Hospital Banting",
+                                                            "Hospital Kuala Selangor"
+                                                        ].map(h => <option key={h} value={h} style={{ background: '#1a1f2e', color: 'white' }}>{h}</option>)}
+                                                    </optgroup>
+                                                    <optgroup label="🏥 Major Government Hospitals - Johor" style={{ background: '#1a1f2e', color: '#00f0ff' }}>
+                                                        {[
+                                                            "Hospital Sultanah Aminah, Johor Bahru",
+                                                            "Hospital Sultanah Nora Ismail, Batu Pahat",
+                                                            "Hospital Enche' Besar Hajjah Khalsom, Kluang",
+                                                            "Hospital Segamat",
+                                                            "Hospital Muar"
+                                                        ].map(h => <option key={h} value={h} style={{ background: '#1a1f2e', color: 'white' }}>{h}</option>)}
+                                                    </optgroup>
+                                                    <optgroup label="🏥 Major Government Hospitals - Penang" style={{ background: '#1a1f2e', color: '#00f0ff' }}>
+                                                        {[
+                                                            "Hospital Pulau Pinang",
+                                                            "Hospital Kepala Batas",
+                                                            "Hospital Bukit Mertajam",
+                                                            "Hospital Balik Pulau"
+                                                        ].map(h => <option key={h} value={h} style={{ background: '#1a1f2e', color: 'white' }}>{h}</option>)}
+                                                    </optgroup>
+                                                    <optgroup label="🏥 Major Government Hospitals - Perak" style={{ background: '#1a1f2e', color: '#00f0ff' }}>
+                                                        {[
+                                                            "Hospital Raja Permaisuri Bainun, Ipoh",
+                                                            "Hospital Taiping",
+                                                            "Hospital Teluk Intan",
+                                                            "Hospital Seri Manjung"
+                                                        ].map(h => <option key={h} value={h} style={{ background: '#1a1f2e', color: 'white' }}>{h}</option>)}
+                                                    </optgroup>
+                                                    <optgroup label="🏥 Major Government Hospitals - Pahang" style={{ background: '#1a1f2e', color: '#00f0ff' }}>
+                                                        {[
+                                                            "Hospital Tengku Ampuan Afzan, Kuantan",
+                                                            "Hospital Bentong",
+                                                            "Hospital Temerloh",
+                                                            "Hospital Jengka"
+                                                        ].map(h => <option key={h} value={h} style={{ background: '#1a1f2e', color: 'white' }}>{h}</option>)}
+                                                    </optgroup>
+                                                    <optgroup label="🏥 Major Government Hospitals - Negeri Sembilan" style={{ background: '#1a1f2e', color: '#00f0ff' }}>
+                                                        {[
+                                                            "Hospital Tuanku Ja'afar, Seremban",
+                                                            "Hospital Port Dickson",
+                                                            "Hospital Jelebu"
+                                                        ].map(h => <option key={h} value={h} style={{ background: '#1a1f2e', color: 'white' }}>{h}</option>)}
+                                                    </optgroup>
+                                                    <optgroup label="🏥 Major Government Hospitals - Melaka" style={{ background: '#1a1f2e', color: '#00f0ff' }}>
+                                                        {[
+                                                            "Hospital Melaka",
+                                                            "Hospital Jasin",
+                                                            "Hospital Alor Gajah"
+                                                        ].map(h => <option key={h} value={h} style={{ background: '#1a1f2e', color: 'white' }}>{h}</option>)}
+                                                    </optgroup>
+                                                    <optgroup label="🏥 Major Government Hospitals - Kedah" style={{ background: '#1a1f2e', color: '#00f0ff' }}>
+                                                        {[
+                                                            "Hospital Sultanah Bahiyah, Alor Setar",
+                                                            "Hospital Sultan Abdul Halim, Sungai Petani",
+                                                            "Hospital Kulim",
+                                                            "Hospital Langkawi"
+                                                        ].map(h => <option key={h} value={h} style={{ background: '#1a1f2e', color: 'white' }}>{h}</option>)}
+                                                    </optgroup>
+                                                    <optgroup label="🏥 Major Government Hospitals - Kelantan" style={{ background: '#1a1f2e', color: '#00f0ff' }}>
+                                                        {[
+                                                            "Hospital Raja Perempuan Zainab II, Kota Bharu",
+                                                            "Hospital Tanah Merah",
+                                                            "Hospital Gua Musang",
+                                                            "Hospital Machang"
+                                                        ].map(h => <option key={h} value={h} style={{ background: '#1a1f2e', color: 'white' }}>{h}</option>)}
+                                                    </optgroup>
+                                                    <optgroup label="🏥 Major Government Hospitals - Terengganu" style={{ background: '#1a1f2e', color: '#00f0ff' }}>
+                                                        {[
+                                                            "Hospital Sultanah Nur Zahirah, Kuala Terengganu",
+                                                            "Hospital Kemaman",
+                                                            "Hospital Dungun",
+                                                            "Hospital Besut"
+                                                        ].map(h => <option key={h} value={h} style={{ background: '#1a1f2e', color: 'white' }}>{h}</option>)}
+                                                    </optgroup>
+                                                    <optgroup label="🏥 Major Government Hospitals - Perlis" style={{ background: '#1a1f2e', color: '#00f0ff' }}>
+                                                        {[
+                                                            "Hospital Tuanku Fauziah, Kangar"
+                                                        ].map(h => <option key={h} value={h} style={{ background: '#1a1f2e', color: 'white' }}>{h}</option>)}
+                                                    </optgroup>
+                                                    <optgroup label="🏥 Major Government Hospitals - Sarawak" style={{ background: '#1a1f2e', color: '#00f0ff' }}>
+                                                        {[
+                                                            "Hospital Umum Sarawak, Kuching",
+                                                            "Hospital Sibu",
+                                                            "Hospital Miri",
+                                                            "Hospital Bintulu",
+                                                            "Hospital Kapit",
+                                                            "Hospital Sarikei"
+                                                        ].map(h => <option key={h} value={h} style={{ background: '#1a1f2e', color: 'white' }}>{h}</option>)}
+                                                    </optgroup>
+                                                    <optgroup label="🏥 Major Government Hospitals - Sabah" style={{ background: '#1a1f2e', color: '#00f0ff' }}>
+                                                        {[
+                                                            "Hospital Queen Elizabeth, Kota Kinabalu",
+                                                            "Hospital Queen Elizabeth II, Kota Kinabalu",
+                                                            "Hospital Duchess of Kent, Sandakan",
+                                                            "Hospital Tawau",
+                                                            "Hospital Lahad Datu",
+                                                            "Hospital Keningau"
+                                                        ].map(h => <option key={h} value={h} style={{ background: '#1a1f2e', color: 'white' }}>{h}</option>)}
+                                                    </optgroup>
+                                                    <optgroup label="🏥 Major Government Hospitals - Labuan" style={{ background: '#1a1f2e', color: '#00f0ff' }}>
+                                                        {[
+                                                            "Hospital Labuan"
+                                                        ].map(h => <option key={h} value={h} style={{ background: '#1a1f2e', color: 'white' }}>{h}</option>)}
+                                                    </optgroup>
+                                                    <optgroup label="🏥 Klinik Kesihatan (Health Clinics)" style={{ background: '#1a1f2e', color: '#febc2e' }}>
+                                                        {[
+                                                            "Klinik Kesihatan Kuala Lumpur",
+                                                            "Klinik Kesihatan Cheras",
+                                                            "Klinik Kesihatan Petaling Jaya",
+                                                            "Klinik Kesihatan Shah Alam",
+                                                            "Klinik Kesihatan Subang Jaya",
+                                                            "Klinik Kesihatan Johor Bahru",
+                                                            "Klinik Kesihatan Georgetown",
+                                                            "Klinik Kesihatan Ipoh",
+                                                            "Klinik Kesihatan Kuantan",
+                                                            "Klinik Kesihatan Kota Bharu",
+                                                            "Other Health Clinic"
+                                                        ].map(h => <option key={h} value={h} style={{ background: '#1a1f2e', color: 'white' }}>{h}</option>)}
+                                                    </optgroup>
+                                                    <optgroup label="🏥 Private Hospitals & Others" style={{ background: '#1a1f2e', color: '#ff0055' }}>
+                                                        {[
+                                                            "Private Hospital / Clinic",
+                                                            "University Hospital",
+                                                            "Military Hospital",
+                                                            "Other Medical Facility"
+                                                        ].map(h => <option key={h} value={h} style={{ background: '#1a1f2e', color: 'white' }}>{h}</option>)}
+                                                    </optgroup>
                                                 </select>
                                                 <button
                                                     onClick={() => {
