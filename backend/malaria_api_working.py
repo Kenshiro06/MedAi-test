@@ -237,7 +237,7 @@ def batch_predict():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    print("\n🚀 Starting Flask server on http://localhost:5000")
+    print("\n🚀 Starting Flask server")
     print("📡 API Endpoints:")
     print("   - GET  /health          - Health check")
     print("   - POST /predict         - Single image prediction")
@@ -245,5 +245,8 @@ if __name__ == "__main__":
     print("\n✅ Server ready to accept requests!")
     print("=" * 60)
     
+    # Get port from environment variable (for Railway/Render deployment)
+    port = int(os.environ.get("PORT", 5000))
+    
     # Run server (use debug=False for production)
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=port, debug=False)
