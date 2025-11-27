@@ -23,6 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 
-# Large AI model files (too big for GitHub)
-backend/malaria_finetune_stage2.h5
-*.h5
+# Large AI model files are tracked with Git LFS
+# (removed from .gitignore to allow LFS tracking)
