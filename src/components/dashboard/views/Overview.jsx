@@ -7,35 +7,95 @@ const StatCard = ({ title, value, change, icon: Icon, color, delay }) => (
     <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay }}
+        transition={{ 
+            delay,
+            type: 'spring',
+            stiffness: 100,
+            damping: 15
+        }}
+        whileHover={{ 
+            y: -5,
+            boxShadow: `0 10px 30px rgba(${color}, 0.3)`,
+            transition: { duration: 0.2 }
+        }}
         style={{
-            background: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)',
-            border: '1px solid var(--color-glass-border)',
-            borderRadius: '16px',
-            padding: '1.5rem',
+            background: `linear-gradient(135deg, rgba(${color}, 0.08) 0%, rgba(${color}, 0.02) 100%)`,
+            border: `1px solid rgba(${color}, 0.2)`,
+            borderRadius: '20px',
+            padding: '1.75rem',
             position: 'relative',
             overflow: 'hidden',
-            backdropFilter: 'blur(10px)'
+            backdropFilter: 'blur(10px)',
+            cursor: 'pointer',
+            boxShadow: `0 4px 15px rgba(${color}, 0.1)`
         }}
     >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-            <div>
-                <h3 style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>{title}</h3>
-                <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{value}</div>
-            </div>
-            <div style={{ padding: '0.75rem', background: `rgba(${color}, 0.1)`, borderRadius: '12px', color: `rgb(${color})` }}>
-                <Icon size={24} />
-            </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}>
-            <span style={{ color: '#00ff88', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                <TrendingUp size={14} /> {change}
-            </span>
-            <span style={{ color: 'var(--color-text-muted)' }}>vs last week</span>
+        {/* Decorative background pattern */}
+        <div style={{ 
+            position: 'absolute', 
+            top: '-50%', 
+            right: '-20%', 
+            width: '200px', 
+            height: '200px', 
+            background: `radial-gradient(circle, rgba(${color}, 0.15) 0%, transparent 70%)`, 
+            borderRadius: '50%', 
+            pointerEvents: 'none',
+            filter: 'blur(40px)'
+        }} />
+        
+        {/* Icon with glow */}
+        <div style={{ 
+            position: 'absolute',
+            top: '1.5rem',
+            right: '1.5rem',
+            padding: '0.875rem', 
+            background: `rgba(${color}, 0.15)`, 
+            borderRadius: '14px', 
+            color: `rgb(${color})`,
+            boxShadow: `0 0 20px rgba(${color}, 0.3)`,
+            border: `1px solid rgba(${color}, 0.3)`
+        }}>
+            <Icon size={28} strokeWidth={2.5} />
         </div>
 
-        {/* Decorative background glow */}
-        <div style={{ position: 'absolute', top: '-50%', right: '-20%', width: '150px', height: '150px', background: `radial-gradient(circle, rgba(${color}, 0.2) 0%, transparent 70%)`, borderRadius: '50%', pointerEvents: 'none' }} />
+        <div style={{ position: 'relative', zIndex: 1 }}>
+            <h3 style={{ 
+                fontSize: '0.8rem', 
+                color: 'var(--color-text-muted)', 
+                marginBottom: '0.75rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                fontWeight: '600'
+            }}>
+                {title}
+            </h3>
+            <div style={{ 
+                fontSize: '2.5rem', 
+                fontWeight: '800',
+                marginBottom: '0.75rem',
+                background: `linear-gradient(135deg, rgb(${color}), rgba(${color}, 0.7))`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+            }}>
+                {value}
+            </div>
+            <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem', 
+                fontSize: '0.85rem',
+                padding: '0.5rem 0.75rem',
+                background: 'rgba(0, 255, 136, 0.1)',
+                borderRadius: '8px',
+                width: 'fit-content',
+                border: '1px solid rgba(0, 255, 136, 0.2)'
+            }}>
+                <TrendingUp size={14} color="#00ff88" strokeWidth={2.5} />
+                <span style={{ color: '#00ff88', fontWeight: '600' }}>{change}</span>
+                <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>vs last week</span>
+            </div>
+        </div>
     </motion.div>
 );
 
@@ -734,102 +794,209 @@ const Overview = ({ role, user }) => {
 
             </div>
 
-            {/* Recent Reports Table */}
+            {/* Recent Reports Table - Sleek Design */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7 }}
+                transition={{ delay: 0.7, type: 'spring', stiffness: 100 }}
                 className="glass-panel"
                 style={{ padding: '2rem', marginTop: '1.5rem' }}
             >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                    <h3 style={{ fontSize: '1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                    <h3 style={{ 
+                        fontSize: '1.5rem', 
+                        fontWeight: '700',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem'
+                    }}>
+                        <Activity size={24} color="var(--color-primary)" />
                         {role === 'health_officer' ? 'My Personal Analyses' : 
                          role === 'admin' ? 'My Personal Analyses' :
                          role === 'medical_officer' ? 'My Assigned Reviews' :
                          role === 'pathologist' ? 'My Assigned Verifications' :
                          'My Recent Analyses'}
                     </h3>
-                    <button style={{ padding: '0.5rem 1rem', background: 'rgba(0, 240, 255, 0.1)', border: '1px solid var(--color-primary)', borderRadius: '8px', color: 'var(--color-primary)', cursor: 'pointer', fontSize: '0.875rem' }}>
+                    <motion.button 
+                        whileHover={{ scale: 1.05, boxShadow: '0 5px 15px rgba(0, 240, 255, 0.3)' }}
+                        whileTap={{ scale: 0.95 }}
+                        style={{ 
+                            padding: '0.75rem 1.5rem', 
+                            background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(0, 240, 255, 0.05))', 
+                            border: '1px solid rgba(0, 240, 255, 0.3)', 
+                            borderRadius: '12px', 
+                            color: 'var(--color-primary)', 
+                            cursor: 'pointer', 
+                            fontSize: '0.875rem',
+                            fontWeight: '600',
+                            transition: 'all 0.3s ease'
+                        }}
+                    >
                         View All
-                    </button>
+                    </motion.button>
                 </div>
 
                 {loading ? (
-                    <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>Loading reports...</div>
+                    <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                        <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                            style={{ display: 'inline-block', marginBottom: '1rem' }}
+                        >
+                            <Activity size={32} color="var(--color-primary)" />
+                        </motion.div>
+                        <div>Loading reports...</div>
+                    </div>
                 ) : recentReports.length === 0 ? (
-                    <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-                        {role === 'health_officer' || role === 'admin' 
-                            ? 'No personal analyses yet. Use AI Detector or Analyze to create your first analysis.' 
-                            : role === 'medical_officer' || role === 'pathologist'
-                            ? 'No assigned reports yet.'
-                            : 'No analyses yet. Start by using the AI Detector.'}
+                    <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                        <FileText size={48} style={{ opacity: 0.3, marginBottom: '1rem' }} />
+                        <div style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>No reports yet</div>
+                        <div style={{ fontSize: '0.875rem' }}>
+                            {role === 'health_officer' || role === 'admin' 
+                                ? 'Use AI Detector or Analyze to create your first analysis.' 
+                                : role === 'medical_officer' || role === 'pathologist'
+                                ? 'No assigned reports yet.'
+                                : 'Start by using the AI Detector.'}
+                        </div>
                     </div>
                 ) : (
-                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                        <thead style={{ background: 'rgba(255,255,255,0.02)' }}>
-                            <tr>
-                                <th style={{ padding: '1rem', color: 'var(--color-text-muted)', fontWeight: '600' }}>ID</th>
-                                <th style={{ padding: '1rem', color: 'var(--color-text-muted)', fontWeight: '600' }}>Patient</th>
-                                <th style={{ padding: '1rem', color: 'var(--color-text-muted)', fontWeight: '600' }}>Date</th>
-                                <th style={{ padding: '1rem', color: 'var(--color-text-muted)', fontWeight: '600' }}>Result</th>
-                                <th style={{ padding: '1rem', color: 'var(--color-text-muted)', fontWeight: '600' }}>Confidence</th>
-                                <th style={{ padding: '1rem', color: 'var(--color-text-muted)', fontWeight: '600' }}>Status</th>
-                                <th style={{ padding: '1rem', color: 'var(--color-text-muted)', fontWeight: '600', textAlign: 'right' }}>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {recentReports.map((report, i) => (
-                                <tr key={report.id} style={{ borderBottom: '1px solid var(--color-glass-border)' }}>
-                                    <td style={{ padding: '1rem', fontFamily: 'monospace' }}>#{i + 1}</td>
-                                    <td style={{ padding: '1rem', fontWeight: '600' }}>{report.patient_name}</td>
-                                    <td style={{ padding: '1rem', color: 'var(--color-text-muted)' }}>
-                                        {new Date(report.created_at).toLocaleDateString()}
-                                    </td>
-                                    <td style={{ padding: '1rem' }}>
-                                        <span style={{
-                                            padding: '0.25rem 0.75rem',
-                                            borderRadius: '99px',
-                                            background: report.type?.toLowerCase().includes('positive') ? 'rgba(255, 0, 85, 0.1)' : 'rgba(0, 255, 136, 0.1)',
-                                            color: report.type?.toLowerCase().includes('positive') ? '#ff0055' : '#00ff88',
-                                            fontSize: '0.875rem'
-                                        }}>
-                                            {report.type}
-                                        </span>
-                                    </td>
-                                    <td style={{ padding: '1rem' }}>{report.confidence ? `${report.confidence.toFixed(1)}%` : '-'}</td>
-                                    <td style={{ padding: '1rem' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            {report.status === 'approved' && <CheckCircle size={16} color="#28c840" />}
-                                            {report.status === 'rejected' && <XCircle size={16} color="#ff0055" />}
-                                            {report.status === 'pending' && <Clock size={16} color="#febc2e" />}
-                                            <span style={{ textTransform: 'capitalize', fontSize: '0.875rem' }}>{report.status}</span>
-                                        </div>
-                                    </td>
-                                    <td style={{ padding: '1rem', textAlign: 'right' }}>
-                                        <button
-                                            onClick={() => setSelectedReport(report)}
-                                            style={{
+                    <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 0.5rem' }}>
+                            <thead>
+                                <tr style={{ 
+                                    background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.08), rgba(0, 240, 255, 0.02))',
+                                    borderRadius: '12px'
+                                }}>
+                                    <th style={{ padding: '1rem 1.5rem', color: 'var(--color-primary)', fontWeight: '700', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', borderTopLeftRadius: '12px', borderBottomLeftRadius: '12px' }}>#</th>
+                                    <th style={{ padding: '1rem 1.5rem', color: 'var(--color-primary)', fontWeight: '700', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left' }}>Patient</th>
+                                    <th style={{ padding: '1rem 1.5rem', color: 'var(--color-primary)', fontWeight: '700', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left' }}>Date</th>
+                                    <th style={{ padding: '1rem 1.5rem', color: 'var(--color-primary)', fontWeight: '700', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left' }}>Result</th>
+                                    <th style={{ padding: '1rem 1.5rem', color: 'var(--color-primary)', fontWeight: '700', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left' }}>Confidence</th>
+                                    <th style={{ padding: '1rem 1.5rem', color: 'var(--color-primary)', fontWeight: '700', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left' }}>Status</th>
+                                    <th style={{ padding: '1rem 1.5rem', color: 'var(--color-primary)', fontWeight: '700', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'right', borderTopRightRadius: '12px', borderBottomRightRadius: '12px' }}>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {recentReports.map((report, i) => (
+                                    <motion.tr 
+                                        key={report.id}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: i * 0.05 }}
+                                        whileHover={{ 
+                                            backgroundColor: 'rgba(0, 240, 255, 0.03)',
+                                            boxShadow: '0 4px 15px rgba(0, 240, 255, 0.1)',
+                                            transition: { duration: 0.2 }
+                                        }}
+                                        style={{ 
+                                            background: 'rgba(255,255,255,0.02)',
+                                            borderRadius: '12px',
+                                            transition: 'all 0.3s ease'
+                                        }}
+                                    >
+                                        <td style={{ padding: '1.25rem 1.5rem', fontFamily: 'monospace', fontWeight: '600', color: 'var(--color-text-muted)', borderTopLeftRadius: '12px', borderBottomLeftRadius: '12px' }}>
+                                            {String(i + 1).padStart(2, '0')}
+                                        </td>
+                                        <td style={{ padding: '1.25rem 1.5rem', fontWeight: '600', fontSize: '0.95rem' }}>
+                                            {report.patient_name}
+                                        </td>
+                                        <td style={{ padding: '1.25rem 1.5rem', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
+                                            {new Date(report.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                        </td>
+                                        <td style={{ padding: '1.25rem 1.5rem' }}>
+                                            <span style={{
                                                 padding: '0.5rem 1rem',
-                                                background: 'rgba(0, 240, 255, 0.1)',
-                                                border: '1px solid var(--color-primary)',
-                                                borderRadius: '8px',
-                                                color: 'var(--color-primary)',
-                                                cursor: 'pointer',
+                                                borderRadius: '20px',
+                                                background: report.type?.toLowerCase().includes('positive') 
+                                                    ? 'linear-gradient(135deg, rgba(255, 0, 85, 0.15), rgba(255, 0, 85, 0.05))' 
+                                                    : 'linear-gradient(135deg, rgba(0, 255, 136, 0.15), rgba(0, 255, 136, 0.05))',
+                                                color: report.type?.toLowerCase().includes('positive') ? '#ff0055' : '#00ff88',
+                                                fontSize: '0.875rem',
+                                                fontWeight: '600',
+                                                border: `1px solid ${report.type?.toLowerCase().includes('positive') ? 'rgba(255, 0, 85, 0.3)' : 'rgba(0, 255, 136, 0.3)'}`,
                                                 display: 'inline-flex',
                                                 alignItems: 'center',
+                                                gap: '0.5rem'
+                                            }}>
+                                                {report.type?.toLowerCase().includes('positive') ? <AlertTriangle size={14} /> : <CheckCircle size={14} />}
+                                                {report.type}
+                                            </span>
+                                        </td>
+                                        <td style={{ padding: '1.25rem 1.5rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                <div style={{ 
+                                                    flex: 1, 
+                                                    height: '6px', 
+                                                    background: 'rgba(255,255,255,0.05)', 
+                                                    borderRadius: '3px',
+                                                    overflow: 'hidden',
+                                                    maxWidth: '80px'
+                                                }}>
+                                                    <div style={{ 
+                                                        width: `${report.confidence || 0}%`, 
+                                                        height: '100%', 
+                                                        background: report.confidence >= 80 ? '#00ff88' : report.confidence >= 50 ? '#febc2e' : '#ff0055',
+                                                        borderRadius: '3px',
+                                                        transition: 'width 0.3s ease'
+                                                    }} />
+                                                </div>
+                                                <span style={{ fontSize: '0.875rem', fontWeight: '600', minWidth: '45px' }}>
+                                                    {report.confidence ? `${report.confidence.toFixed(1)}%` : '-'}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: '1.25rem 1.5rem' }}>
+                                            <div style={{ 
+                                                display: 'inline-flex', 
+                                                alignItems: 'center', 
                                                 gap: '0.5rem',
-                                                fontSize: '0.875rem'
-                                            }}
-                                        >
-                                            <Eye size={16} />
-                                            View Report
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                                padding: '0.5rem 1rem',
+                                                borderRadius: '20px',
+                                                background: report.status === 'approved' ? 'rgba(40, 200, 64, 0.1)' : report.status === 'rejected' ? 'rgba(255, 0, 85, 0.1)' : 'rgba(254, 188, 46, 0.1)',
+                                                border: `1px solid ${report.status === 'approved' ? 'rgba(40, 200, 64, 0.3)' : report.status === 'rejected' ? 'rgba(255, 0, 85, 0.3)' : 'rgba(254, 188, 46, 0.3)'}`
+                                            }}>
+                                                {report.status === 'approved' && <CheckCircle size={14} color="#28c840" />}
+                                                {report.status === 'rejected' && <XCircle size={14} color="#ff0055" />}
+                                                {report.status === 'pending' && <Clock size={14} color="#febc2e" />}
+                                                <span style={{ 
+                                                    textTransform: 'capitalize', 
+                                                    fontSize: '0.875rem',
+                                                    fontWeight: '600',
+                                                    color: report.status === 'approved' ? '#28c840' : report.status === 'rejected' ? '#ff0055' : '#febc2e'
+                                                }}>
+                                                    {report.status}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right', borderTopRightRadius: '12px', borderBottomRightRadius: '12px' }}>
+                                            <motion.button
+                                                whileHover={{ scale: 1.05, boxShadow: '0 5px 15px rgba(0, 240, 255, 0.3)' }}
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={() => setSelectedReport(report)}
+                                                style={{
+                                                    padding: '0.625rem 1.25rem',
+                                                    background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(0, 240, 255, 0.05))',
+                                                    border: '1px solid rgba(0, 240, 255, 0.3)',
+                                                    borderRadius: '10px',
+                                                    color: 'var(--color-primary)',
+                                                    cursor: 'pointer',
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: '0.5rem',
+                                                    fontSize: '0.875rem',
+                                                    fontWeight: '600',
+                                                    transition: 'all 0.3s ease'
+                                                }}
+                                            >
+                                                <Eye size={16} />
+                                                View
+                                            </motion.button>
+                                        </td>
+                                    </motion.tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
             </motion.div>
 
