@@ -831,6 +831,104 @@ const Detector = ({ role, user, onNavigate }) => {
                                         </div>
                                     )}
 
+                                    {/* Clinical Methodology & Important Notes */}
+                                    {patientData.diseaseType === 'Malaria' && (
+                                        <div style={{ marginTop: '2rem', marginBottom: '2rem', pageBreakBefore: 'always' }}>
+                                            <h3 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '1rem', textTransform: 'uppercase', color: '#444', borderBottom: '2px solid #eee', paddingBottom: '0.5rem' }}>
+                                                Clinical Methodology & Important Notes
+                                            </h3>
+
+                                            {/* BFMP: Thick Film Identification */}
+                                            <div style={{ marginBottom: '1.5rem', padding: '1rem', background: '#fff3cd', border: '1px solid #ffc107', borderRadius: '8px' }}>
+                                                <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem', fontWeight: 'bold', color: '#856404' }}>
+                                                    📋 BFMP: Thick Film Identification
+                                                </h4>
+                                                
+                                                <div style={{ fontSize: '0.85rem', color: '#333', lineHeight: '1.6' }}>
+                                                    <p style={{ margin: '0 0 0.75rem 0' }}>
+                                                        <strong>1. Parasite Stages:</strong>
+                                                    </p>
+                                                    <ul style={{ margin: '0 0 0.75rem 1.5rem', paddingLeft: 0 }}>
+                                                        <li style={{ marginBottom: '0.5rem' }}>
+                                                            <strong>Asexual Forms:</strong> Counted for parasite density calculation
+                                                        </li>
+                                                        <li style={{ marginBottom: '0.5rem' }}>
+                                                            <strong>Sexual Forms (Gametocytes):</strong> Counted separately, not included in density
+                                                        </li>
+                                                        <li style={{ marginBottom: '0.5rem' }}>
+                                                            <strong>Clinical Significance:</strong> Parasite density guides clinical severity assessment, treatment decisions, and monitoring of therapeutic response
+                                                        </li>
+                                                    </ul>
+
+                                                    <p style={{ margin: '0.75rem 0', padding: '0.5rem', background: 'rgba(255, 193, 7, 0.1)', borderLeft: '3px solid #ffc107' }}>
+                                                        <strong>⚠️ Note:</strong> This AI system currently provides overall parasite detection. Stage classification should be verified by trained microscopists for accurate clinical assessment.
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {/* White Blood Cells (WBCs) */}
+                                            <div style={{ marginBottom: '1.5rem', padding: '1rem', background: '#d1ecf1', border: '1px solid #17a2b8', borderRadius: '8px' }}>
+                                                <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem', fontWeight: 'bold', color: '#0c5460' }}>
+                                                    🔬 White Blood Cells (WBCs) & Parasite Density
+                                                </h4>
+                                                
+                                                <div style={{ fontSize: '0.85rem', color: '#333', lineHeight: '1.6' }}>
+                                                    <p style={{ margin: '0 0 0.75rem 0' }}>
+                                                        <strong>Standard Formula for Parasite Density:</strong>
+                                                    </p>
+                                                    <div style={{ padding: '0.75rem', background: 'white', borderRadius: '4px', fontFamily: 'monospace', fontSize: '0.9rem', marginBottom: '0.75rem', textAlign: 'center', border: '1px solid #17a2b8' }}>
+                                                        Parasites/µL = (Asexual parasites ÷ 200 WBCs) × 8000
+                                                    </div>
+
+                                                    <p style={{ margin: '0 0 0.75rem 0' }}>
+                                                        <strong>Recommended Protocol:</strong>
+                                                    </p>
+                                                    <ul style={{ margin: '0 0 0.75rem 1.5rem', paddingLeft: 0 }}>
+                                                        <li style={{ marginBottom: '0.5rem' }}>
+                                                            Count until ≥200 WBCs are accumulated for accuracy
+                                                        </li>
+                                                        <li style={{ marginBottom: '0.5rem' }}>
+                                                            For poor quality smears, increase threshold (e.g., 300 WBCs)
+                                                        </li>
+                                                        <li style={{ marginBottom: '0.5rem' }}>
+                                                            Display both raw count and final parasite density estimate
+                                                        </li>
+                                                        <li style={{ marginBottom: '0.5rem' }}>
+                                                            Include confidence score for staff validation
+                                                        </li>
+                                                    </ul>
+
+                                                    <p style={{ margin: '0.75rem 0', padding: '0.5rem', background: 'rgba(23, 162, 184, 0.1)', borderLeft: '3px solid #17a2b8' }}>
+                                                        <strong>⚠️ Current Limitation:</strong> This AI system provides parasite detection and classification. WBC counting and parasite density calculation should be performed manually by trained laboratory staff following WHO guidelines.
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {/* Validation Requirements */}
+                                            <div style={{ padding: '1rem', background: '#f8d7da', border: '1px solid #dc3545', borderRadius: '8px' }}>
+                                                <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem', fontWeight: 'bold', color: '#721c24' }}>
+                                                    ⚕️ Validation & Quality Assurance
+                                                </h4>
+                                                <div style={{ fontSize: '0.85rem', color: '#333', lineHeight: '1.6' }}>
+                                                    <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
+                                                        <li style={{ marginBottom: '0.5rem' }}>
+                                                            All AI-generated results must be validated by qualified medical laboratory technologists or pathologists
+                                                        </li>
+                                                        <li style={{ marginBottom: '0.5rem' }}>
+                                                            Parasite stage identification and density calculations require manual verification
+                                                        </li>
+                                                        <li style={{ marginBottom: '0.5rem' }}>
+                                                            This system serves as a screening tool to assist, not replace, professional microscopic examination
+                                                        </li>
+                                                        <li>
+                                                            Follow local laboratory protocols and WHO guidelines for malaria diagnosis
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     {/* Footer Signatures */}
                                     <div style={{ marginTop: '4rem', display: 'flex', justifyContent: 'space-between' }}>
                                         <div>
