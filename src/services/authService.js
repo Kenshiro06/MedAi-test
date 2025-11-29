@@ -6,7 +6,7 @@ export const authService = {
     async login(identifier, password) {
         try {
             // Query auth_accounts table - check both email and ic_number
-            const { data, error} = await supabase
+            const { data, error } = await supabase
                 .from('auth_accounts')
                 .select('id, email, role, status, ic_number')
                 .or(`email.eq.${identifier},ic_number.eq.${identifier}`)
@@ -25,15 +25,23 @@ export const authService = {
 
             // Store user session in localStorage
             localStorage.setItem('user', JSON.stringify(data));
-            
+
             // Log login activity
             await activityLogger.logLogin(data);
-            
+
             return {
                 success: true,
                 user: data
             };
         } catch (error) {
+            // Handle "Row not found" error from .single()
+            if (error.code === 'PGRST116' || error.message.includes('Cannot coerce') || error.message.includes('JSON object')) {
+                return {
+                    success: false,
+                    error: 'Please check your password or username'
+                };
+            }
+
             return {
                 success: false,
                 error: error.message
