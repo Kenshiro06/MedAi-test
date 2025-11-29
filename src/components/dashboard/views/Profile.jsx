@@ -41,7 +41,7 @@ const Profile = ({ user }) => {
                 'pathologist': 'pathologist_profile',
                 'health_officer': 'health_officer_profile'
             };
-            
+
             const profileTable = profileTableMap[user.role] || 'lab_technician_profile';
 
             const { data, error } = await supabase
@@ -54,7 +54,7 @@ const Profile = ({ user }) => {
 
             setProfile(data || {});
             setEditedProfile(data || {});
-            
+
             // Load profile picture if exists
             if (data?.profile_picture_url) {
                 setProfilePicture(data.profile_picture_url);
@@ -86,7 +86,7 @@ const Profile = ({ user }) => {
         const preview = URL.createObjectURL(file);
         setPendingImage(file);
         setPreviewUrl(preview);
-        
+
         // Enable edit mode when selecting a picture
         setIsEditing(true);
     };
@@ -126,7 +126,7 @@ const Profile = ({ user }) => {
                 'pathologist': 'pathologist_profile',
                 'health_officer': 'health_officer_profile'
             };
-            
+
             const profileTable = profileTableMap[user.role] || 'lab_technician_profile';
 
             const { error: updateError } = await supabase
@@ -144,7 +144,7 @@ const Profile = ({ user }) => {
             setPreviewUrl(null);
             setShowSuccessMessage(true);
             setTimeout(() => setShowSuccessMessage(false), 3000);
-            
+
             console.log('✅ Profile picture uploaded successfully');
         } catch (error) {
             console.error('Error uploading profile picture:', error);
@@ -168,7 +168,7 @@ const Profile = ({ user }) => {
 
     const handleRemoveProfilePicture = async () => {
         if (!profilePicture) return;
-        
+
         const confirmed = window.confirm('Are you sure you want to remove your profile picture?');
         if (!confirmed) return;
 
@@ -198,7 +198,7 @@ const Profile = ({ user }) => {
                 'pathologist': 'pathologist_profile',
                 'health_officer': 'health_officer_profile'
             };
-            
+
             const profileTable = profileTableMap[user.role] || 'lab_technician_profile';
 
             const { error: updateError } = await supabase
@@ -214,7 +214,7 @@ const Profile = ({ user }) => {
             setProfilePicture(null);
             setShowSuccessMessage(true);
             setTimeout(() => setShowSuccessMessage(false), 3000);
-            
+
             console.log('✅ Profile picture removed successfully');
         } catch (error) {
             console.error('Error removing profile picture:', error);
@@ -261,7 +261,7 @@ const Profile = ({ user }) => {
                 'pathologist': 'pathologist_profile',
                 'health_officer': 'health_officer_profile'
             };
-            
+
             const profileTable = profileTableMap[user.role] || 'lab_technician_profile';
 
             const { error } = await supabase
@@ -273,6 +273,19 @@ const Profile = ({ user }) => {
                 });
 
             if (error) throw error;
+
+            // IMPORTANT: Also update IC number in auth_accounts table for login
+            if (editedProfile.ic_number) {
+                const { error: authError } = await supabase
+                    .from('auth_accounts')
+                    .update({ ic_number: editedProfile.ic_number })
+                    .eq('id', user.id);
+
+                if (authError) {
+                    console.error('Error updating IC in auth_accounts:', authError);
+                    // Don't throw - profile is saved, auth IC can be updated later
+                }
+            }
 
             // Update local state
             setProfilePicture(finalProfilePictureUrl);
@@ -417,7 +430,7 @@ const Profile = ({ user }) => {
                                     height: '180px',
                                     borderRadius: '50%',
                                     background: (previewUrl || profilePicture)
-                                        ? `url(${previewUrl || profilePicture})` 
+                                        ? `url(${previewUrl || profilePicture})`
                                         : 'linear-gradient(135deg, rgba(0, 240, 255, 0.2) 0%, rgba(255, 0, 85, 0.2) 100%)',
                                     backgroundSize: 'cover',
                                     backgroundPosition: 'center',
@@ -434,7 +447,7 @@ const Profile = ({ user }) => {
                                 }}
                             >
                                 {!profilePicture && !previewUrl && (profile?.full_name?.[0] || user.email[0]).toUpperCase()}
-                                
+
                                 {uploadingPicture && (
                                     <div style={{
                                         position: 'absolute',
@@ -599,7 +612,7 @@ const Profile = ({ user }) => {
                                 </div>
                                 <div style={{ fontSize: '0.9rem', wordBreak: 'break-all' }}>{user.email}</div>
                             </div>
-                            
+
                             {profile?.license_no && (
                                 <div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>
@@ -706,7 +719,7 @@ const Profile = ({ user }) => {
                                             field.key === 'address' ? (
                                                 <textarea
                                                     value={editedProfile[field.key] || ''}
-                                                    onChange={(e) => setEditedProfile({...editedProfile, [field.key]: e.target.value})}
+                                                    onChange={(e) => setEditedProfile({ ...editedProfile, [field.key]: e.target.value })}
                                                     placeholder={`Enter ${field.label.toLowerCase()}`}
                                                     rows={3}
                                                     style={{
@@ -735,7 +748,7 @@ const Profile = ({ user }) => {
                                                 <input
                                                     type="text"
                                                     value={editedProfile[field.key] || ''}
-                                                    onChange={(e) => setEditedProfile({...editedProfile, [field.key]: e.target.value})}
+                                                    onChange={(e) => setEditedProfile({ ...editedProfile, [field.key]: e.target.value })}
                                                     placeholder={`Enter ${field.label.toLowerCase()}`}
                                                     style={{
                                                         width: '100%',

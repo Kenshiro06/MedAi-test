@@ -4,22 +4,19 @@ import { Users, Trash2, RefreshCw, Search, CheckCircle, XCircle, UserPlus, X } f
 import { supabase } from '../../../lib/supabase';
 import { activityLogger } from '../../../services/activityLogger';
 
-const UserManagement = ({ user: currentUser }) => {
+const ManageLabTechnician = ({ user: currentUser }) => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [newUser, setNewUser] = useState({
         email: '',
         password: '',
-        role: 'lab_technician',
         fullName: '',
         icNumber: '',
         department: '',
-        hospital: '',
-        specialization: ''
+        hospital: ''
     });
 
     useEffect(() => {
@@ -29,27 +26,26 @@ const UserManagement = ({ user: currentUser }) => {
     const fetchUsers = async () => {
         setLoading(true);
         try {
+            // Fetch only lab technicians
             const { data: accounts, error } = await supabase
                 .from('auth_accounts')
                 .select('*')
+                .eq('role', 'lab_technician')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
 
             const { data: labTechs } = await supabase.from('lab_technician_profile').select('*');
-            const { data: medicalOfficers } = await supabase.from('medical_officer_profile').select('*');
-            const { data: pathologists } = await supabase.from('pathologist_profile').select('*');
-            const { data: healthOfficers } = await supabase.from('health_officer_profile').select('*');
-            const { data: admins } = await supabase.from('admin_profile').select('*');
 
             const mappedUsers = accounts.map(account => {
-                let fullName = account.email;
-                if (account.role === 'lab_technician') fullName = labTechs?.find(p => p.account_id === account.id)?.full_name || account.email;
-                else if (account.role === 'medical_officer') fullName = medicalOfficers?.find(p => p.account_id === account.id)?.full_name || account.email;
-                else if (account.role === 'pathologist') fullName = pathologists?.find(p => p.account_id === account.id)?.full_name || account.email;
-                else if (account.role === 'health_officer') fullName = healthOfficers?.find(p => p.account_id === account.id)?.full_name || account.email;
-                else if (account.role === 'admin') fullName = admins?.find(p => p.account_id === account.id)?.full_name || account.email;
-                return { ...account, fullName };
+                const profile = labTechs?.find(p => p.account_id === account.id);
+                return {
+                    ...account,
+                    fullName: profile?.full_name || account.email,
+                    fullName: profile?.full_name || account.email,
+                    // department: profile?.department, // Column does not exist
+                    // hospital: profile?.hospital // Column does not exist
+                };
             });
 
             setUsers(mappedUsers);
@@ -71,7 +67,7 @@ const UserManagement = ({ user: currentUser }) => {
     };
 
     const handleDeleteUser = async (userId) => {
-        if (!confirm('Delete this user?')) return;
+        if (!confirm('Delete this lab technician?')) return;
         try {
             const userToDelete = users.find(u => u.id === userId);
             await supabase.from('auth_accounts').delete().eq('id', userId);
@@ -82,7 +78,7 @@ const UserManagement = ({ user: currentUser }) => {
             }
 
             await fetchUsers();
-            alert('✅ User deleted successfully!');
+            alert('✅ Lab Technician deleted successfully!');
         } catch (error) {
             alert('Error deleting user: ' + error.message);
         }
@@ -118,14 +114,14 @@ const UserManagement = ({ user: currentUser }) => {
                 return;
             }
 
-            // Insert into auth_accounts (using password_hash column)
+            // Insert into auth_accounts
             const { data: account, error: accountError } = await supabase
                 .from('auth_accounts')
                 .insert([{
                     email: newUser.email,
                     ic_number: newUser.icNumber,
-                    password_hash: newUser.password, // Using password_hash column (in production, hash this!)
-                    role: newUser.role,
+                    password_hash: newUser.password,
+                    role: 'lab_technician',
                     status: 'approved'
                 }])
                 .select()
@@ -133,38 +129,30 @@ const UserManagement = ({ user: currentUser }) => {
 
             if (accountError) throw accountError;
 
-            // Insert into role-specific profile table
+            // Insert into lab_technician_profile
             const profileData = {
                 account_id: account.id,
                 full_name: newUser.fullName,
-                ic_number: newUser.icNumber,
-                department: newUser.department || 'General',
-                hospital: newUser.hospital || 'General Hospital'
+                ic_number: newUser.icNumber
+                // department: newUser.department, // Column does not exist in DB
+                // hospital: newUser.hospital      // Column does not exist in DB
             };
 
-            let profileTable = '';
-            if (newUser.role === 'lab_technician') {
-                profileTable = 'lab_technician_profile';
-            } else if (newUser.role === 'medical_officer') {
-                profileTable = 'medical_officer_profile';
-            } else if (newUser.role === 'pathologist') {
-                profileTable = 'pathologist_profile';
-                profileData.specialization = newUser.specialization || 'General Pathology';
-            } else if (newUser.role === 'health_officer') {
-                profileTable = 'health_officer_profile';
-            } else if (newUser.role === 'admin') {
-                profileTable = 'admin_profile';
-            }
+            console.log('Account created:', account);
+            console.log('Inserting profile data:', profileData);
 
-            if (profileTable) {
-                const { error: profileError } = await supabase
-                    .from(profileTable)
-                    .insert([profileData]);
+            const { error: profileError } = await supabase
+                .from('lab_technician_profile')
+                .insert([profileData]);
 
-                if (profileError) {
-                    console.error('Profile creation error:', profileError);
-                    // Don't throw - account is created, profile can be added later
-                }
+            if (profileError) {
+                console.error('Profile creation error details:', JSON.stringify(profileError, null, 2));
+                console.error('Profile creation error message:', profileError.message);
+                console.error('Profile creation error hint:', profileError.hint);
+                console.error('Profile creation error details:', profileError.details);
+                // Manual rollback: delete the account if profile creation fails
+                await supabase.from('auth_accounts').delete().eq('id', account.id);
+                throw new Error('Failed to create profile. Please try again.');
             }
 
             // Log activity
@@ -172,22 +160,20 @@ const UserManagement = ({ user: currentUser }) => {
                 await activityLogger.logUserManagement(
                     currentUser,
                     'Created',
-                    `${newUser.fullName} (${newUser.email}) as ${newUser.role}`
+                    `${newUser.fullName} (${newUser.email}) as lab_technician`
                 );
             }
 
-            alert(`✅ User ${newUser.fullName} created successfully!\n\nLogin Credentials:\nEmail: ${newUser.email}\nPassword: ${newUser.password}\n\nPlease save these credentials!`);
+            alert(`✅ Lab Technician ${newUser.fullName} created successfully!\n\nLogin Credentials:\nEmail: ${newUser.email}\nPassword: ${newUser.password}\n\nPlease save these credentials!`);
 
             // Reset form
             setNewUser({
                 email: '',
                 password: '',
-                role: 'lab_technician',
                 fullName: '',
                 icNumber: '',
                 department: '',
-                hospital: '',
-                specialization: ''
+                hospital: ''
             });
             setShowAddModal(false);
             await fetchUsers();
@@ -199,33 +185,22 @@ const UserManagement = ({ user: currentUser }) => {
         }
     };
 
-    const getRoleColor = (role) => {
-        const colors = { admin: '#f97316', lab_technician: '#00f0ff', medical_officer: '#00ff88', pathologist: '#a855f7', health_officer: '#3b82f6' };
-        return colors[role] || '#ffffff';
-    };
-
-    const getRoleLabel = (role) => {
-        const labels = { admin: 'Admin', lab_technician: 'Lab Technician', medical_officer: 'Medical Officer', pathologist: 'Pathologist', health_officer: 'Health Officer' };
-        return labels[role] || role;
-    };
-
     const filteredUsers = users.filter(user => {
-        const matchesFilter = filter === 'all' || user.role === filter;
         const matchesSearch = user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || user.email.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchesFilter && matchesSearch;
+        return matchesSearch;
     });
 
     return (
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
-                    <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>User <span className="text-gradient">Management</span></h1>
-                    <p style={{ color: 'var(--color-text-muted)' }}>Manage system users ({filteredUsers.length}/{users.length})</p>
+                    <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Manage <span className="text-gradient">Lab Technicians</span></h1>
+                    <p style={{ color: 'var(--color-text-muted)' }}>Manage lab technicians ({filteredUsers.length}/{users.length})</p>
                 </div>
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
                     <button onClick={() => setShowAddModal(true)} style={{ padding: '0.75rem 1.5rem', background: 'linear-gradient(135deg, #00f0ff, #0080ff)', border: 'none', borderRadius: '8px', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '600' }}>
                         <UserPlus size={18} />
-                        Add User
+                        Add Technician
                     </button>
                     <button onClick={fetchUsers} disabled={loading} style={{ padding: '0.75rem 1rem', background: 'rgba(0, 240, 255, 0.1)', border: '1px solid var(--color-primary)', borderRadius: '8px', color: 'var(--color-primary)', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <RefreshCw size={16} />
@@ -238,16 +213,8 @@ const UserManagement = ({ user: currentUser }) => {
                 <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                     <div style={{ flex: 1, minWidth: '200px', position: 'relative' }}>
                         <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
-                        <input type="text" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 3rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-glass-border)', borderRadius: '8px', color: 'white', outline: 'none' }} />
+                        <input type="text" placeholder="Search technicians..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 3rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-glass-border)', borderRadius: '8px', color: 'white', outline: 'none' }} />
                     </div>
-                    <select value={filter} onChange={(e) => setFilter(e.target.value)} style={{ padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-glass-border)', borderRadius: '8px', color: 'white', cursor: 'pointer', outline: 'none' }}>
-                        <option value="all">All Roles</option>
-                        <option value="admin">Admin</option>
-                        <option value="lab_technician">Lab Technician</option>
-                        <option value="medical_officer">Medical Officer</option>
-                        <option value="pathologist">Pathologist</option>
-                        <option value="health_officer">Health Officer</option>
-                    </select>
                 </div>
             </div>
 
@@ -258,9 +225,9 @@ const UserManagement = ({ user: currentUser }) => {
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                             <tr style={{ borderBottom: '1px solid var(--color-glass-border)' }}>
-                                <th style={{ padding: '1.5rem', textAlign: 'left', color: 'var(--color-text-muted)' }}>User</th>
-                                <th style={{ padding: '1.5rem', textAlign: 'left', color: 'var(--color-text-muted)' }}>Role</th>
+                                <th style={{ padding: '1.5rem', textAlign: 'left', color: 'var(--color-text-muted)' }}>Technician</th>
                                 <th style={{ padding: '1.5rem', textAlign: 'left', color: 'var(--color-text-muted)' }}>Email</th>
+                                {/* <th style={{ padding: '1.5rem', textAlign: 'left', color: 'var(--color-text-muted)' }}>Department</th> */}
                                 <th style={{ padding: '1.5rem', textAlign: 'left', color: 'var(--color-text-muted)' }}>Status</th>
                                 <th style={{ padding: '1.5rem', textAlign: 'left', color: 'var(--color-text-muted)' }}>Joined</th>
                                 <th style={{ padding: '1.5rem', textAlign: 'right', color: 'var(--color-text-muted)' }}>Actions</th>
@@ -271,18 +238,14 @@ const UserManagement = ({ user: currentUser }) => {
                                 <motion.tr key={user.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} whileHover={{ backgroundColor: 'rgba(255,255,255,0.02)' }} style={{ borderBottom: '1px solid var(--color-glass-border)' }}>
                                     <td style={{ padding: '1.5rem' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: `${getRoleColor(user.role)}20`, border: `2px solid ${getRoleColor(user.role)}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: getRoleColor(user.role) }}>
+                                            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0, 240, 255, 0.1)', border: '2px solid #00f0ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#00f0ff' }}>
                                                 {user.fullName.charAt(0).toUpperCase()}
                                             </div>
                                             <span style={{ fontWeight: '600' }}>{user.fullName}</span>
                                         </div>
                                     </td>
-                                    <td style={{ padding: '1.5rem' }}>
-                                        <span style={{ padding: '0.25rem 0.75rem', background: `${getRoleColor(user.role)}20`, border: `1px solid ${getRoleColor(user.role)}`, borderRadius: '6px', fontSize: '0.875rem', color: getRoleColor(user.role) }}>
-                                            {getRoleLabel(user.role)}
-                                        </span>
-                                    </td>
                                     <td style={{ padding: '1.5rem', color: 'var(--color-text-muted)' }}>{user.email}</td>
+                                    {/* <td style={{ padding: '1.5rem', color: 'var(--color-text-muted)' }}>{user.department || '-'}</td> */}
                                     <td style={{ padding: '1.5rem' }}>
                                         <button onClick={() => handleStatusToggle(user.id, user.status)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.25rem 0.75rem', background: user.status === 'approved' ? 'rgba(0, 255, 136, 0.1)' : 'rgba(255, 188, 46, 0.1)', border: `1px solid ${user.status === 'approved' ? '#00ff88' : '#febc2e'}`, borderRadius: '6px', fontSize: '0.875rem', color: user.status === 'approved' ? '#00ff88' : '#febc2e', cursor: 'pointer' }}>
                                             {user.status === 'approved' ? <CheckCircle size={14} /> : <XCircle size={14} />}
@@ -299,6 +262,13 @@ const UserManagement = ({ user: currentUser }) => {
                                     </td>
                                 </motion.tr>
                             ))}
+                            {filteredUsers.length === 0 && (
+                                <tr>
+                                    <td colSpan="6" style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                                        No lab technicians found
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -342,7 +312,7 @@ const UserManagement = ({ user: currentUser }) => {
                             onClick={(e) => e.stopPropagation()}
                         >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                                <h2 style={{ fontSize: '1.5rem', margin: 0 }}>Add New User</h2>
+                                <h2 style={{ fontSize: '1.5rem', margin: 0 }}>Add New Lab Technician</h2>
                                 <button
                                     onClick={() => setShowAddModal(false)}
                                     style={{
@@ -372,7 +342,7 @@ const UserManagement = ({ user: currentUser }) => {
                                             required
                                             value={newUser.fullName}
                                             onChange={(e) => setNewUser({ ...newUser, fullName: e.target.value })}
-                                            placeholder="Dr. John Smith"
+                                            placeholder="John Smith"
                                             style={{
                                                 width: '100%',
                                                 padding: '0.75rem',
@@ -408,11 +378,7 @@ const UserManagement = ({ user: currentUser }) => {
                                                 outline: 'none'
                                             }}
                                         />
-                                        <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>
-                                            User can login with this IC number or email
-                                        </p>
                                     </div>
-
 
                                     {/* Email */}
                                     <div>
@@ -424,7 +390,7 @@ const UserManagement = ({ user: currentUser }) => {
                                             required
                                             value={newUser.email}
                                             onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                                            placeholder="user@example.com"
+                                            placeholder="tech@example.com"
                                             style={{
                                                 width: '100%',
                                                 padding: '0.75rem',
@@ -459,40 +425,9 @@ const UserManagement = ({ user: currentUser }) => {
                                                 outline: 'none'
                                             }}
                                         />
-                                        <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>
-                                            User will login with this password
-                                        </p>
                                     </div>
 
-                                    {/* Role */}
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
-                                            Role *
-                                        </label>
-                                        <select
-                                            required
-                                            value={newUser.role}
-                                            onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
-                                            style={{
-                                                width: '100%',
-                                                padding: '0.75rem',
-                                                background: 'rgba(255, 255, 255, 0.05)',
-                                                border: '1px solid var(--color-glass-border)',
-                                                borderRadius: '8px',
-                                                color: 'white',
-                                                outline: 'none',
-                                                cursor: 'pointer'
-                                            }}
-                                        >
-                                            <option value="lab_technician">Lab Technician</option>
-                                            <option value="medical_officer">Medical Officer</option>
-                                            <option value="pathologist">Pathologist</option>
-                                            <option value="health_officer">Health Officer</option>
-                                            <option value="admin">Admin</option>
-                                        </select>
-                                    </div>
-
-                                    {/* Department */}
+                                    {/* Department - Commented out as DB does not support it
                                     <div>
                                         <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
                                             Department
@@ -501,7 +436,7 @@ const UserManagement = ({ user: currentUser }) => {
                                             type="text"
                                             value={newUser.department}
                                             onChange={(e) => setNewUser({ ...newUser, department: e.target.value })}
-                                            placeholder="Laboratory / Pathology / etc."
+                                            placeholder="Laboratory"
                                             style={{
                                                 width: '100%',
                                                 padding: '0.75rem',
@@ -513,8 +448,9 @@ const UserManagement = ({ user: currentUser }) => {
                                             }}
                                         />
                                     </div>
+                                    */}
 
-                                    {/* Hospital */}
+                                    {/* Hospital - Commented out as DB does not support it
                                     <div>
                                         <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
                                             Hospital/Facility
@@ -523,7 +459,7 @@ const UserManagement = ({ user: currentUser }) => {
                                             type="text"
                                             value={newUser.hospital}
                                             onChange={(e) => setNewUser({ ...newUser, hospital: e.target.value })}
-                                            placeholder="General Hospital KL"
+                                            placeholder="General Hospital"
                                             style={{
                                                 width: '100%',
                                                 padding: '0.75rem',
@@ -535,30 +471,7 @@ const UserManagement = ({ user: currentUser }) => {
                                             }}
                                         />
                                     </div>
-
-                                    {/* Specialization (for Pathologist only) */}
-                                    {newUser.role === 'pathologist' && (
-                                        <div>
-                                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
-                                                Specialization
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={newUser.specialization}
-                                                onChange={(e) => setNewUser({ ...newUser, specialization: e.target.value })}
-                                                placeholder="General Pathology / Microbiology / etc."
-                                                style={{
-                                                    width: '100%',
-                                                    padding: '0.75rem',
-                                                    background: 'rgba(255, 255, 255, 0.05)',
-                                                    border: '1px solid var(--color-glass-border)',
-                                                    borderRadius: '8px',
-                                                    color: 'white',
-                                                    outline: 'none'
-                                                }}
-                                            />
-                                        </div>
-                                    )}
+                                    */}
 
                                     {/* Buttons */}
                                     <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
@@ -593,7 +506,7 @@ const UserManagement = ({ user: currentUser }) => {
                                                 fontWeight: '600'
                                             }}
                                         >
-                                            {submitting ? 'Creating...' : 'Create User'}
+                                            {submitting ? 'Creating...' : 'Create Technician'}
                                         </button>
                                     </div>
                                 </div>
@@ -606,4 +519,4 @@ const UserManagement = ({ user: currentUser }) => {
     );
 };
 
-export default UserManagement;
+export default ManageLabTechnician;

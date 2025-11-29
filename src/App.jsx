@@ -18,6 +18,7 @@ import ActivityLogs from './components/dashboard/views/ActivityLogs';
 import Profile from './components/dashboard/views/Profile';
 import Settings from './components/dashboard/views/Settings';
 import Surveillance from './components/dashboard/views/Surveillance';
+import ManageLabTechnician from './components/dashboard/views/ManageLabTechnician';
 import { authService } from './services/authService';
 
 function App() {
@@ -50,7 +51,7 @@ function App() {
 
   const renderDashboardView = () => {
     if (!user) return null;
-    
+
     switch (currentView) {
       case 'overview':
         return <Overview role={user.role} user={user} />;
@@ -64,6 +65,8 @@ function App() {
         return <Reports role={user.role} user={user} />;
       case 'verify':
         return <Reports role={user.role} user={user} isPathologist={true} />;
+      case 'manage_lab_tech':
+        return <ManageLabTechnician user={user} />;
       case 'surveillance':
         return <Surveillance user={user} />;
       case 'users':

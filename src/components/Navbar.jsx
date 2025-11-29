@@ -6,20 +6,20 @@ const Navbar = ({ onLoginClick, isLoggedIn }) => {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <nav className="glass-panel" style={{ 
-            position: 'fixed', 
-            top: 0, 
-            left: 0, 
-            right: 0, 
-            zIndex: 1000, 
-            margin: '1rem', 
-            borderRadius: '16px', 
+        <nav className="glass-panel" style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1000,
+            margin: '1rem',
+            borderRadius: '16px',
             transition: 'all 0.3s ease',
             backdropFilter: 'blur(10px)'
         }}>
             <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '80px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Activity color="var(--color-primary)" size={32} />
+                    <img src="/icon_MedAI.png" alt="MedAI Logo" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
                     <span style={{ fontSize: '1.5rem', fontWeight: 'bold', letterSpacing: '-0.5px' }}>
                         Med<span className="text-gradient">AI</span>
                     </span>

@@ -30,7 +30,7 @@ const SubmitReport = ({ role, user }) => {
     const fetchAnalyses = async () => {
         setLoading(true);
         setError(null);
-        
+
         try {
             const result = await analysisService.getAnalysesByUser(user.id);
             if (result.success) {
@@ -42,9 +42,9 @@ const SubmitReport = ({ role, user }) => {
                             .select('id, status')
                             .eq('analysis_id', analysis.id)
                             .limit(1);
-                        
+
                         const report = reports?.[0] || null;
-                        
+
                         return {
                             ...analysis,
                             report_status: report?.status || null,
@@ -88,13 +88,13 @@ const SubmitReport = ({ role, user }) => {
     };
 
     const toggleSelectAll = () => {
-        const filteredAnalyses = analyses.filter(a => 
+        const filteredAnalyses = analyses.filter(a =>
             (searchTerm === '' || a.patient_name?.toLowerCase().includes(searchTerm.toLowerCase())) &&
             (filterDisease === 'all' || a.patient_type === filterDisease) &&
             (filterResult === 'all' || (filterResult === 'positive' ? (a.ai_result?.toLowerCase().includes('positive') || a.ai_result?.toLowerCase().includes('detected')) : a.ai_result?.toLowerCase().includes('negative'))) &&
             (filterStatus === 'all' || (filterStatus === 'submitted' ? a.report_status : filterStatus === 'not-submitted' ? !a.report_status : true))
         );
-        
+
         if (selectedIds.length === filteredAnalyses.length) {
             setSelectedIds([]);
         } else {
@@ -103,7 +103,7 @@ const SubmitReport = ({ role, user }) => {
     };
 
     const toggleSelect = (id) => {
-        setSelectedIds(prev => 
+        setSelectedIds(prev =>
             prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
         );
     };
@@ -180,7 +180,7 @@ const SubmitReport = ({ role, user }) => {
             // This prevents affecting other analyses with the same patient
             if (editedData.patient_name !== selectedAnalysis.patient_name) {
                 const patientTable = selectedAnalysis.patient_type === 'malaria' ? 'malaria_patients' : 'leptospirosis_patients';
-                
+
                 // Get the original patient data
                 const { data: originalPatient } = await supabase
                     .from(patientTable)
@@ -343,9 +343,9 @@ const SubmitReport = ({ role, user }) => {
                         transition={{ delay: 0.05, type: 'spring', stiffness: 200 }}
                         whileHover={{ y: -5, boxShadow: '0 15px 30px rgba(0, 240, 255, 0.2)' }}
                         className="glass-panel"
-                        style={{ 
-                            padding: '1.25rem', 
-                            background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.12), rgba(0, 240, 255, 0.03))', 
+                        style={{
+                            padding: '1.25rem',
+                            background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.12), rgba(0, 240, 255, 0.03))',
                             border: '1px solid rgba(0, 240, 255, 0.25)',
                             borderRadius: '16px',
                             position: 'relative',
@@ -356,7 +356,7 @@ const SubmitReport = ({ role, user }) => {
                         <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontSize: '3.5rem', opacity: 0.08 }}>📊</div>
                         <div style={{ position: 'relative', zIndex: 1 }}>
                             <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Reports</div>
-                            <motion.div 
+                            <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                                 transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
@@ -374,9 +374,9 @@ const SubmitReport = ({ role, user }) => {
                         transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
                         whileHover={{ y: -5, boxShadow: '0 15px 30px rgba(254, 188, 46, 0.2)' }}
                         className="glass-panel"
-                        style={{ 
-                            padding: '1.25rem', 
-                            background: 'linear-gradient(135deg, rgba(254, 188, 46, 0.12), rgba(254, 188, 46, 0.03))', 
+                        style={{
+                            padding: '1.25rem',
+                            background: 'linear-gradient(135deg, rgba(254, 188, 46, 0.12), rgba(254, 188, 46, 0.03))',
                             border: '1px solid rgba(254, 188, 46, 0.25)',
                             borderRadius: '16px',
                             position: 'relative',
@@ -387,7 +387,7 @@ const SubmitReport = ({ role, user }) => {
                         <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontSize: '3.5rem', opacity: 0.08 }}>📤</div>
                         <div style={{ position: 'relative', zIndex: 1 }}>
                             <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Submitted Review</div>
-                            <motion.div 
+                            <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                                 transition={{ delay: 0.25, type: 'spring', stiffness: 200 }}
@@ -405,9 +405,9 @@ const SubmitReport = ({ role, user }) => {
                         transition={{ delay: 0.15, type: 'spring', stiffness: 200 }}
                         whileHover={{ y: -5, boxShadow: '0 15px 30px rgba(255, 0, 85, 0.2)' }}
                         className="glass-panel"
-                        style={{ 
-                            padding: '1.25rem', 
-                            background: 'linear-gradient(135deg, rgba(255, 0, 85, 0.12), rgba(255, 0, 85, 0.03))', 
+                        style={{
+                            padding: '1.25rem',
+                            background: 'linear-gradient(135deg, rgba(255, 0, 85, 0.12), rgba(255, 0, 85, 0.03))',
                             border: '1px solid rgba(255, 0, 85, 0.25)',
                             borderRadius: '16px',
                             position: 'relative',
@@ -418,7 +418,7 @@ const SubmitReport = ({ role, user }) => {
                         <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontSize: '3.5rem', opacity: 0.08 }}>📝</div>
                         <div style={{ position: 'relative', zIndex: 1 }}>
                             <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Not Submitted</div>
-                            <motion.div 
+                            <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                                 transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
@@ -457,17 +457,17 @@ const SubmitReport = ({ role, user }) => {
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                             <BarChart3 size={24} color="var(--color-primary)" />
-                            <h2 style={{ fontSize: '1.5rem', fontWeight: '600' }}>Your Analyses ({analyses.filter(a => 
+                            <h2 style={{ fontSize: '1.5rem', fontWeight: '600' }}>Your Analyses ({analyses.filter(a =>
                                 (searchTerm === '' || a.patient_name?.toLowerCase().includes(searchTerm.toLowerCase())) &&
                                 (filterDisease === 'all' || a.patient_type === filterDisease) &&
                                 (filterResult === 'all' || (filterResult === 'positive' ? a.ai_result?.toLowerCase().includes('positive') || a.ai_result?.toLowerCase().includes('detected') : a.ai_result?.toLowerCase().includes('negative'))) &&
                                 (filterStatus === 'all' || (filterStatus === 'submitted' ? a.report_status : !a.report_status))
                             ).length})</h2>
                             {selectedIds.length > 0 && (
-                                <span style={{ 
-                                    padding: '0.25rem 0.75rem', 
-                                    background: 'rgba(0, 240, 255, 0.1)', 
-                                    border: '1px solid var(--color-primary)', 
+                                <span style={{
+                                    padding: '0.25rem 0.75rem',
+                                    background: 'rgba(0, 240, 255, 0.1)',
+                                    border: '1px solid var(--color-primary)',
                                     borderRadius: '6px',
                                     fontSize: '0.875rem',
                                     color: 'var(--color-primary)'
@@ -478,14 +478,14 @@ const SubmitReport = ({ role, user }) => {
                         </div>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                             {selectedIds.length > 0 && (
-                                <button 
-                                    onClick={deleteSelected} 
-                                    style={{ 
-                                        padding: '0.5rem 1rem', 
-                                        background: 'rgba(255, 0, 85, 0.1)', 
-                                        border: '1px solid rgba(255, 0, 85, 0.3)', 
-                                        borderRadius: '8px', 
-                                        color: '#ff0055', 
+                                <button
+                                    onClick={deleteSelected}
+                                    style={{
+                                        padding: '0.5rem 1rem',
+                                        background: 'rgba(255, 0, 85, 0.1)',
+                                        border: '1px solid rgba(255, 0, 85, 0.3)',
+                                        borderRadius: '8px',
+                                        color: '#ff0055',
                                         cursor: 'pointer',
                                         display: 'flex',
                                         alignItems: 'center',
@@ -534,9 +534,9 @@ const SubmitReport = ({ role, user }) => {
                             <thead>
                                 <tr style={{ background: 'rgba(255,255,255,0.02)' }}>
                                     <th style={{ padding: '1rem', textAlign: 'center', color: 'var(--color-text-muted)', fontWeight: '500', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                        <input 
-                                            type="checkbox" 
-                                            checked={selectedIds.length > 0 && selectedIds.length === analyses.filter(a => 
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedIds.length > 0 && selectedIds.length === analyses.filter(a =>
                                                 (searchTerm === '' || a.patient_name?.toLowerCase().includes(searchTerm.toLowerCase())) &&
                                                 (filterDisease === 'all' || a.patient_type === filterDisease) &&
                                                 (filterResult === 'all' || (filterResult === 'positive' ? (a.ai_result?.toLowerCase().includes('positive') || a.ai_result?.toLowerCase().includes('detected')) : a.ai_result?.toLowerCase().includes('negative'))) &&
@@ -558,172 +558,146 @@ const SubmitReport = ({ role, user }) => {
                             </thead>
                             <tbody>
                                 {analyses
-                                    .filter(a => 
+                                    .filter(a =>
                                         (searchTerm === '' || a.patient_name?.toLowerCase().includes(searchTerm.toLowerCase())) &&
                                         (filterDisease === 'all' || a.patient_type === filterDisease) &&
                                         (filterResult === 'all' || (filterResult === 'positive' ? (a.ai_result?.toLowerCase().includes('positive') || a.ai_result?.toLowerCase().includes('detected')) : a.ai_result?.toLowerCase().includes('negative'))) &&
                                         (filterStatus === 'all' || (filterStatus === 'submitted' ? a.report_status : filterStatus === 'not-submitted' ? !a.report_status : true))
                                     )
                                     .map((analysis, index) => {
-                                    const ResultIcon = getResultIcon(analysis.ai_result);
-                                    const isSelected = selectedIds.includes(analysis.id);
-                                    return (
-                                        <motion.tr
-                                            key={analysis.id}
-                                            initial={{ opacity: 0, x: -20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: index * 0.03, duration: 0.3 }}
-                                            style={{ 
-                                                borderBottom: '1px solid rgba(255,255,255,0.05)',
-                                                background: isSelected ? 'rgba(0, 240, 255, 0.05)' : 'rgba(0,0,0,0)',
-                                                transition: 'all 0.3s ease'
-                                            }}
-                                            whileHover={{ background: 'rgba(255,255,255,0.03)' }}
-                                        >
-                                            <td style={{ padding: '0.875rem 1rem', textAlign: 'center' }}>
-                                                <input 
-                                                    type="checkbox" 
-                                                    checked={isSelected}
-                                                    onChange={() => toggleSelect(analysis.id)}
-                                                    style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--color-primary)' }}
-                                                />
-                                            </td>
-                                            <td style={{ padding: '0.875rem 1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>{index + 1}</td>
-                                            <td style={{ padding: '0.875rem 1rem', fontWeight: '600', fontSize: '0.9rem' }}>
-                                                {analysis.patient_name || 'N/A'}
-                                            </td>
-                                            <td style={{ padding: '0.875rem 1rem' }}>
-                                                <span style={{ 
-                                                    padding: '0.35rem 0.75rem', 
-                                                    background: analysis.patient_type === 'malaria' 
-                                                        ? 'linear-gradient(135deg, rgba(255, 0, 85, 0.15), rgba(255, 0, 85, 0.05))' 
-                                                        : 'linear-gradient(135deg, rgba(255, 188, 46, 0.15), rgba(255, 188, 46, 0.05))',
-                                                    border: `1px solid ${analysis.patient_type === 'malaria' ? 'rgba(255, 0, 85, 0.3)' : 'rgba(255, 188, 46, 0.3)'}`,
-                                                    borderRadius: '20px',
-                                                    fontSize: '0.8rem',
-                                                    textTransform: 'capitalize',
-                                                    fontWeight: '500',
-                                                    display: 'inline-flex',
-                                                    alignItems: 'center',
-                                                    gap: '0.3rem'
-                                                }}>
-                                                    {analysis.patient_type === 'malaria' ? '🦟' : '🦠'} {analysis.patient_type}
-                                                </span>
-                                            </td>
-                                            <td style={{ padding: '0.875rem 1rem' }}>
-                                                <div style={{ 
-                                                    display: 'flex', 
-                                                    alignItems: 'center', 
-                                                    gap: '0.4rem', 
-                                                    color: getResultColor(analysis.ai_result),
-                                                    fontWeight: '600',
-                                                    fontSize: '0.9rem'
-                                                }}>
-                                                    <ResultIcon size={16} />
-                                                    <span>{analysis.ai_result || 'Pending'}</span>
-                                                </div>
-                                            </td>
-                                            <td style={{ padding: '0.875rem 1rem' }}>
-                                                <div style={{ 
-                                                    display: 'flex', 
-                                                    alignItems: 'center', 
-                                                    gap: '0.5rem' 
-                                                }}>
-                                                    <div style={{ 
-                                                        width: '50px', 
-                                                        height: '6px', 
-                                                        background: 'rgba(255,255,255,0.1)', 
-                                                        borderRadius: '3px',
-                                                        overflow: 'hidden'
+                                        const ResultIcon = getResultIcon(analysis.ai_result);
+                                        const isSelected = selectedIds.includes(analysis.id);
+                                        return (
+                                            <motion.tr
+                                                key={analysis.id}
+                                                initial={{ opacity: 0, x: -20 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: index * 0.03, duration: 0.3 }}
+                                                style={{
+                                                    borderBottom: '1px solid rgba(255,255,255,0.05)',
+                                                    background: isSelected ? 'rgba(0, 240, 255, 0.05)' : 'rgba(0,0,0,0)',
+                                                    transition: 'all 0.3s ease'
+                                                }}
+                                                whileHover={{ background: 'rgba(255,255,255,0.03)' }}
+                                            >
+                                                <td style={{ padding: '0.875rem 1rem', textAlign: 'center' }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isSelected}
+                                                        onChange={() => toggleSelect(analysis.id)}
+                                                        style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--color-primary)' }}
+                                                    />
+                                                </td>
+                                                <td style={{ padding: '0.875rem 1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>{index + 1}</td>
+                                                <td style={{ padding: '0.875rem 1rem', fontWeight: '600', fontSize: '0.9rem' }}>
+                                                    {analysis.patient_name || 'N/A'}
+                                                </td>
+                                                <td style={{ padding: '0.875rem 1rem' }}>
+                                                    <span style={{
+                                                        padding: '0.35rem 0.75rem',
+                                                        background: analysis.patient_type === 'malaria'
+                                                            ? 'linear-gradient(135deg, rgba(255, 0, 85, 0.15), rgba(255, 0, 85, 0.05))'
+                                                            : 'linear-gradient(135deg, rgba(255, 188, 46, 0.15), rgba(255, 188, 46, 0.05))',
+                                                        border: `1px solid ${analysis.patient_type === 'malaria' ? 'rgba(255, 0, 85, 0.3)' : 'rgba(255, 188, 46, 0.3)'}`,
+                                                        borderRadius: '20px',
+                                                        fontSize: '0.8rem',
+                                                        textTransform: 'capitalize',
+                                                        fontWeight: '500',
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: '0.3rem'
                                                     }}>
-                                                        <motion.div 
-                                                            initial={{ width: 0 }}
-                                                            animate={{ width: `${analysis.confidence_score || 0}%` }}
-                                                            transition={{ delay: index * 0.03 + 0.3, duration: 0.5 }}
-                                                            style={{ 
-                                                                height: '100%', 
-                                                                background: analysis.confidence_score >= 80 
-                                                                    ? 'linear-gradient(90deg, #28c840, #00ff88)' 
-                                                                    : analysis.confidence_score >= 50 
-                                                                        ? 'linear-gradient(90deg, #ffbc2e, #ffd700)'
-                                                                        : 'linear-gradient(90deg, #ff0055, #ff6b6b)',
-                                                                borderRadius: '3px'
-                                                            }}
-                                                        />
-                                                    </div>
-                                                    <span style={{ fontSize: '0.85rem', fontWeight: '500' }}>
-                                                        {analysis.confidence_score ? `${analysis.confidence_score}%` : 'N/A'}
+                                                        {analysis.patient_type === 'malaria' ? '🦟' : '🦠'} {analysis.patient_type}
                                                     </span>
-                                                </div>
-                                            </td>
-                                            <td style={{ padding: '0.875rem 1rem', color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
-                                                {analysis.analyzed_at ? new Date(analysis.analyzed_at).toLocaleDateString() : 'N/A'}
-                                            </td>
-                                            <td style={{ padding: '0.875rem 1rem' }}>
-                                                <span style={{
-                                                    display: 'inline-flex',
-                                                    alignItems: 'center',
-                                                    padding: '0.35rem 0.75rem',
-                                                    borderRadius: '20px',
-                                                    fontSize: '0.8rem',
-                                                    textTransform: 'capitalize',
-                                                    fontWeight: '500',
-                                                    letterSpacing: '0.3px',
-                                                    whiteSpace: 'nowrap',
-                                                    background: analysis.report_status === 'approved' ? 'linear-gradient(135deg, rgba(40, 200, 64, 0.15), rgba(40, 200, 64, 0.05))' : 
-                                                               analysis.report_status === 'rejected' ? 'linear-gradient(135deg, rgba(255, 0, 85, 0.15), rgba(255, 0, 85, 0.05))' : 
-                                                               analysis.report_status === 'pending' ? 'linear-gradient(135deg, rgba(254, 188, 46, 0.15), rgba(254, 188, 46, 0.05))' :
-                                                               'linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05))',
-                                                    color: analysis.report_status === 'approved' ? '#28c840' : 
-                                                          analysis.report_status === 'rejected' ? '#ff0055' : 
-                                                          analysis.report_status === 'pending' ? '#febc2e' :
-                                                          '#a78bfa',
-                                                    border: `1px solid ${analysis.report_status === 'approved' ? 'rgba(40, 200, 64, 0.3)' : 
-                                                                        analysis.report_status === 'rejected' ? 'rgba(255, 0, 85, 0.3)' : 
-                                                                        analysis.report_status === 'pending' ? 'rgba(254, 188, 46, 0.3)' :
-                                                                        'rgba(139, 92, 246, 0.3)'}`
-                                                }}>
-                                                    {analysis.report_status || 'Not Submitted'}
-                                                </span>
-                                            </td>
-                                            <td style={{ padding: '0.875rem 1rem', textAlign: 'right' }}>
-                                                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                                                    <motion.button
-                                                        whileHover={{ scale: 1.05 }}
-                                                        whileTap={{ scale: 0.95 }}
-                                                        onClick={() => setSelectedAnalysis(analysis)}
-                                                        style={{ 
-                                                            padding: '0.5rem 0.875rem', 
-                                                            background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(0, 240, 255, 0.05))', 
-                                                            border: '1px solid rgba(0, 240, 255, 0.3)', 
-                                                            borderRadius: '8px', 
-                                                            color: 'var(--color-primary)', 
-                                                            cursor: 'pointer',
-                                                            display: 'inline-flex',
-                                                            alignItems: 'center',
-                                                            gap: '0.4rem',
-                                                            fontSize: '0.85rem',
-                                                            fontWeight: '500',
-                                                            transition: 'all 0.3s ease'
-                                                        }}
-                                                    >
-                                                        <Eye size={14} />
-                                                        View
-                                                    </motion.button>
-                                                    {!analysis.report_status && (
+                                                </td>
+                                                <td style={{ padding: '0.875rem 1rem' }}>
+                                                    <div style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '0.4rem',
+                                                        color: getResultColor(analysis.ai_result),
+                                                        fontWeight: '600',
+                                                        fontSize: '0.9rem'
+                                                    }}>
+                                                        <ResultIcon size={16} />
+                                                        <span>{analysis.ai_result || 'Pending'}</span>
+                                                    </div>
+                                                </td>
+                                                <td style={{ padding: '0.875rem 1rem' }}>
+                                                    <div style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '0.5rem'
+                                                    }}>
+                                                        <div style={{
+                                                            width: '50px',
+                                                            height: '6px',
+                                                            background: 'rgba(255,255,255,0.1)',
+                                                            borderRadius: '3px',
+                                                            overflow: 'hidden'
+                                                        }}>
+                                                            <motion.div
+                                                                initial={{ width: 0 }}
+                                                                animate={{ width: `${analysis.confidence_score || 0}%` }}
+                                                                transition={{ delay: index * 0.03 + 0.3, duration: 0.5 }}
+                                                                style={{
+                                                                    height: '100%',
+                                                                    background: analysis.confidence_score >= 80
+                                                                        ? 'linear-gradient(90deg, #28c840, #00ff88)'
+                                                                        : analysis.confidence_score >= 50
+                                                                            ? 'linear-gradient(90deg, #ffbc2e, #ffd700)'
+                                                                            : 'linear-gradient(90deg, #ff0055, #ff6b6b)',
+                                                                    borderRadius: '3px'
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        <span style={{ fontSize: '0.85rem', fontWeight: '500' }}>
+                                                            {analysis.confidence_score ? `${analysis.confidence_score}%` : 'N/A'}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td style={{ padding: '0.875rem 1rem', color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
+                                                    {analysis.analyzed_at ? new Date(analysis.analyzed_at).toLocaleDateString() : 'N/A'}
+                                                </td>
+                                                <td style={{ padding: '0.875rem 1rem' }}>
+                                                    <span style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        padding: '0.35rem 0.75rem',
+                                                        borderRadius: '20px',
+                                                        fontSize: '0.8rem',
+                                                        textTransform: 'capitalize',
+                                                        fontWeight: '500',
+                                                        letterSpacing: '0.3px',
+                                                        whiteSpace: 'nowrap',
+                                                        background: analysis.report_status === 'approved' ? 'linear-gradient(135deg, rgba(40, 200, 64, 0.15), rgba(40, 200, 64, 0.05))' :
+                                                            analysis.report_status === 'rejected' ? 'linear-gradient(135deg, rgba(255, 0, 85, 0.15), rgba(255, 0, 85, 0.05))' :
+                                                                analysis.report_status === 'pending' ? 'linear-gradient(135deg, rgba(254, 188, 46, 0.15), rgba(254, 188, 46, 0.05))' :
+                                                                    'linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05))',
+                                                        color: analysis.report_status === 'approved' ? '#28c840' :
+                                                            analysis.report_status === 'rejected' ? '#ff0055' :
+                                                                analysis.report_status === 'pending' ? '#febc2e' :
+                                                                    '#a78bfa',
+                                                        border: `1px solid ${analysis.report_status === 'approved' ? 'rgba(40, 200, 64, 0.3)' :
+                                                            analysis.report_status === 'rejected' ? 'rgba(255, 0, 85, 0.3)' :
+                                                                analysis.report_status === 'pending' ? 'rgba(254, 188, 46, 0.3)' :
+                                                                    'rgba(139, 92, 246, 0.3)'}`
+                                                    }}>
+                                                        {analysis.report_status || 'Not Submitted'}
+                                                    </span>
+                                                </td>
+                                                <td style={{ padding: '0.875rem 1rem', textAlign: 'right' }}>
+                                                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                                                         <motion.button
                                                             whileHover={{ scale: 1.05 }}
                                                             whileTap={{ scale: 0.95 }}
-                                                            onClick={() => {
-                                                                setSelectedAnalysis(analysis);
-                                                                setTimeout(() => startEditing(analysis), 0);
-                                                            }}
-                                                            style={{ 
-                                                                padding: '0.5rem 0.875rem', 
-                                                                background: 'linear-gradient(135deg, rgba(254, 188, 46, 0.15), rgba(254, 188, 46, 0.05))', 
-                                                                border: '1px solid rgba(254, 188, 46, 0.3)', 
-                                                                borderRadius: '8px', 
-                                                                color: '#febc2e', 
+                                                            onClick={() => setSelectedAnalysis(analysis)}
+                                                            style={{
+                                                                padding: '0.5rem 0.875rem',
+                                                                background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(0, 240, 255, 0.05))',
+                                                                border: '1px solid rgba(0, 240, 255, 0.3)',
+                                                                borderRadius: '8px',
+                                                                color: 'var(--color-primary)',
                                                                 cursor: 'pointer',
                                                                 display: 'inline-flex',
                                                                 alignItems: 'center',
@@ -733,37 +707,63 @@ const SubmitReport = ({ role, user }) => {
                                                                 transition: 'all 0.3s ease'
                                                             }}
                                                         >
-                                                            <Edit2 size={14} />
-                                                            Edit
+                                                            <Eye size={14} />
+                                                            View
                                                         </motion.button>
-                                                    )}
-                                                    <motion.button
-                                                        whileHover={{ scale: 1.05 }}
-                                                        whileTap={{ scale: 0.95 }}
-                                                        onClick={() => deleteAnalysis(analysis.id)}
-                                                        style={{ 
-                                                            padding: '0.5rem 0.875rem', 
-                                                            background: 'linear-gradient(135deg, rgba(255, 0, 85, 0.15), rgba(255, 0, 85, 0.05))', 
-                                                            border: '1px solid rgba(255, 0, 85, 0.3)', 
-                                                            borderRadius: '8px', 
-                                                            color: '#ff0055', 
-                                                            cursor: 'pointer',
-                                                            display: 'inline-flex',
-                                                            alignItems: 'center',
-                                                            gap: '0.4rem',
-                                                            fontSize: '0.85rem',
-                                                            fontWeight: '500',
-                                                            transition: 'all 0.3s ease'
-                                                        }}
-                                                    >
-                                                        <Trash2 size={14} />
-                                                        Delete
-                                                    </motion.button>
-                                                </div>
-                                            </td>
-                                        </motion.tr>
-                                    );
-                                })}
+                                                        {!analysis.report_status && (
+                                                            <motion.button
+                                                                whileHover={{ scale: 1.05 }}
+                                                                whileTap={{ scale: 0.95 }}
+                                                                onClick={() => {
+                                                                    setSelectedAnalysis(analysis);
+                                                                    setTimeout(() => startEditing(analysis), 0);
+                                                                }}
+                                                                style={{
+                                                                    padding: '0.5rem 0.875rem',
+                                                                    background: 'linear-gradient(135deg, rgba(254, 188, 46, 0.15), rgba(254, 188, 46, 0.05))',
+                                                                    border: '1px solid rgba(254, 188, 46, 0.3)',
+                                                                    borderRadius: '8px',
+                                                                    color: '#febc2e',
+                                                                    cursor: 'pointer',
+                                                                    display: 'inline-flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '0.4rem',
+                                                                    fontSize: '0.85rem',
+                                                                    fontWeight: '500',
+                                                                    transition: 'all 0.3s ease'
+                                                                }}
+                                                            >
+                                                                <Edit2 size={14} />
+                                                                Edit
+                                                            </motion.button>
+                                                        )}
+                                                        <motion.button
+                                                            whileHover={{ scale: 1.05 }}
+                                                            whileTap={{ scale: 0.95 }}
+                                                            onClick={() => deleteAnalysis(analysis.id)}
+                                                            style={{
+                                                                padding: '0.5rem 0.875rem',
+                                                                background: 'linear-gradient(135deg, rgba(255, 0, 85, 0.15), rgba(255, 0, 85, 0.05))',
+                                                                border: '1px solid rgba(255, 0, 85, 0.3)',
+                                                                borderRadius: '8px',
+                                                                color: '#ff0055',
+                                                                cursor: 'pointer',
+                                                                display: 'inline-flex',
+                                                                alignItems: 'center',
+                                                                gap: '0.4rem',
+                                                                fontSize: '0.85rem',
+                                                                fontWeight: '500',
+                                                                transition: 'all 0.3s ease'
+                                                            }}
+                                                        >
+                                                            <Trash2 size={14} />
+                                                            Delete
+                                                        </motion.button>
+                                                    </div>
+                                                </td>
+                                            </motion.tr>
+                                        );
+                                    })}
                             </tbody>
                         </table>
                     </div>
@@ -777,17 +777,17 @@ const SubmitReport = ({ role, user }) => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        style={{ 
-                            position: 'fixed', 
-                            top: 0, 
-                            left: 0, 
-                            width: '100%', 
-                            height: '100%', 
-                            background: 'rgba(0,0,0,0.8)', 
-                            backdropFilter: 'blur(10px)', 
-                            zIndex: 1000, 
-                            display: 'flex', 
-                            alignItems: 'center', 
+                        style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            background: 'rgba(0,0,0,0.8)',
+                            backdropFilter: 'blur(10px)',
+                            zIndex: 1000,
+                            display: 'flex',
+                            alignItems: 'center',
                             justifyContent: 'center',
                             padding: '2rem'
                         }}
@@ -798,38 +798,38 @@ const SubmitReport = ({ role, user }) => {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
                             className="glass-panel"
-                            style={{ 
-                                width: '100%', 
-                                maxWidth: '600px', 
-                                padding: '2rem', 
-                                maxHeight: '90vh', 
-                                overflowY: 'auto' 
+                            style={{
+                                width: '100%',
+                                maxWidth: '600px',
+                                padding: '2rem',
+                                maxHeight: '90vh',
+                                overflowY: 'auto'
                             }}
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* PDF-Style Report Header */}
                             {!isEditing && (
-                                <div style={{ 
-                                    background: 'white', 
-                                    color: '#000', 
-                                    padding: '2rem', 
+                                <div style={{
+                                    background: 'white',
+                                    color: '#000',
+                                    padding: '2rem',
                                     borderRadius: '12px 12px 0 0',
                                     marginBottom: '1.5rem',
                                     position: 'relative'
                                 }}>
-                                    <button 
+                                    <button
                                         onClick={() => {
                                             setSelectedAnalysis(null);
                                             setIsEditing(false);
-                                        }} 
-                                        style={{ 
+                                        }}
+                                        style={{
                                             position: 'absolute',
                                             top: '1rem',
                                             right: '1rem',
-                                            background: 'rgba(0,0,0,0.1)', 
-                                            border: 'none', 
+                                            background: 'rgba(0,0,0,0.1)',
+                                            border: 'none',
                                             borderRadius: '6px',
-                                            color: '#000', 
+                                            color: '#000',
                                             cursor: 'pointer',
                                             padding: '0.5rem',
                                             display: 'flex',
@@ -842,9 +842,9 @@ const SubmitReport = ({ role, user }) => {
 
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                            <img 
-                                                src="/Screenshot_2025-11-27_171855-removebg-preview.png" 
-                                                alt="MedAi Logo" 
+                                            <img
+                                                src="/icon_MedAI.png"
+                                                alt="MedAi Logo"
                                                 style={{ width: '60px', height: '60px', objectFit: 'contain' }}
                                             />
                                             <div>
@@ -855,10 +855,10 @@ const SubmitReport = ({ role, user }) => {
                                         <div style={{ textAlign: 'right' }}>
                                             <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', margin: 0, marginBottom: '0.25rem' }}>DIAGNOSTIC REPORT</h3>
                                             <p style={{ margin: 0, fontSize: '0.85rem', color: '#666' }}>
-                                                {selectedAnalysis.analyzed_at ? new Date(selectedAnalysis.analyzed_at).toLocaleDateString('en-US', { 
-                                                    year: 'numeric', 
-                                                    month: '2-digit', 
-                                                    day: '2-digit' 
+                                                {selectedAnalysis.analyzed_at ? new Date(selectedAnalysis.analyzed_at).toLocaleDateString('en-US', {
+                                                    year: 'numeric',
+                                                    month: '2-digit',
+                                                    day: '2-digit'
                                                 }) : 'N/A'}
                                             </p>
                                         </div>
@@ -866,10 +866,10 @@ const SubmitReport = ({ role, user }) => {
 
                                     {/* Patient Information Section */}
                                     <div style={{ marginBottom: '1.5rem' }}>
-                                        <h4 style={{ 
-                                            fontSize: '0.95rem', 
-                                            fontWeight: 'bold', 
-                                            textTransform: 'uppercase', 
+                                        <h4 style={{
+                                            fontSize: '0.95rem',
+                                            fontWeight: 'bold',
+                                            textTransform: 'uppercase',
                                             letterSpacing: '0.5px',
                                             marginBottom: '1rem',
                                             paddingBottom: '0.5rem',
@@ -915,10 +915,10 @@ const SubmitReport = ({ role, user }) => {
 
                                     {/* Microscopic Analysis Results */}
                                     <div>
-                                        <h4 style={{ 
-                                            fontSize: '0.95rem', 
-                                            fontWeight: 'bold', 
-                                            textTransform: 'uppercase', 
+                                        <h4 style={{
+                                            fontSize: '0.95rem',
+                                            fontWeight: 'bold',
+                                            textTransform: 'uppercase',
                                             letterSpacing: '0.5px',
                                             marginBottom: '1rem',
                                             paddingBottom: '0.5rem',
@@ -979,9 +979,9 @@ const SubmitReport = ({ role, user }) => {
                                                                     const parasites = selectedAnalysis.ai_result?.toLowerCase().includes('positive') ? Math.floor(Math.random() * 20) + 5 : 0;
                                                                     const wbcs = Math.floor(Math.random() * 50) + 200;
                                                                     const density = parasites > 0 ? Math.round((parasites / wbcs) * 8000) : 0;
-                                                                    return density === 0 ? 'Negative' : 
-                                                                           density < 1000 ? 'Low' :
-                                                                           density < 10000 ? 'Moderate' : 'High';
+                                                                    return density === 0 ? 'Negative' :
+                                                                        density < 1000 ? 'Low' :
+                                                                            density < 10000 ? 'Moderate' : 'High';
                                                                 })()}
                                                             </td>
                                                         </tr>
@@ -996,8 +996,8 @@ const SubmitReport = ({ role, user }) => {
                                                 )}
                                                 <tr style={{ borderBottom: '1px solid #ddd' }}>
                                                     <td style={{ padding: '0.75rem' }}>AI Detection Result</td>
-                                                    <td style={{ 
-                                                        padding: '0.75rem', 
+                                                    <td style={{
+                                                        padding: '0.75rem',
                                                         fontWeight: 'bold',
                                                         color: selectedAnalysis.ai_result?.toLowerCase().includes('positive') ? '#ff0055' : '#28c840'
                                                     }}>
@@ -1025,9 +1025,9 @@ const SubmitReport = ({ role, user }) => {
                                     </div>
 
                                     {/* AI Recommendation */}
-                                    <div style={{ 
-                                        marginTop: '1.5rem', 
-                                        padding: '1rem', 
+                                    <div style={{
+                                        marginTop: '1.5rem',
+                                        padding: '1rem',
                                         background: selectedAnalysis.ai_result?.toLowerCase().includes('positive') ? '#fff3cd' : '#d1ecf1',
                                         border: `1px solid ${selectedAnalysis.ai_result?.toLowerCase().includes('positive') ? '#ffc107' : '#0dcaf0'}`,
                                         borderRadius: '8px'
@@ -1037,7 +1037,7 @@ const SubmitReport = ({ role, user }) => {
                                             <div>
                                                 <h5 style={{ margin: 0, marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 'bold' }}>AI Recommendation</h5>
                                                 <p style={{ margin: 0, fontSize: '0.85rem', lineHeight: '1.5' }}>
-                                                    {selectedAnalysis.ai_result?.toLowerCase().includes('positive') 
+                                                    {selectedAnalysis.ai_result?.toLowerCase().includes('positive')
                                                         ? 'Consider uploading more fields (10-30 recommended) for better accuracy. Immediate medical consultation recommended for positive cases.'
                                                         : 'Result appears normal. Continue routine monitoring as per standard protocols.'}
                                                 </p>
@@ -1051,15 +1051,15 @@ const SubmitReport = ({ role, user }) => {
                                         const images = selectedAnalysis.image_paths && Array.isArray(selectedAnalysis.image_paths) && selectedAnalysis.image_paths.length > 0
                                             ? selectedAnalysis.image_paths
                                             : [selectedAnalysis.image_path].filter(Boolean);
-                                        
+
                                         if (images.length === 0) return null;
-                                        
+
                                         return (
                                             <div style={{ marginTop: '1.5rem' }}>
-                                                <h4 style={{ 
-                                                    fontSize: '0.95rem', 
-                                                    fontWeight: 'bold', 
-                                                    textTransform: 'uppercase', 
+                                                <h4 style={{
+                                                    fontSize: '0.95rem',
+                                                    fontWeight: 'bold',
+                                                    textTransform: 'uppercase',
                                                     letterSpacing: '0.5px',
                                                     marginBottom: '1rem',
                                                     paddingBottom: '0.5rem',
@@ -1090,8 +1090,8 @@ const SubmitReport = ({ role, user }) => {
                                                                 <div style={{ fontWeight: '600', fontSize: '0.875rem', marginBottom: '0.25rem' }}>
                                                                     Field {idx + 1}
                                                                 </div>
-                                                                <div style={{ 
-                                                                    fontSize: '0.75rem', 
+                                                                <div style={{
+                                                                    fontSize: '0.75rem',
                                                                     color: '#2e7d32',
                                                                     fontWeight: '500'
                                                                 }}>
@@ -1102,7 +1102,7 @@ const SubmitReport = ({ role, user }) => {
                                                     ))}
                                                 </div>
                                                 <div style={{ marginTop: '1rem', padding: '1rem', background: '#f8f9fa', borderRadius: '8px', fontSize: '0.875rem', color: '#666' }}>
-                                                    <strong>Note:</strong> All microscope images were analyzed using AI-powered detection system. 
+                                                    <strong>Note:</strong> All microscope images were analyzed using AI-powered detection system.
                                                     Images marked as "Good" quality contributed to the final diagnosis with high confidence.
                                                 </div>
                                             </div>
@@ -1114,15 +1114,15 @@ const SubmitReport = ({ role, user }) => {
                             {isEditing && (
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                                     <h2 style={{ fontSize: '1.5rem' }}>Edit Analysis</h2>
-                                    <button 
+                                    <button
                                         onClick={() => {
                                             setSelectedAnalysis(null);
                                             setIsEditing(false);
-                                        }} 
-                                        style={{ 
-                                            background: 'transparent', 
-                                            border: 'none', 
-                                            color: 'var(--color-text-muted)', 
+                                        }}
+                                        style={{
+                                            background: 'transparent',
+                                            border: 'none',
+                                            color: 'var(--color-text-muted)',
                                             cursor: 'pointer',
                                             padding: '0.5rem'
                                         }}
@@ -1135,123 +1135,123 @@ const SubmitReport = ({ role, user }) => {
                             {isEditing && (
                                 <div style={{ marginBottom: '2rem', padding: '1.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}>
                                     <h3 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--color-primary)' }}>Patient Information</h3>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                                    <div>
-                                        <div style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Patient Name</div>
-                                        {isEditing ? (
-                                            <input 
-                                                type="text"
-                                                value={editedData.patient_name}
-                                                onChange={(e) => setEditedData({...editedData, patient_name: e.target.value})}
-                                                style={{ 
-                                                    width: '100%',
-                                                    padding: '0.5rem', 
-                                                    background: 'rgba(255,255,255,0.05)', 
-                                                    border: '1px solid var(--color-glass-border)', 
-                                                    borderRadius: '6px', 
-                                                    color: 'white',
-                                                    outline: 'none'
-                                                }}
-                                            />
-                                        ) : (
-                                            <div style={{ fontWeight: '600' }}>{selectedAnalysis.patient_name || 'N/A'}</div>
-                                        )}
-                                    </div>
-                                    <div>
-                                        <div style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Disease Type</div>
-                                        {isEditing ? (
-                                            <select
-                                                value={editedData.patient_type}
-                                                onChange={(e) => setEditedData({...editedData, patient_type: e.target.value})}
-                                                style={{ 
-                                                    width: '100%',
-                                                    padding: '0.5rem', 
-                                                    background: 'rgba(255,255,255,0.05)', 
-                                                    border: '1px solid var(--color-glass-border)', 
-                                                    borderRadius: '6px', 
-                                                    color: 'white',
-                                                    outline: 'none'
-                                                }}
-                                            >
-                                                <option value="malaria">Malaria</option>
-                                                <option value="leptospirosis">Leptospirosis</option>
-                                            </select>
-                                        ) : (
-                                            <div style={{ textTransform: 'capitalize' }}>{selectedAnalysis.patient_type}</div>
-                                        )}
-                                    </div>
-                                    <div>
-                                        <div style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Analysis Date</div>
-                                        <div>{selectedAnalysis.analyzed_at ? new Date(selectedAnalysis.analyzed_at).toLocaleString() : 'N/A'}</div>
-                                    </div>
-                                    <div>
-                                        <div style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Analyzed By</div>
-                                        <div>{user.email}</div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                                        <div>
+                                            <div style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Patient Name</div>
+                                            {isEditing ? (
+                                                <input
+                                                    type="text"
+                                                    value={editedData.patient_name}
+                                                    onChange={(e) => setEditedData({ ...editedData, patient_name: e.target.value })}
+                                                    style={{
+                                                        width: '100%',
+                                                        padding: '0.5rem',
+                                                        background: 'rgba(255,255,255,0.05)',
+                                                        border: '1px solid var(--color-glass-border)',
+                                                        borderRadius: '6px',
+                                                        color: 'white',
+                                                        outline: 'none'
+                                                    }}
+                                                />
+                                            ) : (
+                                                <div style={{ fontWeight: '600' }}>{selectedAnalysis.patient_name || 'N/A'}</div>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <div style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Disease Type</div>
+                                            {isEditing ? (
+                                                <select
+                                                    value={editedData.patient_type}
+                                                    onChange={(e) => setEditedData({ ...editedData, patient_type: e.target.value })}
+                                                    style={{
+                                                        width: '100%',
+                                                        padding: '0.5rem',
+                                                        background: 'rgba(255,255,255,0.05)',
+                                                        border: '1px solid var(--color-glass-border)',
+                                                        borderRadius: '6px',
+                                                        color: 'white',
+                                                        outline: 'none'
+                                                    }}
+                                                >
+                                                    <option value="malaria">Malaria</option>
+                                                    <option value="leptospirosis">Leptospirosis</option>
+                                                </select>
+                                            ) : (
+                                                <div style={{ textTransform: 'capitalize' }}>{selectedAnalysis.patient_type}</div>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <div style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Analysis Date</div>
+                                            <div>{selectedAnalysis.analyzed_at ? new Date(selectedAnalysis.analyzed_at).toLocaleString() : 'N/A'}</div>
+                                        </div>
+                                        <div>
+                                            <div style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Analyzed By</div>
+                                            <div>{user.email}</div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
                             )}
 
                             {isEditing && (
                                 <div style={{ marginBottom: '2rem', padding: '1.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}>
                                     <h3 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--color-primary)' }}>Analysis Results</h3>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                                    <div>
-                                        <div style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Result</div>
-                                        {isEditing ? (
-                                            <input 
-                                                type="text"
-                                                value={editedData.ai_result}
-                                                onChange={(e) => setEditedData({...editedData, ai_result: e.target.value})}
-                                                placeholder="e.g., Positive, Negative"
-                                                style={{ 
-                                                    width: '100%',
-                                                    padding: '0.5rem', 
-                                                    background: 'rgba(255,255,255,0.05)', 
-                                                    border: '1px solid var(--color-glass-border)', 
-                                                    borderRadius: '6px', 
-                                                    color: 'white',
-                                                    outline: 'none'
-                                                }}
-                                            />
-                                        ) : (
-                                            <div style={{ 
-                                                color: getResultColor(selectedAnalysis.ai_result), 
-                                                fontWeight: 'bold',
-                                                fontSize: '1.1rem'
-                                            }}>
-                                                {selectedAnalysis.ai_result || 'Pending'}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div>
-                                        <div style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Confidence (%)</div>
-                                        {isEditing ? (
-                                            <input 
-                                                type="number"
-                                                min="0"
-                                                max="100"
-                                                step="0.01"
-                                                value={editedData.confidence_score}
-                                                onChange={(e) => setEditedData({...editedData, confidence_score: e.target.value})}
-                                                style={{ 
-                                                    width: '100%',
-                                                    padding: '0.5rem', 
-                                                    background: 'rgba(255,255,255,0.05)', 
-                                                    border: '1px solid var(--color-glass-border)', 
-                                                    borderRadius: '6px', 
-                                                    color: 'white',
-                                                    outline: 'none'
-                                                }}
-                                            />
-                                        ) : (
-                                            <div style={{ fontWeight: '600' }}>
-                                                {selectedAnalysis.confidence_score ? `${selectedAnalysis.confidence_score}%` : 'N/A'}
-                                            </div>
-                                        )}
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                                        <div>
+                                            <div style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Result</div>
+                                            {isEditing ? (
+                                                <input
+                                                    type="text"
+                                                    value={editedData.ai_result}
+                                                    onChange={(e) => setEditedData({ ...editedData, ai_result: e.target.value })}
+                                                    placeholder="e.g., Positive, Negative"
+                                                    style={{
+                                                        width: '100%',
+                                                        padding: '0.5rem',
+                                                        background: 'rgba(255,255,255,0.05)',
+                                                        border: '1px solid var(--color-glass-border)',
+                                                        borderRadius: '6px',
+                                                        color: 'white',
+                                                        outline: 'none'
+                                                    }}
+                                                />
+                                            ) : (
+                                                <div style={{
+                                                    color: getResultColor(selectedAnalysis.ai_result),
+                                                    fontWeight: 'bold',
+                                                    fontSize: '1.1rem'
+                                                }}>
+                                                    {selectedAnalysis.ai_result || 'Pending'}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <div style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Confidence (%)</div>
+                                            {isEditing ? (
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    max="100"
+                                                    step="0.01"
+                                                    value={editedData.confidence_score}
+                                                    onChange={(e) => setEditedData({ ...editedData, confidence_score: e.target.value })}
+                                                    style={{
+                                                        width: '100%',
+                                                        padding: '0.5rem',
+                                                        background: 'rgba(255,255,255,0.05)',
+                                                        border: '1px solid var(--color-glass-border)',
+                                                        borderRadius: '6px',
+                                                        color: 'white',
+                                                        outline: 'none'
+                                                    }}
+                                                />
+                                            ) : (
+                                                <div style={{ fontWeight: '600' }}>
+                                                    {selectedAnalysis.confidence_score ? `${selectedAnalysis.confidence_score}%` : 'N/A'}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
                             )}
 
                             {/* Action Buttons */}
@@ -1304,11 +1304,11 @@ const SubmitReport = ({ role, user }) => {
                                     <button
                                         onClick={saveEdit}
                                         className="btn-primary"
-                                        style={{ 
-                                            flex: 1, 
-                                            display: 'flex', 
-                                            alignItems: 'center', 
-                                            justifyContent: 'center', 
+                                        style={{
+                                            flex: 1,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
                                             gap: '0.5rem'
                                         }}
                                     >
@@ -1317,28 +1317,28 @@ const SubmitReport = ({ role, user }) => {
                                     </button>
                                     <button
                                         onClick={() => setIsEditing(false)}
-                                        style={{ 
+                                        style={{
                                             flex: 0.3,
-                                            padding: '1rem', 
-                                            borderRadius: '99px', 
-                                            border: '1px solid var(--color-glass-border)', 
-                                            background: 'transparent', 
-                                            color: 'var(--color-text-muted)', 
-                                            cursor: 'pointer' 
+                                            padding: '1rem',
+                                            borderRadius: '99px',
+                                            border: '1px solid var(--color-glass-border)',
+                                            background: 'transparent',
+                                            color: 'var(--color-text-muted)',
+                                            cursor: 'pointer'
                                         }}
                                     >
                                         Cancel
                                     </button>
                                 </div>
                             ) : selectedAnalysis.report_status ? (
-                                <div style={{ 
-                                    padding: '1.5rem', 
-                                    background: selectedAnalysis.report_status === 'approved' ? 'rgba(40, 200, 64, 0.1)' : 
-                                               selectedAnalysis.report_status === 'rejected' ? 'rgba(255, 0, 85, 0.1)' : 
-                                               'rgba(254, 188, 46, 0.1)',
-                                    border: `1px solid ${selectedAnalysis.report_status === 'approved' ? 'rgba(40, 200, 64, 0.3)' : 
-                                                        selectedAnalysis.report_status === 'rejected' ? 'rgba(255, 0, 85, 0.3)' : 
-                                                        'rgba(254, 188, 46, 0.3)'}`,
+                                <div style={{
+                                    padding: '1.5rem',
+                                    background: selectedAnalysis.report_status === 'approved' ? 'rgba(40, 200, 64, 0.1)' :
+                                        selectedAnalysis.report_status === 'rejected' ? 'rgba(255, 0, 85, 0.1)' :
+                                            'rgba(254, 188, 46, 0.1)',
+                                    border: `1px solid ${selectedAnalysis.report_status === 'approved' ? 'rgba(40, 200, 64, 0.3)' :
+                                        selectedAnalysis.report_status === 'rejected' ? 'rgba(255, 0, 85, 0.3)' :
+                                            'rgba(254, 188, 46, 0.3)'}`,
                                     borderRadius: '12px',
                                     textAlign: 'center'
                                 }}>
@@ -1358,7 +1358,7 @@ const SubmitReport = ({ role, user }) => {
                                         <h4 style={{ fontSize: '0.95rem', marginBottom: '1rem', color: 'var(--color-primary)', fontWeight: '600' }}>
                                             Select Medical Officer to Assign
                                         </h4>
-                                        
+
                                         {doctors.length === 0 ? (
                                             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>No medical officers available</p>
                                         ) : (
@@ -1406,11 +1406,11 @@ const SubmitReport = ({ role, user }) => {
                                             onClick={submitReport}
                                             disabled={submitting || !selectedDoctor}
                                             className="btn-primary"
-                                            style={{ 
-                                                flex: 1, 
-                                                display: 'flex', 
-                                                alignItems: 'center', 
-                                                justifyContent: 'center', 
+                                            style={{
+                                                flex: 1,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
                                                 gap: '0.5rem',
                                                 opacity: (submitting || !selectedDoctor) ? 0.5 : 1,
                                                 cursor: (submitting || !selectedDoctor) ? 'not-allowed' : 'pointer'
@@ -1424,14 +1424,14 @@ const SubmitReport = ({ role, user }) => {
                                                 setSelectedAnalysis(null);
                                                 setSelectedDoctor(null);
                                             }}
-                                            style={{ 
+                                            style={{
                                                 flex: 0.3,
-                                                padding: '1rem', 
-                                                borderRadius: '99px', 
-                                                border: '1px solid var(--color-glass-border)', 
-                                                background: 'transparent', 
-                                                color: 'var(--color-text-muted)', 
-                                                cursor: 'pointer' 
+                                                padding: '1rem',
+                                                borderRadius: '99px',
+                                                border: '1px solid var(--color-glass-border)',
+                                                background: 'transparent',
+                                                color: 'var(--color-text-muted)',
+                                                cursor: 'pointer'
                                             }}
                                         >
                                             Cancel

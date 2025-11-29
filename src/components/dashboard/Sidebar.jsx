@@ -15,6 +15,7 @@ const Sidebar = ({ role, currentView, setView, onLogout }) => {
             { id: 'detector', label: 'AI Detector', icon: Microscope },
             { id: 'analyze', label: 'Analyze Result', icon: BarChart3 },
             { id: 'reports', label: 'Review Reports', icon: FileText },
+            { id: 'manage_lab_tech', label: 'Manage Lab Tech', icon: Users },
         ],
         pathologist: [
             { id: 'overview', label: 'Dashboard', icon: LayoutDashboard },
@@ -96,15 +97,15 @@ const Sidebar = ({ role, currentView, setView, onLogout }) => {
                         position: 'relative'
                     }}
                 >
-                    <img 
-                        src="/Screenshot_2025-11-27_171855-removebg-preview.png" 
-                        alt="MedAI Logo" 
-                        style={{ 
-                            width: '100%', 
-                            height: '100%', 
+                    <img
+                        src="/icon_MedAI.png"
+                        alt="MedAI Logo"
+                        style={{
+                            width: '100%',
+                            height: '100%',
                             objectFit: 'contain',
                             filter: 'drop-shadow(0 0 8px rgba(0, 240, 255, 0.4))'
-                        }} 
+                        }}
                     />
                 </motion.div>
                 <div style={{ flex: 1, textAlign: 'left' }}>

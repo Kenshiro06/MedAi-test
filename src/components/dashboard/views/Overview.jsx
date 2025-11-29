@@ -7,13 +7,13 @@ const StatCard = ({ title, value, change, icon: Icon, color, delay }) => (
     <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ 
+        transition={{
             delay,
             type: 'spring',
             stiffness: 100,
             damping: 15
         }}
-        whileHover={{ 
+        whileHover={{
             y: -5,
             boxShadow: `0 10px 30px rgba(${color}, 0.3)`,
             transition: { duration: 0.2 }
@@ -31,26 +31,26 @@ const StatCard = ({ title, value, change, icon: Icon, color, delay }) => (
         }}
     >
         {/* Decorative background pattern */}
-        <div style={{ 
-            position: 'absolute', 
-            top: '-50%', 
-            right: '-20%', 
-            width: '200px', 
-            height: '200px', 
-            background: `radial-gradient(circle, rgba(${color}, 0.15) 0%, transparent 70%)`, 
-            borderRadius: '50%', 
+        <div style={{
+            position: 'absolute',
+            top: '-50%',
+            right: '-20%',
+            width: '200px',
+            height: '200px',
+            background: `radial-gradient(circle, rgba(${color}, 0.15) 0%, transparent 70%)`,
+            borderRadius: '50%',
             pointerEvents: 'none',
             filter: 'blur(40px)'
         }} />
-        
+
         {/* Icon with glow */}
-        <div style={{ 
+        <div style={{
             position: 'absolute',
             top: '1.5rem',
             right: '1.5rem',
-            padding: '0.875rem', 
-            background: `rgba(${color}, 0.15)`, 
-            borderRadius: '14px', 
+            padding: '0.875rem',
+            background: `rgba(${color}, 0.15)`,
+            borderRadius: '14px',
             color: `rgb(${color})`,
             boxShadow: `0 0 20px rgba(${color}, 0.3)`,
             border: `1px solid rgba(${color}, 0.3)`
@@ -59,9 +59,9 @@ const StatCard = ({ title, value, change, icon: Icon, color, delay }) => (
         </div>
 
         <div style={{ position: 'relative', zIndex: 1 }}>
-            <h3 style={{ 
-                fontSize: '0.8rem', 
-                color: 'var(--color-text-muted)', 
+            <h3 style={{
+                fontSize: '0.8rem',
+                color: 'var(--color-text-muted)',
                 marginBottom: '0.75rem',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
@@ -69,8 +69,8 @@ const StatCard = ({ title, value, change, icon: Icon, color, delay }) => (
             }}>
                 {title}
             </h3>
-            <div style={{ 
-                fontSize: '2.5rem', 
+            <div style={{
+                fontSize: '2.5rem',
                 fontWeight: '800',
                 marginBottom: '0.75rem',
                 background: `linear-gradient(135deg, rgb(${color}), rgba(${color}, 0.7))`,
@@ -80,10 +80,10 @@ const StatCard = ({ title, value, change, icon: Icon, color, delay }) => (
             }}>
                 {value}
             </div>
-            <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.5rem', 
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
                 fontSize: '0.85rem',
                 padding: '0.5rem 0.75rem',
                 background: 'rgba(0, 255, 136, 0.1)',
@@ -168,13 +168,13 @@ const Overview = ({ role, user }) => {
             let pendingCount = 0;
             let reportsCount = 0;
 
-            if (role === 'admin') {
+            if (role === 'admin' || role === 'health_officer') {
                 // Admin sees ALL data
                 const { count: total } = await supabase.from('analyses').select('*', { count: 'exact', head: true });
                 const { count: positive } = await supabase.from('analyses').select('*', { count: 'exact', head: true }).ilike('ai_result', '%positive%');
                 const { count: pending } = await supabase.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'pending');
                 const { count: reports } = await supabase.from('reports').select('*', { count: 'exact', head: true });
-                
+
                 totalCount = total || 0;
                 positiveCount = positive || 0;
                 pendingCount = pending || 0;
@@ -182,7 +182,7 @@ const Overview = ({ role, user }) => {
             } else {
                 // Health Officer, Lab Tech, MO, Pathologist: Personal usage only in Overview
                 // For Lab Tech, MO, Pathologist: Count PERSONAL usage + assigned work
-                
+
                 // 1. Personal analyses (they used AI Detector/Analyze themselves)
                 const { count: personalAnalyses } = await supabase
                     .from('analyses')
@@ -206,7 +206,7 @@ const Overview = ({ role, user }) => {
                         .from('reports')
                         .select('analysis_id, status')
                         .eq('submitted_by', user.id);
-                    
+
                     assignedAnalysisIds = submittedReports?.map(r => r.analysis_id) || [];
                     assignedReportsCount = submittedReports?.length || 0;
                     assignedPendingCount = submittedReports?.filter(r => r.status === 'pending').length || 0;
@@ -216,7 +216,7 @@ const Overview = ({ role, user }) => {
                         .from('reports')
                         .select('analysis_id, status')
                         .eq('medical_officer_id', user.id);
-                    
+
                     assignedAnalysisIds = assignedReports?.map(r => r.analysis_id) || [];
                     assignedReportsCount = assignedReports?.length || 0;
                     assignedPendingCount = assignedReports?.filter(r => r.status === 'pending').length || 0;
@@ -226,7 +226,7 @@ const Overview = ({ role, user }) => {
                         .from('reports')
                         .select('analysis_id, status')
                         .eq('pathologist_id', user.id);
-                    
+
                     assignedAnalysisIds = assignedReports?.map(r => r.analysis_id) || [];
                     assignedReportsCount = assignedReports?.length || 0;
                     assignedPendingCount = assignedReports?.filter(r => r.status === 'pending').length || 0;
@@ -290,18 +290,18 @@ const Overview = ({ role, user }) => {
         try {
             // Get analyses for last 7 days with role-based filtering
             const counts = [];
-            
+
             for (let i = 6; i >= 0; i--) {
                 const date = new Date();
                 date.setDate(date.getDate() - i);
                 date.setHours(0, 0, 0, 0);
-                
+
                 const nextDate = new Date(date);
                 nextDate.setDate(nextDate.getDate() + 1);
 
                 let dayCount = 0;
 
-                if (role === 'admin') {
+                if (role === 'admin' || role === 'health_officer') {
                     // Admin sees all data
                     const { count } = await supabase
                         .from('analyses')
@@ -312,7 +312,7 @@ const Overview = ({ role, user }) => {
                 } else {
                     // Health Officer, Lab Tech, MO, Pathologist: Personal + assigned
                     // For other roles: personal + assigned
-                    
+
                     // 1. Personal analyses
                     const { count: personalCount } = await supabase
                         .from('analyses')
@@ -330,7 +330,7 @@ const Overview = ({ role, user }) => {
                             .select('analysis_id')
                             .eq('submitted_by', user.id);
                         const analysisIds = reports?.map(r => r.analysis_id) || [];
-                        
+
                         if (analysisIds.length > 0) {
                             const { count } = await supabase
                                 .from('analyses')
@@ -348,7 +348,7 @@ const Overview = ({ role, user }) => {
                             .select('analysis_id')
                             .eq('medical_officer_id', user.id);
                         const analysisIds = reports?.map(r => r.analysis_id) || [];
-                        
+
                         if (analysisIds.length > 0) {
                             const { count } = await supabase
                                 .from('analyses')
@@ -366,7 +366,7 @@ const Overview = ({ role, user }) => {
                             .select('analysis_id')
                             .eq('pathologist_id', user.id);
                         const analysisIds = reports?.map(r => r.analysis_id) || [];
-                        
+
                         if (analysisIds.length > 0) {
                             const { count } = await supabase
                                 .from('analyses')
@@ -399,7 +399,7 @@ const Overview = ({ role, user }) => {
                 const percentage = Math.round((count / maxCount) * 100);
                 return count > 0 ? Math.max(percentage, 5) : 0;
             });
-            
+
             setChartData(normalized);
         } catch (error) {
             console.error('Error fetching chart data:', error);
@@ -432,7 +432,7 @@ const Overview = ({ role, user }) => {
                     created_at: analysis.analyzed_at,
                     analyses: analysis
                 })) || [];
-                
+
             } else {
                 // For MO and Pathologist: Fetch from reports table
                 let query = supabase
@@ -553,10 +553,10 @@ const Overview = ({ role, user }) => {
 
     return (
         <div>
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                style={{ 
+                style={{
                     marginBottom: '2rem',
                     padding: '2rem',
                     background: `linear-gradient(135deg, rgba(${currentRole.color}, 0.1) 0%, rgba(${currentRole.color}, 0.05) 50%, transparent 100%)`,
@@ -641,24 +641,33 @@ const Overview = ({ role, user }) => {
                 >
                     <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <Activity size={20} color="var(--color-primary)" />
-                        {role === 'lab_technician' ? 'Analysis Distribution' : 'My Personal Analyses'}
+                        {['lab_technician', 'health_officer', 'admin'].includes(role) ? 'Analysis Distribution' : 'My Personal Analyses'}
                     </h3>
-                    
-                    {personalAnalyses.length === 0 ? (
+
+                    {personalAnalyses.length === 0 && !((role === 'admin' || role === 'health_officer') && stats.totalSamples > 0) ? (
                         <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-muted)' }}>
                             <Activity size={32} style={{ opacity: 0.3, marginBottom: '0.5rem' }} />
                             <div>No analyses yet</div>
                             <div style={{ fontSize: '0.875rem', marginTop: '0.5rem' }}>Use AI Detector to analyze samples</div>
                         </div>
-                    ) : role === 'lab_technician' ? (
+                    ) : ['lab_technician', 'health_officer', 'admin'].includes(role) ? (
                         <>
                             {/* Simple Bar Chart - Only for Lab Technician */}
                             {(() => {
-                                const positive = personalAnalyses.filter(a => a.isPositive).length;
-                                const negative = personalAnalyses.filter(a => !a.isPositive).length;
-                                const total = personalAnalyses.length;
+                                let positive, negative, total;
+
+                                if (role === 'admin' || role === 'health_officer') {
+                                    positive = stats.malariaDetected || 0;
+                                    total = stats.totalSamples || 0;
+                                    negative = Math.max(0, total - positive);
+                                } else {
+                                    positive = personalAnalyses.filter(a => a.isPositive).length;
+                                    negative = personalAnalyses.filter(a => !a.isPositive).length;
+                                    total = personalAnalyses.length;
+                                }
+
                                 const maxValue = Math.max(positive, negative);
-                                
+
                                 return (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                                         {/* Positive Bar */}
@@ -757,22 +766,22 @@ const Overview = ({ role, user }) => {
                     ) : (
                         /* List view for other roles */
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            {personalAnalyses.map((item, i) => (
-                                <div key={i} style={{ 
-                                    display: 'flex', 
-                                    gap: '1rem', 
-                                    padding: '1rem', 
-                                    background: 'rgba(255,255,255,0.03)', 
-                                    borderRadius: '12px', 
-                                    borderLeft: `4px solid ${item.isPositive ? '#ff0055' : '#00ff88'}` 
+                            {personalAnalyses.slice(0, 4).map((item, i) => (
+                                <div key={i} style={{
+                                    display: 'flex',
+                                    gap: '1rem',
+                                    padding: '1rem',
+                                    background: 'rgba(255,255,255,0.03)',
+                                    borderRadius: '12px',
+                                    borderLeft: `4px solid ${item.isPositive ? '#ff0055' : '#00ff88'}`
                                 }}>
                                     <div style={{ flex: 1 }}>
                                         <div style={{ fontWeight: '600', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                             <span>{item.patientName}</span>
-                                            <span style={{ 
-                                                fontSize: '0.75rem', 
-                                                padding: '0.25rem 0.5rem', 
-                                                borderRadius: '4px', 
+                                            <span style={{
+                                                fontSize: '0.75rem',
+                                                padding: '0.25rem 0.5rem',
+                                                borderRadius: '4px',
                                                 background: item.isPositive ? 'rgba(255,0,85,0.1)' : 'rgba(0,255,136,0.1)',
                                                 color: item.isPositive ? '#ff0055' : '#00ff88'
                                             }}>
@@ -803,30 +812,30 @@ const Overview = ({ role, user }) => {
                 style={{ padding: '2rem', marginTop: '1.5rem' }}
             >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                    <h3 style={{ 
-                        fontSize: '1.5rem', 
+                    <h3 style={{
+                        fontSize: '1.5rem',
                         fontWeight: '700',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '0.75rem'
                     }}>
                         <Activity size={24} color="var(--color-primary)" />
-                        {role === 'health_officer' ? 'My Personal Analyses' : 
-                         role === 'admin' ? 'My Personal Analyses' :
-                         role === 'medical_officer' ? 'My Assigned Reviews' :
-                         role === 'pathologist' ? 'My Assigned Verifications' :
-                         'My Recent Analyses'}
+                        {role === 'health_officer' ? 'My Personal Analyses' :
+                            role === 'admin' ? 'My Personal Analyses' :
+                                role === 'medical_officer' ? 'My Assigned Reviews' :
+                                    role === 'pathologist' ? 'My Assigned Verifications' :
+                                        'My Recent Analyses'}
                     </h3>
-                    <motion.button 
+                    <motion.button
                         whileHover={{ scale: 1.05, boxShadow: '0 5px 15px rgba(0, 240, 255, 0.3)' }}
                         whileTap={{ scale: 0.95 }}
-                        style={{ 
-                            padding: '0.75rem 1.5rem', 
-                            background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(0, 240, 255, 0.05))', 
-                            border: '1px solid rgba(0, 240, 255, 0.3)', 
-                            borderRadius: '12px', 
-                            color: 'var(--color-primary)', 
-                            cursor: 'pointer', 
+                        style={{
+                            padding: '0.75rem 1.5rem',
+                            background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(0, 240, 255, 0.05))',
+                            border: '1px solid rgba(0, 240, 255, 0.3)',
+                            borderRadius: '12px',
+                            color: 'var(--color-primary)',
+                            cursor: 'pointer',
                             fontSize: '0.875rem',
                             fontWeight: '600',
                             transition: 'all 0.3s ease'
@@ -852,18 +861,18 @@ const Overview = ({ role, user }) => {
                         <FileText size={48} style={{ opacity: 0.3, marginBottom: '1rem' }} />
                         <div style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>No reports yet</div>
                         <div style={{ fontSize: '0.875rem' }}>
-                            {role === 'health_officer' || role === 'admin' 
-                                ? 'Use AI Detector or Analyze to create your first analysis.' 
+                            {role === 'health_officer' || role === 'admin'
+                                ? 'Use AI Detector or Analyze to create your first analysis.'
                                 : role === 'medical_officer' || role === 'pathologist'
-                                ? 'No assigned reports yet.'
-                                : 'Start by using the AI Detector.'}
+                                    ? 'No assigned reports yet.'
+                                    : 'Start by using the AI Detector.'}
                         </div>
                     </div>
                 ) : (
                     <div style={{ overflowX: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 0.5rem' }}>
                             <thead>
-                                <tr style={{ 
+                                <tr style={{
                                     background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.08), rgba(0, 240, 255, 0.02))',
                                     borderRadius: '12px'
                                 }}>
@@ -878,17 +887,17 @@ const Overview = ({ role, user }) => {
                             </thead>
                             <tbody>
                                 {recentReports.map((report, i) => (
-                                    <motion.tr 
+                                    <motion.tr
                                         key={report.id}
                                         initial={{ opacity: 0, x: -20 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: i * 0.05 }}
-                                        whileHover={{ 
+                                        whileHover={{
                                             backgroundColor: 'rgba(0, 240, 255, 0.03)',
                                             boxShadow: '0 4px 15px rgba(0, 240, 255, 0.1)',
                                             transition: { duration: 0.2 }
                                         }}
-                                        style={{ 
+                                        style={{
                                             background: 'rgba(255,255,255,0.02)',
                                             borderRadius: '12px',
                                             transition: 'all 0.3s ease'
@@ -907,8 +916,8 @@ const Overview = ({ role, user }) => {
                                             <span style={{
                                                 padding: '0.5rem 1rem',
                                                 borderRadius: '20px',
-                                                background: report.type?.toLowerCase().includes('positive') 
-                                                    ? 'linear-gradient(135deg, rgba(255, 0, 85, 0.15), rgba(255, 0, 85, 0.05))' 
+                                                background: report.type?.toLowerCase().includes('positive')
+                                                    ? 'linear-gradient(135deg, rgba(255, 0, 85, 0.15), rgba(255, 0, 85, 0.05))'
                                                     : 'linear-gradient(135deg, rgba(0, 255, 136, 0.15), rgba(0, 255, 136, 0.05))',
                                                 color: report.type?.toLowerCase().includes('positive') ? '#ff0055' : '#00ff88',
                                                 fontSize: '0.875rem',
@@ -924,17 +933,17 @@ const Overview = ({ role, user }) => {
                                         </td>
                                         <td style={{ padding: '1.25rem 1.5rem' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                                <div style={{ 
-                                                    flex: 1, 
-                                                    height: '6px', 
-                                                    background: 'rgba(255,255,255,0.05)', 
+                                                <div style={{
+                                                    flex: 1,
+                                                    height: '6px',
+                                                    background: 'rgba(255,255,255,0.05)',
                                                     borderRadius: '3px',
                                                     overflow: 'hidden',
                                                     maxWidth: '80px'
                                                 }}>
-                                                    <div style={{ 
-                                                        width: `${report.confidence || 0}%`, 
-                                                        height: '100%', 
+                                                    <div style={{
+                                                        width: `${report.confidence || 0}%`,
+                                                        height: '100%',
                                                         background: report.confidence >= 80 ? '#00ff88' : report.confidence >= 50 ? '#febc2e' : '#ff0055',
                                                         borderRadius: '3px',
                                                         transition: 'width 0.3s ease'
@@ -946,9 +955,9 @@ const Overview = ({ role, user }) => {
                                             </div>
                                         </td>
                                         <td style={{ padding: '1.25rem 1.5rem' }}>
-                                            <div style={{ 
-                                                display: 'inline-flex', 
-                                                alignItems: 'center', 
+                                            <div style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
                                                 gap: '0.5rem',
                                                 padding: '0.5rem 1rem',
                                                 borderRadius: '20px',
@@ -958,8 +967,8 @@ const Overview = ({ role, user }) => {
                                                 {report.status === 'approved' && <CheckCircle size={14} color="#28c840" />}
                                                 {report.status === 'rejected' && <XCircle size={14} color="#ff0055" />}
                                                 {report.status === 'pending' && <Clock size={14} color="#febc2e" />}
-                                                <span style={{ 
-                                                    textTransform: 'capitalize', 
+                                                <span style={{
+                                                    textTransform: 'capitalize',
                                                     fontSize: '0.875rem',
                                                     fontWeight: '600',
                                                     color: report.status === 'approved' ? '#28c840' : report.status === 'rejected' ? '#ff0055' : '#febc2e'

@@ -97,7 +97,7 @@ const Reports = ({ role, user }) => {
                 // Find submitter info
                 const submitter = accounts?.find(a => a.id === r.submitted_by);
                 const labTechProfile = labTechProfiles?.find(p => p.account_id === r.submitted_by);
-                
+
                 // Find medical officer info
                 const moAccount = accounts?.find(a => a.id === r.medical_officer_id);
                 const moProfile = moProfiles?.find(p => p.account_id === r.medical_officer_id);
@@ -152,7 +152,7 @@ const Reports = ({ role, user }) => {
             let updateData = {};
             const currentReport = reports.find(r => r.id === id);
             const patientName = currentReport?.patient_name || 'Unknown';
-            
+
             // Medical Officer approves → Assign to Pathologist
             if (role === 'medical_officer' && newStatus === 'approved') {
                 // Get a pathologist to assign
@@ -162,17 +162,17 @@ const Reports = ({ role, user }) => {
                     .eq('role', 'pathologist')
                     .eq('status', 'approved')
                     .limit(1);
-                
+
                 updateData = {
                     status: 'submitted', // Submitted to pathologist
                     mo_reviewed_at: new Date().toISOString(),
                     mo_status: 'approved',
                     pathologist_id: pathologists?.[0]?.id || null
                 };
-                
+
                 // Log activity
                 await activityLogger.logReportApprovedByMO(user, id, patientName);
-                
+
                 alert('✅ Report approved and forwarded to Pathologist!');
             }
             // Medical Officer rejects
@@ -181,10 +181,10 @@ const Reports = ({ role, user }) => {
                     status: 'rejected',
                     mo_reviewed_at: new Date().toISOString()
                 };
-                
+
                 // Log activity
                 await activityLogger.logReportRejectedByMO(user, id, patientName);
-                
+
                 alert('✅ Report rejected!');
             }
             // Pathologist approves → Final approval
@@ -193,12 +193,12 @@ const Reports = ({ role, user }) => {
                     status: 'approved',
                     pathologist_reviewed_at: new Date().toISOString()
                 };
-                
+
                 // Log activity with lab tech and MO emails for notifications
                 const labTechEmail = currentReport?.submitter_email || '';
                 const moEmail = currentReport?.mo_email || '';
                 await activityLogger.logReportApprovedByPathologist(user, id, patientName, labTechEmail, moEmail);
-                
+
                 alert('✅ Report verified and approved!');
             }
             // Pathologist rejects
@@ -207,12 +207,12 @@ const Reports = ({ role, user }) => {
                     status: 'rejected',
                     pathologist_reviewed_at: new Date().toISOString()
                 };
-                
+
                 // Log activity with lab tech and MO emails for notifications
                 const labTechEmail = currentReport?.submitter_email || '';
                 const moEmail = currentReport?.mo_email || '';
                 await activityLogger.logReportRejectedByPathologist(user, id, patientName, labTechEmail, moEmail);
-                
+
                 alert('✅ Report rejected!');
             }
             // Default
@@ -247,16 +247,16 @@ const Reports = ({ role, user }) => {
         } else {
             statusMatch = report.status === filter;
         }
-        
+
         // Search filter
         const searchLower = searchQuery.toLowerCase();
-        const searchMatch = !searchQuery || 
+        const searchMatch = !searchQuery ||
             report.id.toString().includes(searchLower) ||
             report.patient_name?.toLowerCase().includes(searchLower) ||
             report.registration_number?.toLowerCase().includes(searchLower) ||
             report.type?.toLowerCase().includes(searchLower) ||
             report.submitted_by_name?.toLowerCase().includes(searchLower);
-        
+
         return statusMatch && searchMatch;
     });
 
@@ -308,11 +308,11 @@ const Reports = ({ role, user }) => {
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
-        
+
         const filterText = filter === 'all' ? 'All' : filter.charAt(0).toUpperCase() + filter.slice(1);
         const searchText = searchQuery ? `_Search-${searchQuery}` : '';
         const filename = `Reports_${filterText}${searchText}_${new Date().toISOString().split('T')[0]}.csv`;
-        
+
         link.setAttribute('href', url);
         link.setAttribute('download', filename);
         link.style.visibility = 'hidden';
@@ -340,9 +340,9 @@ const Reports = ({ role, user }) => {
                         transition={{ delay: 0.05, type: 'spring', stiffness: 200 }}
                         whileHover={{ y: -5, boxShadow: '0 15px 30px rgba(0, 240, 255, 0.2)' }}
                         className="glass-panel"
-                        style={{ 
-                            padding: '1.25rem', 
-                            background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.12), rgba(0, 240, 255, 0.03))', 
+                        style={{
+                            padding: '1.25rem',
+                            background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.12), rgba(0, 240, 255, 0.03))',
                             border: '1px solid rgba(0, 240, 255, 0.25)',
                             borderRadius: '16px',
                             position: 'relative',
@@ -353,7 +353,7 @@ const Reports = ({ role, user }) => {
                         <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontSize: '3.5rem', opacity: 0.08 }}>📋</div>
                         <div style={{ position: 'relative', zIndex: 1 }}>
                             <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Reports</div>
-                            <motion.div 
+                            <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                                 transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
@@ -371,9 +371,9 @@ const Reports = ({ role, user }) => {
                         transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
                         whileHover={{ y: -5, boxShadow: '0 15px 30px rgba(254, 188, 46, 0.2)' }}
                         className="glass-panel"
-                        style={{ 
-                            padding: '1.25rem', 
-                            background: 'linear-gradient(135deg, rgba(254, 188, 46, 0.12), rgba(254, 188, 46, 0.03))', 
+                        style={{
+                            padding: '1.25rem',
+                            background: 'linear-gradient(135deg, rgba(254, 188, 46, 0.12), rgba(254, 188, 46, 0.03))',
                             border: '1px solid rgba(254, 188, 46, 0.25)',
                             borderRadius: '16px',
                             position: 'relative',
@@ -384,7 +384,7 @@ const Reports = ({ role, user }) => {
                         <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontSize: '3.5rem', opacity: 0.08 }}>⏳</div>
                         <div style={{ position: 'relative', zIndex: 1 }}>
                             <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Pending Review</div>
-                            <motion.div 
+                            <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                                 transition={{ delay: 0.25, type: 'spring', stiffness: 200 }}
@@ -402,9 +402,9 @@ const Reports = ({ role, user }) => {
                         transition={{ delay: 0.15, type: 'spring', stiffness: 200 }}
                         whileHover={{ y: -5, boxShadow: '0 15px 30px rgba(40, 200, 64, 0.2)' }}
                         className="glass-panel"
-                        style={{ 
-                            padding: '1.25rem', 
-                            background: 'linear-gradient(135deg, rgba(40, 200, 64, 0.12), rgba(40, 200, 64, 0.03))', 
+                        style={{
+                            padding: '1.25rem',
+                            background: 'linear-gradient(135deg, rgba(40, 200, 64, 0.12), rgba(40, 200, 64, 0.03))',
                             border: '1px solid rgba(40, 200, 64, 0.25)',
                             borderRadius: '16px',
                             position: 'relative',
@@ -415,7 +415,7 @@ const Reports = ({ role, user }) => {
                         <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontSize: '3.5rem', opacity: 0.08 }}>✅</div>
                         <div style={{ position: 'relative', zIndex: 1 }}>
                             <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Approved</div>
-                            <motion.div 
+                            <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                                 transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
@@ -433,9 +433,9 @@ const Reports = ({ role, user }) => {
                         transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
                         whileHover={{ y: -5, boxShadow: '0 15px 30px rgba(255, 0, 85, 0.2)' }}
                         className="glass-panel"
-                        style={{ 
-                            padding: '1.25rem', 
-                            background: 'linear-gradient(135deg, rgba(255, 0, 85, 0.12), rgba(255, 0, 85, 0.03))', 
+                        style={{
+                            padding: '1.25rem',
+                            background: 'linear-gradient(135deg, rgba(255, 0, 85, 0.12), rgba(255, 0, 85, 0.03))',
                             border: '1px solid rgba(255, 0, 85, 0.25)',
                             borderRadius: '16px',
                             position: 'relative',
@@ -446,7 +446,7 @@ const Reports = ({ role, user }) => {
                         <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontSize: '3.5rem', opacity: 0.08 }}>❌</div>
                         <div style={{ position: 'relative', zIndex: 1 }}>
                             <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Rejected</div>
-                            <motion.div 
+                            <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                                 transition={{ delay: 0.35, type: 'spring', stiffness: 200 }}
@@ -460,17 +460,17 @@ const Reports = ({ role, user }) => {
             )}
 
             {/* Filters & Actions Bar */}
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 }}
-                className="glass-panel" 
-                style={{ 
-                    padding: '1rem', 
-                    marginBottom: '1.5rem', 
-                    display: 'flex', 
-                    gap: '1rem', 
-                    alignItems: 'center', 
+                className="glass-panel"
+                style={{
+                    padding: '1rem',
+                    marginBottom: '1.5rem',
+                    display: 'flex',
+                    gap: '1rem',
+                    alignItems: 'center',
                     borderRadius: '12px',
                     flexWrap: 'wrap'
                 }}
@@ -490,10 +490,10 @@ const Reports = ({ role, user }) => {
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
                             onClick={() => setSearchQuery('')}
-                            style={{ 
-                                background: 'transparent', 
-                                border: 'none', 
-                                color: 'var(--color-text-muted)', 
+                            style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: 'var(--color-text-muted)',
                                 cursor: 'pointer',
                                 padding: '0.25rem',
                                 display: 'flex',
@@ -513,12 +513,12 @@ const Reports = ({ role, user }) => {
                     <select
                         value={filter}
                         onChange={(e) => setFilter(e.target.value)}
-                        style={{ 
-                            background: 'rgba(255,255,255,0.05)', 
-                            border: '1px solid var(--color-glass-border)', 
+                        style={{
+                            background: 'rgba(255,255,255,0.05)',
+                            border: '1px solid var(--color-glass-border)',
                             borderRadius: '8px',
-                            color: 'white', 
-                            cursor: 'pointer', 
+                            color: 'white',
+                            cursor: 'pointer',
                             outline: 'none',
                             padding: '0.5rem 0.75rem',
                             fontSize: '0.9rem',
@@ -540,12 +540,12 @@ const Reports = ({ role, user }) => {
                         whileHover={{ scale: 1.05, boxShadow: '0 5px 15px rgba(0, 240, 255, 0.2)' }}
                         whileTap={{ scale: 0.95 }}
                         onClick={fetchReports}
-                        style={{ 
-                            padding: '0.6rem 1rem', 
-                            background: 'rgba(255,255,255,0.05)', 
-                            border: '1px solid var(--color-glass-border)', 
-                            borderRadius: '8px', 
-                            color: 'white', 
+                        style={{
+                            padding: '0.6rem 1rem',
+                            background: 'rgba(255,255,255,0.05)',
+                            border: '1px solid var(--color-glass-border)',
+                            borderRadius: '8px',
+                            color: 'white',
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
@@ -562,12 +562,12 @@ const Reports = ({ role, user }) => {
                         whileHover={{ scale: 1.05, boxShadow: '0 5px 15px rgba(0, 240, 255, 0.3)' }}
                         whileTap={{ scale: 0.95 }}
                         onClick={exportToCSV}
-                        style={{ 
-                            padding: '0.6rem 1rem', 
-                            background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 240, 255, 0.1))', 
-                            border: '1px solid rgba(0, 240, 255, 0.3)', 
-                            borderRadius: '8px', 
-                            color: 'var(--color-primary)', 
+                        style={{
+                            padding: '0.6rem 1rem',
+                            background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 240, 255, 0.1))',
+                            border: '1px solid rgba(0, 240, 255, 0.3)',
+                            borderRadius: '8px',
+                            color: 'var(--color-primary)',
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
@@ -582,11 +582,11 @@ const Reports = ({ role, user }) => {
                 </div>
             </motion.div>
 
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="glass-panel" 
+                className="glass-panel"
                 style={{ overflow: 'hidden', borderRadius: '16px' }}
             >
                 {error && (
@@ -631,20 +631,20 @@ const Reports = ({ role, user }) => {
                                         initial={{ opacity: 0, x: -20, boxShadow: '0 0 0 0px rgba(0, 0, 0, 0) inset' }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: index * 0.05, type: 'spring', stiffness: 200 }}
-                                        whileHover={{ 
+                                        whileHover={{
                                             backgroundColor: 'rgba(0, 240, 255, 0.03)',
                                             boxShadow: '0 0 0 1px rgba(0, 240, 255, 0.1) inset',
                                             transition: { duration: 0.2 }
                                         }}
-                                        style={{ 
+                                        style={{
                                             borderBottom: '1px solid var(--color-glass-border)',
                                             cursor: 'pointer'
                                         }}
                                         onClick={() => setSelectedReport(report)}
                                     >
                                         <td style={{ padding: '1.5rem 1rem' }}>
-                                            <span style={{ 
-                                                fontWeight: '700', 
+                                            <span style={{
+                                                fontWeight: '700',
                                                 fontFamily: 'monospace',
                                                 fontSize: '0.9rem',
                                                 color: 'var(--color-primary)',
@@ -675,7 +675,7 @@ const Reports = ({ role, user }) => {
                                             {new Date(report.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                         </td>
                                         <td style={{ padding: '1.5rem 1rem' }}>
-                                            <motion.span 
+                                            <motion.span
                                                 whileHover={{ scale: 1.05 }}
                                                 style={{
                                                     display: 'inline-flex',
@@ -683,8 +683,8 @@ const Reports = ({ role, user }) => {
                                                     gap: '0.5rem',
                                                     padding: '0.5rem 1rem',
                                                     borderRadius: '99px',
-                                                    background: report.severity === 'High' 
-                                                        ? 'linear-gradient(135deg, rgba(255, 0, 85, 0.15), rgba(255, 0, 85, 0.05))' 
+                                                    background: report.severity === 'High'
+                                                        ? 'linear-gradient(135deg, rgba(255, 0, 85, 0.15), rgba(255, 0, 85, 0.05))'
                                                         : 'linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(0, 240, 255, 0.05))',
                                                     border: `1px solid ${report.severity === 'High' ? 'rgba(255, 0, 85, 0.3)' : 'rgba(0, 240, 255, 0.3)'}`,
                                                     color: report.severity === 'High' ? '#ff0055' : 'var(--color-primary)',
@@ -704,10 +704,10 @@ const Reports = ({ role, user }) => {
                                                     </span>
                                                 </div>
                                                 {report.confidence && (
-                                                    <div style={{ 
-                                                        width: '100%', 
-                                                        height: '6px', 
-                                                        background: 'rgba(255,255,255,0.05)', 
+                                                    <div style={{
+                                                        width: '100%',
+                                                        height: '6px',
+                                                        background: 'rgba(255,255,255,0.05)',
                                                         borderRadius: '99px',
                                                         overflow: 'hidden',
                                                         position: 'relative'
@@ -718,17 +718,17 @@ const Reports = ({ role, user }) => {
                                                             transition={{ delay: index * 0.05 + 0.3, duration: 0.8, ease: 'easeOut' }}
                                                             style={{
                                                                 height: '100%',
-                                                                background: report.confidence >= 95 
+                                                                background: report.confidence >= 95
                                                                     ? 'linear-gradient(90deg, #28c840, #20e050)'
                                                                     : report.confidence >= 80
-                                                                    ? 'linear-gradient(90deg, #febc2e, #ffd700)'
-                                                                    : 'linear-gradient(90deg, #ff0055, #ff4081)',
+                                                                        ? 'linear-gradient(90deg, #febc2e, #ffd700)'
+                                                                        : 'linear-gradient(90deg, #ff0055, #ff4081)',
                                                                 borderRadius: '99px',
-                                                                boxShadow: report.confidence >= 95 
+                                                                boxShadow: report.confidence >= 95
                                                                     ? '0 0 10px rgba(40, 200, 64, 0.5)'
                                                                     : report.confidence >= 80
-                                                                    ? '0 0 10px rgba(254, 188, 46, 0.5)'
-                                                                    : '0 0 10px rgba(255, 0, 85, 0.5)'
+                                                                        ? '0 0 10px rgba(254, 188, 46, 0.5)'
+                                                                        : '0 0 10px rgba(255, 0, 85, 0.5)'
                                                             }}
                                                         />
                                                     </div>
@@ -736,26 +736,25 @@ const Reports = ({ role, user }) => {
                                             </div>
                                         </td>
                                         <td style={{ padding: '1.5rem 1rem' }}>
-                                            <motion.div 
+                                            <motion.div
                                                 whileHover={{ scale: 1.05 }}
-                                                style={{ 
-                                                    display: 'inline-flex', 
-                                                    alignItems: 'center', 
+                                                style={{
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
                                                     gap: '0.5rem',
                                                     padding: '0.5rem 1rem',
                                                     borderRadius: '99px',
-                                                    background: report.status === 'approved' 
+                                                    background: report.status === 'approved'
                                                         ? 'linear-gradient(135deg, rgba(40, 200, 64, 0.15), rgba(40, 200, 64, 0.05))'
                                                         : report.status === 'rejected'
-                                                        ? 'linear-gradient(135deg, rgba(255, 0, 85, 0.15), rgba(255, 0, 85, 0.05))'
-                                                        : 'linear-gradient(135deg, rgba(254, 188, 46, 0.15), rgba(254, 188, 46, 0.05))',
-                                                    border: `1px solid ${
-                                                        report.status === 'approved' 
+                                                            ? 'linear-gradient(135deg, rgba(255, 0, 85, 0.15), rgba(255, 0, 85, 0.05))'
+                                                            : 'linear-gradient(135deg, rgba(254, 188, 46, 0.15), rgba(254, 188, 46, 0.05))',
+                                                    border: `1px solid ${report.status === 'approved'
                                                             ? 'rgba(40, 200, 64, 0.3)'
                                                             : report.status === 'rejected'
-                                                            ? 'rgba(255, 0, 85, 0.3)'
-                                                            : 'rgba(254, 188, 46, 0.3)'
-                                                    }`,
+                                                                ? 'rgba(255, 0, 85, 0.3)'
+                                                                : 'rgba(254, 188, 46, 0.3)'
+                                                        }`,
                                                     fontSize: '0.85rem',
                                                     fontWeight: '600'
                                                 }}
@@ -763,13 +762,13 @@ const Reports = ({ role, user }) => {
                                                 {report.status === 'approved' && <span>✅</span>}
                                                 {report.status === 'rejected' && <span>❌</span>}
                                                 {(report.status === 'pending' || report.status === 'submitted') && <span>⏳</span>}
-                                                <span style={{ 
+                                                <span style={{
                                                     textTransform: 'capitalize',
-                                                    color: report.status === 'approved' 
+                                                    color: report.status === 'approved'
                                                         ? '#28c840'
                                                         : report.status === 'rejected'
-                                                        ? '#ff0055'
-                                                        : '#febc2e'
+                                                            ? '#ff0055'
+                                                            : '#febc2e'
                                                 }}>
                                                     {report.status === 'submitted' && role === 'pathologist' ? 'Pending' : report.status}
                                                 </span>
@@ -784,12 +783,12 @@ const Reports = ({ role, user }) => {
                                                     e.stopPropagation();
                                                     setSelectedReport(report);
                                                 }}
-                                                style={{ 
-                                                    padding: '0.6rem 1.25rem', 
-                                                    border: '1px solid rgba(0, 240, 255, 0.3)', 
-                                                    borderRadius: '8px', 
-                                                    background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(0, 240, 255, 0.05))', 
-                                                    color: 'var(--color-primary)', 
+                                                style={{
+                                                    padding: '0.6rem 1.25rem',
+                                                    border: '1px solid rgba(0, 240, 255, 0.3)',
+                                                    borderRadius: '8px',
+                                                    background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(0, 240, 255, 0.05))',
+                                                    color: 'var(--color-primary)',
                                                     cursor: 'pointer',
                                                     fontWeight: '600',
                                                     fontSize: '0.85rem',
@@ -826,24 +825,24 @@ const Reports = ({ role, user }) => {
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* PDF-Style Report Header */}
-                            <div style={{ 
-                                background: 'white', 
-                                color: '#000', 
-                                padding: '2rem', 
+                            <div style={{
+                                background: 'white',
+                                color: '#000',
+                                padding: '2rem',
                                 borderRadius: '12px',
                                 marginBottom: '1.5rem',
                                 position: 'relative'
                             }}>
-                                <button 
-                                    onClick={() => setSelectedReport(null)} 
-                                    style={{ 
+                                <button
+                                    onClick={() => setSelectedReport(null)}
+                                    style={{
                                         position: 'absolute',
                                         top: '1rem',
                                         right: '1rem',
-                                        background: 'rgba(0,0,0,0.1)', 
-                                        border: 'none', 
+                                        background: 'rgba(0,0,0,0.1)',
+                                        border: 'none',
                                         borderRadius: '6px',
-                                        color: '#000', 
+                                        color: '#000',
                                         cursor: 'pointer',
                                         padding: '0.5rem',
                                         display: 'flex',
@@ -856,9 +855,9 @@ const Reports = ({ role, user }) => {
 
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                        <img 
-                                            src="/Screenshot_2025-11-27_171855-removebg-preview.png" 
-                                            alt="MedAi Logo" 
+                                        <img
+                                            src="/icon_MedAI.png"
+                                            alt="MedAi Logo"
                                             style={{ width: '60px', height: '60px', objectFit: 'contain' }}
                                         />
                                         <div>
@@ -869,10 +868,10 @@ const Reports = ({ role, user }) => {
                                     <div style={{ textAlign: 'right' }}>
                                         <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', margin: 0, marginBottom: '0.25rem' }}>DIAGNOSTIC REPORT</h3>
                                         <p style={{ margin: 0, fontSize: '0.85rem', color: '#666' }}>
-                                            {selectedReport.created_at ? new Date(selectedReport.created_at).toLocaleDateString('en-US', { 
-                                                year: 'numeric', 
-                                                month: '2-digit', 
-                                                day: '2-digit' 
+                                            {selectedReport.created_at ? new Date(selectedReport.created_at).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: '2-digit',
+                                                day: '2-digit'
                                             }) : 'N/A'}
                                         </p>
                                     </div>
@@ -880,10 +879,10 @@ const Reports = ({ role, user }) => {
 
                                 {/* Patient Information Section */}
                                 <div style={{ marginBottom: '1.5rem' }}>
-                                    <h4 style={{ 
-                                        fontSize: '0.95rem', 
-                                        fontWeight: 'bold', 
-                                        textTransform: 'uppercase', 
+                                    <h4 style={{
+                                        fontSize: '0.95rem',
+                                        fontWeight: 'bold',
+                                        textTransform: 'uppercase',
                                         letterSpacing: '0.5px',
                                         marginBottom: '1rem',
                                         paddingBottom: '0.5rem',
@@ -919,10 +918,10 @@ const Reports = ({ role, user }) => {
 
                                 {/* Microscopic Analysis Results */}
                                 <div>
-                                    <h4 style={{ 
-                                        fontSize: '0.95rem', 
-                                        fontWeight: 'bold', 
-                                        textTransform: 'uppercase', 
+                                    <h4 style={{
+                                        fontSize: '0.95rem',
+                                        fontWeight: 'bold',
+                                        textTransform: 'uppercase',
                                         letterSpacing: '0.5px',
                                         marginBottom: '1rem',
                                         paddingBottom: '0.5rem',
@@ -983,9 +982,9 @@ const Reports = ({ role, user }) => {
                                                                 const parasites = selectedReport.severity === 'High' ? Math.floor(Math.random() * 20) + 5 : 0;
                                                                 const wbcs = Math.floor(Math.random() * 50) + 200;
                                                                 const density = parasites > 0 ? Math.round((parasites / wbcs) * 8000) : 0;
-                                                                return density === 0 ? 'Negative' : 
-                                                                       density < 1000 ? 'Low' :
-                                                                       density < 10000 ? 'Moderate' : 'High';
+                                                                return density === 0 ? 'Negative' :
+                                                                    density < 1000 ? 'Low' :
+                                                                        density < 10000 ? 'Moderate' : 'High';
                                                             })()}
                                                         </td>
                                                     </tr>
@@ -1000,8 +999,8 @@ const Reports = ({ role, user }) => {
                                             )}
                                             <tr style={{ borderBottom: '1px solid #ddd' }}>
                                                 <td style={{ padding: '0.75rem' }}>AI Detection Result</td>
-                                                <td style={{ 
-                                                    padding: '0.75rem', 
+                                                <td style={{
+                                                    padding: '0.75rem',
                                                     fontWeight: 'bold',
                                                     color: selectedReport.severity === 'High' ? '#ff0055' : '#28c840'
                                                 }}>
@@ -1029,9 +1028,9 @@ const Reports = ({ role, user }) => {
                                 </div>
 
                                 {/* AI Recommendation */}
-                                <div style={{ 
-                                    marginTop: '1.5rem', 
-                                    padding: '1rem', 
+                                <div style={{
+                                    marginTop: '1.5rem',
+                                    padding: '1rem',
                                     background: selectedReport.severity === 'High' ? '#fff3cd' : '#d1ecf1',
                                     border: `1px solid ${selectedReport.severity === 'High' ? '#ffc107' : '#0dcaf0'}`,
                                     borderRadius: '8px'
@@ -1055,15 +1054,15 @@ const Reports = ({ role, user }) => {
                                     const images = selectedReport.image_paths && Array.isArray(selectedReport.image_paths) && selectedReport.image_paths.length > 0
                                         ? selectedReport.image_paths
                                         : [selectedReport.image_path].filter(Boolean);
-                                    
+
                                     if (images.length === 0) return null;
-                                    
+
                                     return (
                                         <div style={{ marginTop: '1.5rem' }}>
-                                            <h4 style={{ 
-                                                fontSize: '0.95rem', 
-                                                fontWeight: 'bold', 
-                                                textTransform: 'uppercase', 
+                                            <h4 style={{
+                                                fontSize: '0.95rem',
+                                                fontWeight: 'bold',
+                                                textTransform: 'uppercase',
                                                 letterSpacing: '0.5px',
                                                 marginBottom: '1rem',
                                                 paddingBottom: '0.5rem',
@@ -1094,8 +1093,8 @@ const Reports = ({ role, user }) => {
                                                             <div style={{ fontWeight: '600', fontSize: '0.875rem', marginBottom: '0.25rem' }}>
                                                                 Field {idx + 1}
                                                             </div>
-                                                            <div style={{ 
-                                                                fontSize: '0.75rem', 
+                                                            <div style={{
+                                                                fontSize: '0.75rem',
                                                                 color: '#2e7d32',
                                                                 fontWeight: '500'
                                                             }}>
@@ -1106,7 +1105,7 @@ const Reports = ({ role, user }) => {
                                                 ))}
                                             </div>
                                             <div style={{ marginTop: '1rem', padding: '1rem', background: '#f8f9fa', borderRadius: '8px', fontSize: '0.875rem', color: '#666' }}>
-                                                <strong>Note:</strong> All microscope images were analyzed using AI-powered detection system. 
+                                                <strong>Note:</strong> All microscope images were analyzed using AI-powered detection system.
                                                 Images marked as "Good" quality contributed to the final diagnosis with high confidence.
                                             </div>
                                         </div>
@@ -1181,12 +1180,12 @@ const Reports = ({ role, user }) => {
 
                             {/* Status Display for non-pathologist roles */}
                             {(selectedReport.status === 'submitted') && (role === 'medical_officer' || role === 'lab_technician' || role === 'admin') && (
-                                <div style={{ 
-                                    textAlign: 'center', 
-                                    padding: '1.5rem', 
+                                <div style={{
+                                    textAlign: 'center',
+                                    padding: '1.5rem',
                                     background: 'rgba(0, 240, 255, 0.1)',
                                     border: '1px solid rgba(0, 240, 255, 0.3)',
-                                    borderRadius: '12px' 
+                                    borderRadius: '12px'
                                 }}>
                                     <div style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '0.5rem' }}>
                                         📤 Submitted to Pathologist
@@ -1198,12 +1197,12 @@ const Reports = ({ role, user }) => {
                             )}
 
                             {(selectedReport.status === 'approved' || selectedReport.status === 'rejected') && (
-                                <div style={{ 
-                                    textAlign: 'center', 
-                                    padding: '1.5rem', 
+                                <div style={{
+                                    textAlign: 'center',
+                                    padding: '1.5rem',
                                     background: selectedReport.status === 'approved' ? 'rgba(40, 200, 64, 0.1)' : 'rgba(255, 0, 85, 0.1)',
                                     border: `1px solid ${selectedReport.status === 'approved' ? 'rgba(40, 200, 64, 0.3)' : 'rgba(255, 0, 85, 0.3)'}`,
-                                    borderRadius: '12px' 
+                                    borderRadius: '12px'
                                 }}>
                                     <div style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '0.5rem', textTransform: 'capitalize' }}>
                                         {selectedReport.status === 'approved' ? '✅ Final Approval' : '❌ Rejected'}

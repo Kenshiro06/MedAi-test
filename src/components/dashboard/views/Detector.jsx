@@ -67,7 +67,7 @@ const Detector = ({ role, user, onNavigate }) => {
             // Call the actual AI API
             console.log(`🚀 Starting analysis of ${uploadedImages.length} images...`);
             const apiStartTime = Date.now();
-            
+
             const formData = new FormData();
             uploadedImages.forEach(img => {
                 formData.append('images', img.file);
@@ -97,7 +97,7 @@ const Detector = ({ role, user, onNavigate }) => {
 
             // Process results and save to database
             await finalizeAnalysis(data);
-            
+
             const totalTime = ((Date.now() - totalStartTime) / 1000).toFixed(2);
             console.log(`✅ Total analysis + save time: ${totalTime}s`);
         } catch (error) {
@@ -119,13 +119,13 @@ const Detector = ({ role, user, onNavigate }) => {
 
             if (aggregate.parasitized_count > 0) {
                 resultType = `Positive - ${patientData.diseaseType} Detected`;
-                
+
                 // Calculate severity based on percentage of positive fields
                 const positivePercentage = (aggregate.parasitized_count / aggregate.successful) * 100;
                 if (positivePercentage >= 70) severity = 'High';
                 else if (positivePercentage >= 40) severity = 'Medium';
                 else severity = 'Low';
-                
+
                 // Keep confidence as percentage (already in 0-100 range from API)
                 confidence = aggregate.average_confidence;
             } else {
@@ -137,8 +137,8 @@ const Detector = ({ role, user, onNavigate }) => {
 
             // Calculate parasite density (simulated for demo - in real system, this would come from WBC counting)
             const simulatedWBCCount = Math.floor(Math.random() * 50) + 200; // 200-250 WBCs (WHO standard)
-            const parasiteDensity = aggregate.parasitized_count > 0 
-                ? Math.round((aggregate.parasitized_count / simulatedWBCCount) * 8000) 
+            const parasiteDensity = aggregate.parasitized_count > 0
+                ? Math.round((aggregate.parasitized_count / simulatedWBCCount) * 8000)
                 : 0;
 
             setDiagnosis({
@@ -189,7 +189,7 @@ const Detector = ({ role, user, onNavigate }) => {
             const uploadStartTime = Date.now();
             console.log(`📤 Uploading ${uploadedImages.length} images in parallel...`);
             const bucketName = patientData.diseaseType === 'Malaria' ? 'malaria-images' : 'lepto-images';
-            
+
             const uploadPromises = uploadedImages.map(async (img, index) => {
                 const fileName = `${patientData.registrationNumber}_${Date.now()}_${index}_${img.id}.png`;
                 const filePath = `patients/${fileName}`;
@@ -223,7 +223,7 @@ const Detector = ({ role, user, onNavigate }) => {
             // Wait for all uploads to complete
             const uploadResults = await Promise.all(uploadPromises);
             const uploadedUrls = uploadResults.filter(url => url !== null);
-            
+
             const uploadTime = ((Date.now() - uploadStartTime) / 1000).toFixed(2);
             console.log(`✅ Uploaded ${uploadedUrls.length}/${uploadedImages.length} images in ${uploadTime}s`);
             const primaryImageUrl = uploadedUrls[0] || null;
@@ -833,9 +833,9 @@ const Detector = ({ role, user, onNavigate }) => {
                                     {/* Report Header */}
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', borderBottom: '2px solid #eee', paddingBottom: '1rem' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                            <img 
-                                                src="/Screenshot_2025-11-27_171855-removebg-preview.png" 
-                                                alt="MedAi Logo" 
+                                            <img
+                                                src="/icon_MedAI.png"
+                                                alt="MedAi Logo"
                                                 style={{ width: '60px', height: '60px', objectFit: 'contain' }}
                                             />
                                             <div>
@@ -926,9 +926,9 @@ const Detector = ({ role, user, onNavigate }) => {
                                                                 {diagnosis.rawCounts.parasiteDensity} parasites/µL
                                                             </td>
                                                             <td style={{ padding: '0.75rem', color: '#666' }}>
-                                                                {diagnosis.rawCounts.parasiteDensity === 0 ? 'Negative' : 
-                                                                 diagnosis.rawCounts.parasiteDensity < 1000 ? 'Low' :
-                                                                 diagnosis.rawCounts.parasiteDensity < 10000 ? 'Moderate' : 'High'}
+                                                                {diagnosis.rawCounts.parasiteDensity === 0 ? 'Negative' :
+                                                                    diagnosis.rawCounts.parasiteDensity < 1000 ? 'Low' :
+                                                                        diagnosis.rawCounts.parasiteDensity < 10000 ? 'Moderate' : 'High'}
                                                             </td>
                                                         </tr>
                                                         <tr style={{ borderBottom: '1px solid #eee', background: '#d1ecf1' }}>
@@ -991,8 +991,8 @@ const Detector = ({ role, user, onNavigate }) => {
                                                             <div style={{ fontWeight: '600', fontSize: '0.875rem', marginBottom: '0.25rem' }}>
                                                                 Field {idx + 1}
                                                             </div>
-                                                            <div style={{ 
-                                                                fontSize: '0.75rem', 
+                                                            <div style={{
+                                                                fontSize: '0.75rem',
                                                                 color: img.quality === 'Good' ? '#2e7d32' : '#f57c00',
                                                                 fontWeight: '500'
                                                             }}>
@@ -1003,7 +1003,7 @@ const Detector = ({ role, user, onNavigate }) => {
                                                 ))}
                                             </div>
                                             <div style={{ marginTop: '1rem', padding: '1rem', background: '#f8f9fa', borderRadius: '8px', fontSize: '0.875rem', color: '#666' }}>
-                                                <strong>Note:</strong> All microscope images were analyzed using AI-powered detection system. 
+                                                <strong>Note:</strong> All microscope images were analyzed using AI-powered detection system.
                                                 Images marked as "Good" quality contributed to the final diagnosis with high confidence.
                                             </div>
                                         </div>
@@ -1047,8 +1047,8 @@ const Detector = ({ role, user, onNavigate }) => {
                                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
                                                 {uploadedImages.slice(0, 4).map((img, idx) => (
                                                     <div key={idx} style={{ position: 'relative', paddingTop: '100%', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--color-glass-border)' }}>
-                                                        <img 
-                                                            src={img.preview} 
+                                                        <img
+                                                            src={img.preview}
                                                             alt={`Field ${idx + 1}`}
                                                             style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
                                                         />
@@ -1060,16 +1060,16 @@ const Detector = ({ role, user, onNavigate }) => {
                                                     +{uploadedImages.length - 4} more images
                                                 </p>
                                             )}
-                                            <button 
+                                            <button
                                                 onClick={() => setShowImageModal(true)}
-                                                style={{ 
-                                                    width: '100%', 
-                                                    padding: '0.75rem', 
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '0.75rem',
                                                     marginTop: '1rem',
-                                                    background: 'rgba(0, 240, 255, 0.1)', 
-                                                    border: '1px solid var(--color-primary)', 
-                                                    borderRadius: '8px', 
-                                                    color: 'var(--color-primary)', 
+                                                    background: 'rgba(0, 240, 255, 0.1)',
+                                                    border: '1px solid var(--color-primary)',
+                                                    borderRadius: '8px',
+                                                    color: 'var(--color-primary)',
                                                     cursor: 'pointer',
                                                     display: 'flex',
                                                     alignItems: 'center',
@@ -1176,10 +1176,10 @@ const Detector = ({ role, user, onNavigate }) => {
                             </div>
 
                             {/* Patient Info */}
-                            <div style={{ 
-                                background: 'rgba(255, 255, 255, 0.05)', 
-                                padding: '1.5rem', 
-                                borderRadius: '12px', 
+                            <div style={{
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                padding: '1.5rem',
+                                borderRadius: '12px',
                                 marginBottom: '2rem',
                                 border: '1px solid var(--color-glass-border)'
                             }}>
@@ -1198,7 +1198,7 @@ const Detector = ({ role, user, onNavigate }) => {
                                     </div>
                                     <div>
                                         <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.25rem' }}>Analysis Result</div>
-                                        <div style={{ 
+                                        <div style={{
                                             fontWeight: '600',
                                             color: diagnosis?.type.includes('Detected') ? '#ff0055' : '#28c840'
                                         }}>
