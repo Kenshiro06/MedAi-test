@@ -42,7 +42,6 @@ const ManageLabTechnician = ({ user: currentUser }) => {
                 return {
                     ...account,
                     fullName: profile?.full_name || account.email,
-                    fullName: profile?.full_name || account.email,
                     // department: profile?.department, // Column does not exist
                     // hospital: profile?.hospital // Column does not exist
                 };
