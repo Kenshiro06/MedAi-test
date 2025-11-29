@@ -278,7 +278,7 @@ const UserManagement = ({ user: currentUser }) => {
                                         </div>
                                     </td>
                                     <td style={{ padding: '1.5rem' }}>
-                                        <span style={{ padding: '0.25rem 0.75rem', background: `${getRoleColor(user.role)}20`, border: `1px solid ${getRoleColor(user.role)}`, borderRadius: '6px', fontSize: '0.875rem', color: getRoleColor(user.role) }}>
+                                        <span style={{ padding: '0.25rem 0.75rem', background: `${getRoleColor(user.role)}20`, border: `1px solid ${getRoleColor(user.role)}`, borderRadius: '6px', fontSize: '0.875rem', color: getRoleColor(user.role), whiteSpace: 'nowrap' }}>
                                             {getRoleLabel(user.role)}
                                         </span>
                                     </td>

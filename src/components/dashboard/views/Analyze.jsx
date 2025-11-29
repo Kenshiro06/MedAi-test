@@ -21,7 +21,7 @@ const Analyze = ({ role, user }) => {
     const fetchAnalyses = async () => {
         setLoading(true);
         setError(null);
-        
+
         try {
             // Fetch only analyses created by the current user
             const result = await analysisService.getAnalysesByUser(user.id);
@@ -56,7 +56,7 @@ const Analyze = ({ role, user }) => {
 
     const handleDeleteSelected = async () => {
         if (selectedIds.length === 0) return;
-        
+
         if (!confirm(`Are you sure you want to delete ${selectedIds.length} analysis/analyses?`)) {
             return;
         }
@@ -128,10 +128,10 @@ const Analyze = ({ role, user }) => {
     const exportToExcel = (useFiltered = false) => {
         try {
             const dataToExport = useFiltered ? filteredAnalyses : analyses;
-            const filterLabel = useFiltered 
+            const filterLabel = useFiltered
                 ? `(Filtered: ${diseaseFilter === 'all' ? 'All Diseases' : diseaseFilter}, ${resultFilter === 'all' ? 'All Results' : resultFilter})`
                 : '(All Data)';
-            
+
             // Prepare CSV data
             const headers = ['No.', 'Patient Name', 'Disease Type', 'Result', 'Confidence', 'Analyzed By', 'Date'];
             const csvRows = [`Analysis Report ${filterLabel}`, '', headers.join(',')];
@@ -153,7 +153,7 @@ const Analyze = ({ role, user }) => {
             // Add summary statistics for exported data
             const exportedMalaria = dataToExport.filter(a => a.patient_type === 'malaria');
             const exportedLepto = dataToExport.filter(a => a.patient_type === 'leptospirosis');
-            
+
             csvRows.push('');
             csvRows.push('SUMMARY STATISTICS');
             csvRows.push(`Total Exported,${dataToExport.length}`);
@@ -181,7 +181,7 @@ const Analyze = ({ role, user }) => {
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
-            const fileName = useFiltered 
+            const fileName = useFiltered
                 ? `analysis_filtered_${diseaseFilter}_${resultFilter}_${new Date().toISOString().split('T')[0]}.csv`
                 : `analysis_all_${new Date().toISOString().split('T')[0]}.csv`;
             link.setAttribute('href', url);
@@ -245,9 +245,9 @@ const Analyze = ({ role, user }) => {
                             transition={{ delay: 0.05, type: 'spring', stiffness: 200 }}
                             whileHover={{ y: -5, boxShadow: '0 15px 30px rgba(0, 240, 255, 0.2)' }}
                             className="glass-panel"
-                            style={{ 
-                                padding: '1.25rem', 
-                                background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.12), rgba(0, 240, 255, 0.03))', 
+                            style={{
+                                padding: '1.25rem',
+                                background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.12), rgba(0, 240, 255, 0.03))',
                                 border: '1px solid rgba(0, 240, 255, 0.25)',
                                 borderRadius: '16px',
                                 position: 'relative',
@@ -257,8 +257,8 @@ const Analyze = ({ role, user }) => {
                         >
                             <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontSize: '3.5rem', opacity: 0.08 }}>📊</div>
                             <div style={{ position: 'relative', zIndex: 1 }}>
-                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Reports</div>
-                                <motion.div 
+                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Analyses</div>
+                                <motion.div
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
                                     transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
@@ -296,9 +296,9 @@ const Analyze = ({ role, user }) => {
                             transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
                             whileHover={{ y: -5, boxShadow: '0 15px 30px rgba(255, 0, 85, 0.2)' }}
                             className="glass-panel"
-                            style={{ 
-                                padding: '1.25rem', 
-                                background: 'linear-gradient(135deg, rgba(255, 0, 85, 0.12), rgba(255, 0, 85, 0.03))', 
+                            style={{
+                                padding: '1.25rem',
+                                background: 'linear-gradient(135deg, rgba(255, 0, 85, 0.12), rgba(255, 0, 85, 0.03))',
                                 border: '1px solid rgba(255, 0, 85, 0.25)',
                                 borderRadius: '16px',
                                 position: 'relative',
@@ -309,7 +309,7 @@ const Analyze = ({ role, user }) => {
                             <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontSize: '3.5rem', opacity: 0.08 }}>🦟</div>
                             <div style={{ position: 'relative', zIndex: 1 }}>
                                 <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Malaria Cases</div>
-                                <motion.div 
+                                <motion.div
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
                                     transition={{ delay: 0.25, type: 'spring', stiffness: 200 }}
@@ -347,9 +347,9 @@ const Analyze = ({ role, user }) => {
                             transition={{ delay: 0.15, type: 'spring', stiffness: 200 }}
                             whileHover={{ y: -5, boxShadow: '0 15px 30px rgba(255, 188, 46, 0.2)' }}
                             className="glass-panel"
-                            style={{ 
-                                padding: '1.25rem', 
-                                background: 'linear-gradient(135deg, rgba(255, 188, 46, 0.12), rgba(255, 188, 46, 0.03))', 
+                            style={{
+                                padding: '1.25rem',
+                                background: 'linear-gradient(135deg, rgba(255, 188, 46, 0.12), rgba(255, 188, 46, 0.03))',
                                 border: '1px solid rgba(255, 188, 46, 0.25)',
                                 borderRadius: '16px',
                                 position: 'relative',
@@ -360,7 +360,7 @@ const Analyze = ({ role, user }) => {
                             <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontSize: '3.5rem', opacity: 0.08 }}>🦠</div>
                             <div style={{ position: 'relative', zIndex: 1 }}>
                                 <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Leptospirosis</div>
-                                <motion.div 
+                                <motion.div
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
                                     transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
@@ -394,19 +394,19 @@ const Analyze = ({ role, user }) => {
                     </div>
 
 
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="glass-panel" 
+                        className="glass-panel"
                         style={{ padding: '1.5rem', borderRadius: '16px' }}
                     >
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                <div style={{ 
-                                    width: '40px', 
-                                    height: '40px', 
-                                    borderRadius: '10px', 
+                                <div style={{
+                                    width: '40px',
+                                    height: '40px',
+                                    borderRadius: '10px',
                                     background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 240, 255, 0.1))',
                                     display: 'flex',
                                     alignItems: 'center',
@@ -423,18 +423,18 @@ const Analyze = ({ role, user }) => {
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                                 {/* Sleek Filter Dropdowns */}
-                                <select 
-                                    value={diseaseFilter} 
+                                <select
+                                    value={diseaseFilter}
                                     onChange={(e) => setDiseaseFilter(e.target.value)}
                                     className="sleek-select"
-                                    style={{ 
-                                        padding: '0.6rem 1rem', 
-                                        background: 'rgba(255,255,255,0.03)', 
-                                        border: '1px solid rgba(255,255,255,0.1)', 
-                                        borderRadius: '10px', 
-                                        color: 'white', 
-                                        cursor: 'pointer', 
-                                        outline: 'none', 
+                                    style={{
+                                        padding: '0.6rem 1rem',
+                                        background: 'rgba(255,255,255,0.03)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        borderRadius: '10px',
+                                        color: 'white',
+                                        cursor: 'pointer',
+                                        outline: 'none',
                                         minWidth: '140px',
                                         fontSize: '0.85rem',
                                         transition: 'all 0.3s ease',
@@ -445,18 +445,18 @@ const Analyze = ({ role, user }) => {
                                     <option value="malaria">🦟 Malaria</option>
                                     <option value="leptospirosis">🦠 Leptospirosis</option>
                                 </select>
-                                <select 
-                                    value={resultFilter} 
+                                <select
+                                    value={resultFilter}
                                     onChange={(e) => setResultFilter(e.target.value)}
                                     className="sleek-select"
-                                    style={{ 
-                                        padding: '0.6rem 1rem', 
-                                        background: 'rgba(255,255,255,0.03)', 
-                                        border: '1px solid rgba(255,255,255,0.1)', 
-                                        borderRadius: '10px', 
-                                        color: 'white', 
-                                        cursor: 'pointer', 
-                                        outline: 'none', 
+                                    style={{
+                                        padding: '0.6rem 1rem',
+                                        background: 'rgba(255,255,255,0.03)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        borderRadius: '10px',
+                                        color: 'white',
+                                        cursor: 'pointer',
+                                        outline: 'none',
                                         minWidth: '130px',
                                         fontSize: '0.85rem',
                                         transition: 'all 0.3s ease',
@@ -467,24 +467,24 @@ const Analyze = ({ role, user }) => {
                                     <option value="positive">✓ Positive</option>
                                     <option value="negative">✗ Negative</option>
                                 </select>
-                                
+
                                 {/* Delete Button with Animation */}
                                 <AnimatePresence>
                                     {selectedIds.length > 0 && (
-                                        <motion.button 
+                                        <motion.button
                                             initial={{ opacity: 0, scale: 0.8 }}
                                             animate={{ opacity: 1, scale: 1 }}
                                             exit={{ opacity: 0, scale: 0.8 }}
                                             onClick={handleDeleteSelected}
                                             disabled={deleting}
                                             className="sleek-btn-danger"
-                                            style={{ 
-                                                padding: '0.6rem 1rem', 
-                                                background: 'linear-gradient(135deg, rgba(255, 0, 85, 0.2), rgba(255, 0, 85, 0.1))', 
-                                                border: '1px solid rgba(255, 0, 85, 0.4)', 
-                                                borderRadius: '10px', 
-                                                color: '#ff0055', 
-                                                cursor: deleting ? 'not-allowed' : 'pointer', 
+                                            style={{
+                                                padding: '0.6rem 1rem',
+                                                background: 'linear-gradient(135deg, rgba(255, 0, 85, 0.2), rgba(255, 0, 85, 0.1))',
+                                                border: '1px solid rgba(255, 0, 85, 0.4)',
+                                                borderRadius: '10px',
+                                                color: '#ff0055',
+                                                cursor: deleting ? 'not-allowed' : 'pointer',
                                                 opacity: deleting ? 0.5 : 1,
                                                 fontSize: '0.85rem',
                                                 fontWeight: '500',
@@ -495,20 +495,20 @@ const Analyze = ({ role, user }) => {
                                         </motion.button>
                                     )}
                                 </AnimatePresence>
-                                
+
                                 {/* Sleek Export Buttons */}
                                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                    <motion.button 
+                                    <motion.button
                                         whileHover={{ scale: 1.02, y: -2 }}
                                         whileTap={{ scale: 0.98 }}
                                         onClick={() => exportToExcel(true)}
                                         className="sleek-btn"
-                                        style={{ 
-                                            padding: '0.6rem 1rem', 
-                                            background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(0, 240, 255, 0.05))', 
-                                            border: '1px solid rgba(0, 240, 255, 0.3)', 
-                                            borderRadius: '10px', 
-                                            color: 'var(--color-primary)', 
+                                        style={{
+                                            padding: '0.6rem 1rem',
+                                            background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(0, 240, 255, 0.05))',
+                                            border: '1px solid rgba(0, 240, 255, 0.3)',
+                                            borderRadius: '10px',
+                                            color: 'var(--color-primary)',
                                             cursor: 'pointer',
                                             display: 'flex',
                                             alignItems: 'center',
@@ -523,17 +523,17 @@ const Analyze = ({ role, user }) => {
                                         <Download size={14} />
                                         Export ({filteredAnalyses.length})
                                     </motion.button>
-                                    <motion.button 
+                                    <motion.button
                                         whileHover={{ scale: 1.02, y: -2 }}
                                         whileTap={{ scale: 0.98 }}
                                         onClick={() => exportToExcel(false)}
                                         className="sleek-btn"
-                                        style={{ 
-                                            padding: '0.6rem 1rem', 
-                                            background: 'linear-gradient(135deg, rgba(40, 200, 64, 0.15), rgba(40, 200, 64, 0.05))', 
-                                            border: '1px solid rgba(40, 200, 64, 0.3)', 
-                                            borderRadius: '10px', 
-                                            color: '#28c840', 
+                                        style={{
+                                            padding: '0.6rem 1rem',
+                                            background: 'linear-gradient(135deg, rgba(40, 200, 64, 0.15), rgba(40, 200, 64, 0.05))',
+                                            border: '1px solid rgba(40, 200, 64, 0.3)',
+                                            borderRadius: '10px',
+                                            color: '#28c840',
                                             cursor: 'pointer',
                                             display: 'flex',
                                             alignItems: 'center',
@@ -549,18 +549,18 @@ const Analyze = ({ role, user }) => {
                                         All ({analyses.length})
                                     </motion.button>
                                 </div>
-                                
+
                                 {/* Refresh Button */}
-                                <motion.button 
+                                <motion.button
                                     whileHover={{ scale: 1.05, rotate: 15 }}
                                     whileTap={{ scale: 0.95 }}
-                                    onClick={fetchAnalyses} 
-                                    style={{ 
-                                        padding: '0.6rem', 
-                                        background: 'rgba(255,255,255,0.03)', 
-                                        border: '1px solid rgba(255,255,255,0.1)', 
-                                        borderRadius: '10px', 
-                                        color: 'var(--color-primary)', 
+                                    onClick={fetchAnalyses}
+                                    style={{
+                                        padding: '0.6rem',
+                                        background: 'rgba(255,255,255,0.03)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        borderRadius: '10px',
+                                        color: 'var(--color-primary)',
                                         cursor: 'pointer',
                                         display: 'flex',
                                         alignItems: 'center',
@@ -580,8 +580,8 @@ const Analyze = ({ role, user }) => {
                                 <thead>
                                     <tr style={{ background: 'rgba(255,255,255,0.02)' }}>
                                         <th style={{ padding: '1rem', textAlign: 'center', color: 'var(--color-text-muted)', fontWeight: '500', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                            <input 
-                                                type="checkbox" 
+                                            <input
+                                                type="checkbox"
                                                 checked={selectedIds.length === filteredAnalyses.length && filteredAnalyses.length > 0}
                                                 onChange={handleSelectAll}
                                                 style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--color-primary)' }}
@@ -607,7 +607,7 @@ const Analyze = ({ role, user }) => {
                                                 initial={{ opacity: 0, x: -20 }}
                                                 animate={{ opacity: 1, x: 0 }}
                                                 transition={{ delay: index * 0.03, duration: 0.3 }}
-                                                style={{ 
+                                                style={{
                                                     borderBottom: '1px solid rgba(255,255,255,0.05)',
                                                     background: isSelected ? 'rgba(0, 240, 255, 0.05)' : 'rgba(255,255,255,0)',
                                                     transition: 'all 0.3s ease'
@@ -615,8 +615,8 @@ const Analyze = ({ role, user }) => {
                                                 whileHover={{ background: 'rgba(255,255,255,0.03)' }}
                                             >
                                                 <td style={{ padding: '0.875rem 1rem', textAlign: 'center' }}>
-                                                    <input 
-                                                        type="checkbox" 
+                                                    <input
+                                                        type="checkbox"
                                                         checked={isSelected}
                                                         onChange={() => handleSelectOne(analysis.id)}
                                                         style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--color-primary)' }}
@@ -627,10 +627,10 @@ const Analyze = ({ role, user }) => {
                                                     {analysis.patient_name || 'N/A'}
                                                 </td>
                                                 <td style={{ padding: '0.875rem 1rem' }}>
-                                                    <span style={{ 
-                                                        padding: '0.35rem 0.75rem', 
-                                                        background: analysis.patient_type === 'malaria' 
-                                                            ? 'linear-gradient(135deg, rgba(255, 0, 85, 0.15), rgba(255, 0, 85, 0.05))' 
+                                                    <span style={{
+                                                        padding: '0.35rem 0.75rem',
+                                                        background: analysis.patient_type === 'malaria'
+                                                            ? 'linear-gradient(135deg, rgba(255, 0, 85, 0.15), rgba(255, 0, 85, 0.05))'
                                                             : 'linear-gradient(135deg, rgba(255, 188, 46, 0.15), rgba(255, 188, 46, 0.05))',
                                                         border: `1px solid ${analysis.patient_type === 'malaria' ? 'rgba(255, 0, 85, 0.3)' : 'rgba(255, 188, 46, 0.3)'}`,
                                                         borderRadius: '20px',
@@ -645,10 +645,10 @@ const Analyze = ({ role, user }) => {
                                                     </span>
                                                 </td>
                                                 <td style={{ padding: '0.875rem 1rem' }}>
-                                                    <div style={{ 
-                                                        display: 'flex', 
-                                                        alignItems: 'center', 
-                                                        gap: '0.4rem', 
+                                                    <div style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '0.4rem',
                                                         color: getResultColor(analysis.ai_result),
                                                         fontWeight: '600',
                                                         fontSize: '0.9rem'
@@ -658,27 +658,27 @@ const Analyze = ({ role, user }) => {
                                                     </div>
                                                 </td>
                                                 <td style={{ padding: '0.875rem 1rem' }}>
-                                                    <div style={{ 
-                                                        display: 'flex', 
-                                                        alignItems: 'center', 
-                                                        gap: '0.5rem' 
+                                                    <div style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '0.5rem'
                                                     }}>
-                                                        <div style={{ 
-                                                            width: '50px', 
-                                                            height: '6px', 
-                                                            background: 'rgba(255,255,255,0.1)', 
+                                                        <div style={{
+                                                            width: '50px',
+                                                            height: '6px',
+                                                            background: 'rgba(255,255,255,0.1)',
                                                             borderRadius: '3px',
                                                             overflow: 'hidden'
                                                         }}>
-                                                            <motion.div 
+                                                            <motion.div
                                                                 initial={{ width: 0 }}
                                                                 animate={{ width: `${analysis.confidence_score || 0}%` }}
                                                                 transition={{ delay: index * 0.03 + 0.3, duration: 0.5 }}
-                                                                style={{ 
-                                                                    height: '100%', 
-                                                                    background: analysis.confidence_score >= 80 
-                                                                        ? 'linear-gradient(90deg, #28c840, #00ff88)' 
-                                                                        : analysis.confidence_score >= 50 
+                                                                style={{
+                                                                    height: '100%',
+                                                                    background: analysis.confidence_score >= 80
+                                                                        ? 'linear-gradient(90deg, #28c840, #00ff88)'
+                                                                        : analysis.confidence_score >= 50
                                                                             ? 'linear-gradient(90deg, #ffbc2e, #ffd700)'
                                                                             : 'linear-gradient(90deg, #ff0055, #ff6b6b)',
                                                                     borderRadius: '3px'
@@ -701,12 +701,12 @@ const Analyze = ({ role, user }) => {
                                                         whileHover={{ scale: 1.05 }}
                                                         whileTap={{ scale: 0.95 }}
                                                         onClick={() => setSelectedAnalysis(analysis)}
-                                                        style={{ 
-                                                            padding: '0.5rem 0.875rem', 
-                                                            background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(0, 240, 255, 0.05))', 
-                                                            border: '1px solid rgba(0, 240, 255, 0.3)', 
-                                                            borderRadius: '8px', 
-                                                            color: 'var(--color-primary)', 
+                                                        style={{
+                                                            padding: '0.5rem 0.875rem',
+                                                            background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(0, 240, 255, 0.05))',
+                                                            border: '1px solid rgba(0, 240, 255, 0.3)',
+                                                            borderRadius: '8px',
+                                                            color: 'var(--color-primary)',
                                                             cursor: 'pointer',
                                                             display: 'inline-flex',
                                                             alignItems: 'center',
@@ -738,17 +738,17 @@ const Analyze = ({ role, user }) => {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        style={{ 
-                            position: 'fixed', 
-                            top: 0, 
-                            left: 0, 
-                            width: '100%', 
-                            height: '100%', 
-                            background: 'rgba(0,0,0,0.85)', 
-                            backdropFilter: 'blur(20px)', 
-                            zIndex: 1000, 
-                            display: 'flex', 
-                            alignItems: 'center', 
+                        style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            background: 'rgba(0,0,0,0.85)',
+                            backdropFilter: 'blur(20px)',
+                            zIndex: 1000,
+                            display: 'flex',
+                            alignItems: 'center',
                             justifyContent: 'center',
                             padding: '2rem'
                         }}
@@ -760,11 +760,11 @@ const Analyze = ({ role, user }) => {
                             exit={{ scale: 0.9, opacity: 0, y: 20 }}
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                             className="glass-panel"
-                            style={{ 
-                                width: '100%', 
-                                maxWidth: '550px', 
-                                padding: '0', 
-                                maxHeight: '90vh', 
+                            style={{
+                                width: '100%',
+                                maxWidth: '550px',
+                                padding: '0',
+                                maxHeight: '90vh',
                                 overflowY: 'auto',
                                 borderRadius: '20px',
                                 border: '1px solid rgba(255,255,255,0.1)',
@@ -773,8 +773,8 @@ const Analyze = ({ role, user }) => {
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Modal Header */}
-                            <div style={{ 
-                                padding: '1.5rem', 
+                            <div style={{
+                                padding: '1.5rem',
                                 borderBottom: '1px solid rgba(255,255,255,0.05)',
                                 display: 'flex',
                                 justifyContent: 'space-between',
@@ -782,11 +782,11 @@ const Analyze = ({ role, user }) => {
                                 background: 'rgba(0,0,0,0.2)'
                             }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                    <div style={{ 
-                                        width: '40px', 
-                                        height: '40px', 
-                                        borderRadius: '10px', 
-                                        background: selectedAnalysis.patient_type === 'malaria' 
+                                    <div style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '10px',
+                                        background: selectedAnalysis.patient_type === 'malaria'
                                             ? 'linear-gradient(135deg, rgba(255, 0, 85, 0.2), rgba(255, 0, 85, 0.1))'
                                             : 'linear-gradient(135deg, rgba(255, 188, 46, 0.2), rgba(255, 188, 46, 0.1))',
                                         display: 'flex',
@@ -803,14 +803,14 @@ const Analyze = ({ role, user }) => {
                                         </span>
                                     </div>
                                 </div>
-                                <motion.button 
+                                <motion.button
                                     whileHover={{ scale: 1.1, rotate: 90 }}
                                     whileTap={{ scale: 0.9 }}
-                                    onClick={() => setSelectedAnalysis(null)} 
-                                    style={{ 
-                                        background: 'rgba(255,255,255,0.05)', 
-                                        border: 'none', 
-                                        color: 'var(--color-text-muted)', 
+                                    onClick={() => setSelectedAnalysis(null)}
+                                    style={{
+                                        background: 'rgba(255,255,255,0.05)',
+                                        border: 'none',
+                                        color: 'var(--color-text-muted)',
                                         cursor: 'pointer',
                                         padding: '0.5rem',
                                         borderRadius: '8px',
@@ -827,14 +827,14 @@ const Analyze = ({ role, user }) => {
                             {/* Modal Body */}
                             <div style={{ padding: '1.5rem' }}>
                                 {/* Patient Info Card */}
-                                <motion.div 
+                                <motion.div
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.1 }}
-                                    style={{ 
-                                        marginBottom: '1rem', 
-                                        padding: '1.25rem', 
-                                        background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.05), rgba(0, 240, 255, 0.02))', 
+                                    style={{
+                                        marginBottom: '1rem',
+                                        padding: '1.25rem',
+                                        background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.05), rgba(0, 240, 255, 0.02))',
                                         borderRadius: '14px',
                                         border: '1px solid rgba(0, 240, 255, 0.1)'
                                     }}
@@ -861,16 +861,16 @@ const Analyze = ({ role, user }) => {
                                 </motion.div>
 
                                 {/* Results Card */}
-                                <motion.div 
+                                <motion.div
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.2 }}
-                                    style={{ 
-                                        marginBottom: '1.5rem', 
-                                        padding: '1.25rem', 
-                                        background: getResultColor(selectedAnalysis.ai_result) === '#ff0055' 
+                                    style={{
+                                        marginBottom: '1.5rem',
+                                        padding: '1.25rem',
+                                        background: getResultColor(selectedAnalysis.ai_result) === '#ff0055'
                                             ? 'linear-gradient(135deg, rgba(255, 0, 85, 0.1), rgba(255, 0, 85, 0.03))'
-                                            : 'linear-gradient(135deg, rgba(40, 200, 64, 0.1), rgba(40, 200, 64, 0.03))', 
+                                            : 'linear-gradient(135deg, rgba(40, 200, 64, 0.1), rgba(40, 200, 64, 0.03))',
                                         borderRadius: '14px',
                                         border: `1px solid ${getResultColor(selectedAnalysis.ai_result) === '#ff0055' ? 'rgba(255, 0, 85, 0.2)' : 'rgba(40, 200, 64, 0.2)'}`
                                     }}
@@ -879,8 +879,8 @@ const Analyze = ({ role, user }) => {
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                         <div>
                                             <div style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Result</div>
-                                            <div style={{ 
-                                                color: getResultColor(selectedAnalysis.ai_result), 
+                                            <div style={{
+                                                color: getResultColor(selectedAnalysis.ai_result),
                                                 fontWeight: 'bold',
                                                 fontSize: '1.25rem',
                                                 display: 'flex',
@@ -901,22 +901,22 @@ const Analyze = ({ role, user }) => {
                                     {/* Confidence Bar */}
                                     {selectedAnalysis.confidence_score && (
                                         <div style={{ marginTop: '1rem' }}>
-                                            <div style={{ 
-                                                width: '100%', 
-                                                height: '8px', 
-                                                background: 'rgba(255,255,255,0.1)', 
+                                            <div style={{
+                                                width: '100%',
+                                                height: '8px',
+                                                background: 'rgba(255,255,255,0.1)',
                                                 borderRadius: '4px',
                                                 overflow: 'hidden'
                                             }}>
-                                                <motion.div 
+                                                <motion.div
                                                     initial={{ width: 0 }}
                                                     animate={{ width: `${selectedAnalysis.confidence_score}%` }}
                                                     transition={{ delay: 0.3, duration: 0.8, ease: 'easeOut' }}
-                                                    style={{ 
-                                                        height: '100%', 
-                                                        background: selectedAnalysis.confidence_score >= 80 
-                                                            ? 'linear-gradient(90deg, #28c840, #00ff88)' 
-                                                            : selectedAnalysis.confidence_score >= 50 
+                                                    style={{
+                                                        height: '100%',
+                                                        background: selectedAnalysis.confidence_score >= 80
+                                                            ? 'linear-gradient(90deg, #28c840, #00ff88)'
+                                                            : selectedAnalysis.confidence_score >= 50
                                                                 ? 'linear-gradient(90deg, #ffbc2e, #ffd700)'
                                                                 : 'linear-gradient(90deg, #ff0055, #ff6b6b)',
                                                         borderRadius: '4px',
@@ -983,7 +983,7 @@ const Analyze = ({ role, user }) => {
                                     whileHover={{ scale: 1.02, y: -2 }}
                                     whileTap={{ scale: 0.98 }}
                                     onClick={() => setSelectedAnalysis(null)}
-                                    style={{ 
+                                    style={{
                                         width: '100%',
                                         padding: '0.875rem',
                                         background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 240, 255, 0.1))',

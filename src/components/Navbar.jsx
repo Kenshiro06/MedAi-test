@@ -18,17 +18,17 @@ const Navbar = ({ onLoginClick, isLoggedIn }) => {
             backdropFilter: 'blur(10px)'
         }}>
             <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '80px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <a href="#top" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                     <img src="/icon_MedAI.png" alt="MedAI Logo" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
                     <span style={{ fontSize: '1.5rem', fontWeight: 'bold', letterSpacing: '-0.5px' }}>
                         Med<span className="text-gradient">AI</span>
                     </span>
-                </div>
+                </a>
 
                 {/* Desktop Menu */}
                 <div className="desktop-menu" style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
                     {!isLoggedIn && ['How it Works', 'AI Models', 'Live Demo', 'Use Cases'].map((item) => (
-                        <a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`} style={{ color: 'var(--color-text-muted)', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color = 'var(--color-primary)'} onMouseLeave={(e) => e.target.style.color = 'var(--color-text-muted)'}>
+                        <a key={item} href={`#${item.toLowerCase().replaceAll(' ', '-')}`} style={{ color: 'var(--color-text-muted)', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color = 'var(--color-primary)'} onMouseLeave={(e) => e.target.style.color = 'var(--color-text-muted)'}>
                             {item}
                         </a>
                     ))}
@@ -56,7 +56,7 @@ const Navbar = ({ onLoginClick, isLoggedIn }) => {
                         style={{ position: 'absolute', top: '100%', left: 0, right: 0, margin: '0 1rem', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}
                     >
                         {!isLoggedIn && ['How it Works', 'AI Models', 'Live Demo', 'Use Cases'].map((item) => (
-                            <a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`} onClick={() => setIsOpen(false)} style={{ padding: '0.5rem 0' }}>
+                            <a key={item} href={`#${item.toLowerCase().replaceAll(' ', '-')}`} onClick={() => setIsOpen(false)} style={{ padding: '0.5rem 0' }}>
                                 {item}
                             </a>
                         ))}

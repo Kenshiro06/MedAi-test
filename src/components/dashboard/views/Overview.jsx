@@ -48,14 +48,14 @@ const StatCard = ({ title, value, change, icon: Icon, color, delay }) => (
             position: 'absolute',
             top: '1.5rem',
             right: '1.5rem',
-            padding: '0.875rem',
+            padding: '0.75rem',
             background: `rgba(${color}, 0.15)`,
-            borderRadius: '14px',
+            borderRadius: '12px',
             color: `rgb(${color})`,
             boxShadow: `0 0 20px rgba(${color}, 0.3)`,
             border: `1px solid rgba(${color}, 0.3)`
         }}>
-            <Icon size={28} strokeWidth={2.5} />
+            <Icon size={24} strokeWidth={2.5} />
         </div>
 
         <div style={{ position: 'relative', zIndex: 1 }}>
@@ -107,7 +107,17 @@ const Overview = ({ role, user }) => {
         totalSamples: 0,
         malariaDetected: 0,
         pendingReviews: 0,
-        reportsGenerated: 0
+        reportsGenerated: 0,
+        malariaCount: 0,
+        leptoCount: 0,
+        totalUsers: 0,
+        trends: {
+            totalSamplesTrend: 0,
+            malariaDetectedTrend: 0,
+            pendingReviewsTrend: 0,
+            reportsGeneratedTrend: 0,
+            totalUsersTrend: 0
+        }
     });
     const [chartData, setChartData] = useState([40, 65, 45, 80, 55, 90, 70]);
     const [actualCounts, setActualCounts] = useState([0, 0, 0, 0, 0, 0, 0]);
@@ -167,18 +177,68 @@ const Overview = ({ role, user }) => {
             let positiveCount = 0;
             let pendingCount = 0;
             let reportsCount = 0;
+            let malariaCount = 0;
+            let leptoCount = 0;
+            let totalUsers = 0;
 
-            if (role === 'admin' || role === 'health_officer') {
+            // Calculate date ranges for trend comparison
+            const now = new Date();
+            const currentWeekStart = new Date(now);
+            currentWeekStart.setDate(now.getDate() - 7);
+
+            const previousWeekStart = new Date(now);
+            previousWeekStart.setDate(now.getDate() - 14);
+            const previousWeekEnd = new Date(currentWeekStart);
+
+            // Previous week counts for trend calculation
+            let prevTotalCount = 0;
+            let prevPositiveCount = 0;
+            let prevPendingCount = 0;
+            let prevReportsCount = 0;
+            let prevTotalUsers = 0;
+
+            if (role === 'admin') {
                 // Admin sees ALL data
                 const { count: total } = await supabase.from('analyses').select('*', { count: 'exact', head: true });
                 const { count: positive } = await supabase.from('analyses').select('*', { count: 'exact', head: true }).ilike('ai_result', '%positive%');
                 const { count: pending } = await supabase.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'pending');
                 const { count: reports } = await supabase.from('reports').select('*', { count: 'exact', head: true });
+                const { count: malaria } = await supabase.from('analyses').select('*', { count: 'exact', head: true }).eq('patient_type', 'malaria');
+                const { count: lepto } = await supabase.from('analyses').select('*', { count: 'exact', head: true }).eq('patient_type', 'leptospirosis');
+                const { count: users } = await supabase.from('auth_accounts').select('*', { count: 'exact', head: true });
+
+                // Previous week data for trends
+                const { count: prevTotal } = await supabase.from('analyses').select('*', { count: 'exact', head: true })
+                    .gte('analyzed_at', previousWeekStart.toISOString())
+                    .lt('analyzed_at', previousWeekEnd.toISOString());
+                const { count: prevPositive } = await supabase.from('analyses').select('*', { count: 'exact', head: true })
+                    .ilike('ai_result', '%positive%')
+                    .gte('analyzed_at', previousWeekStart.toISOString())
+                    .lt('analyzed_at', previousWeekEnd.toISOString());
+                const { count: prevPending } = await supabase.from('reports').select('*', { count: 'exact', head: true })
+                    .eq('status', 'pending')
+                    .gte('created_at', previousWeekStart.toISOString())
+                    .lt('created_at', previousWeekEnd.toISOString());
+                const { count: prevReports } = await supabase.from('reports').select('*', { count: 'exact', head: true })
+                    .gte('created_at', previousWeekStart.toISOString())
+                    .lt('created_at', previousWeekEnd.toISOString());
+                const { count: prevUsers } = await supabase.from('auth_accounts').select('*', { count: 'exact', head: true })
+                    .gte('created_at', previousWeekStart.toISOString())
+                    .lt('created_at', previousWeekEnd.toISOString());
 
                 totalCount = total || 0;
                 positiveCount = positive || 0;
                 pendingCount = pending || 0;
                 reportsCount = reports || 0;
+                malariaCount = malaria || 0;
+                leptoCount = lepto || 0;
+                totalUsers = users || 0;
+
+                prevTotalCount = prevTotal || 0;
+                prevPositiveCount = prevPositive || 0;
+                prevPendingCount = prevPending || 0;
+                prevReportsCount = prevReports || 0;
+                prevTotalUsers = prevUsers || 0;
             } else {
                 // Health Officer, Lab Tech, MO, Pathologist: Personal usage only in Overview
                 // For Lab Tech, MO, Pathologist: Count PERSONAL usage + assigned work
@@ -194,6 +254,34 @@ const Overview = ({ role, user }) => {
                     .select('*', { count: 'exact', head: true })
                     .eq('account_id', user.id)
                     .ilike('ai_result', '%positive%');
+
+                const { count: personalMalaria } = await supabase
+                    .from('analyses')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('account_id', user.id)
+                    .eq('patient_type', 'malaria');
+
+                const { count: personalLepto } = await supabase
+                    .from('analyses')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('account_id', user.id)
+                    .eq('patient_type', 'leptospirosis');
+
+                // Previous week personal data
+                const { count: prevPersonalAnalyses } = await supabase
+                    .from('analyses')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('account_id', user.id)
+                    .gte('analyzed_at', previousWeekStart.toISOString())
+                    .lt('analyzed_at', previousWeekEnd.toISOString());
+
+                const { count: prevPersonalPositive } = await supabase
+                    .from('analyses')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('account_id', user.id)
+                    .ilike('ai_result', '%positive%')
+                    .gte('analyzed_at', previousWeekStart.toISOString())
+                    .lt('analyzed_at', previousWeekEnd.toISOString());
 
                 // 2. Assigned work (reports assigned to them)
                 let assignedAnalysisIds = [];
@@ -235,6 +323,8 @@ const Overview = ({ role, user }) => {
                 // 3. Count analyses from assigned reports (excluding personal ones to avoid double counting)
                 let assignedAnalysesCount = 0;
                 let assignedPositiveCount = 0;
+                let assignedMalariaCount = 0;
+                let assignedLeptoCount = 0;
 
                 if (assignedAnalysisIds.length > 0) {
                     const { count: assigned } = await supabase
@@ -250,8 +340,24 @@ const Overview = ({ role, user }) => {
                         .neq('account_id', user.id)
                         .ilike('ai_result', '%positive%');
 
+                    const { count: assignedMal } = await supabase
+                        .from('analyses')
+                        .select('*', { count: 'exact', head: true })
+                        .in('id', assignedAnalysisIds)
+                        .neq('account_id', user.id)
+                        .eq('patient_type', 'malaria');
+
+                    const { count: assignedLep } = await supabase
+                        .from('analyses')
+                        .select('*', { count: 'exact', head: true })
+                        .in('id', assignedAnalysisIds)
+                        .neq('account_id', user.id)
+                        .eq('patient_type', 'leptospirosis');
+
                     assignedAnalysesCount = assigned || 0;
                     assignedPositiveCount = assignedPos || 0;
+                    assignedMalariaCount = assignedMal || 0;
+                    assignedLeptoCount = assignedLep || 0;
                 }
 
                 // 4. Combine personal + assigned
@@ -259,21 +365,48 @@ const Overview = ({ role, user }) => {
                 positiveCount = (personalPositive || 0) + assignedPositiveCount;
                 pendingCount = assignedPendingCount;
                 reportsCount = assignedReportsCount;
+                malariaCount = (personalMalaria || 0) + assignedMalariaCount;
+                leptoCount = (personalLepto || 0) + assignedLeptoCount;
+
+                prevTotalCount = prevPersonalAnalyses || 0;
+                prevPositiveCount = prevPersonalPositive || 0;
             }
+
+            // Calculate trend percentages
+            const calculateTrend = (current, previous) => {
+                if (previous === 0) return current > 0 ? 100 : 0;
+                return ((current - previous) / previous) * 100;
+            };
+
+            const trends = {
+                totalSamplesTrend: calculateTrend(totalCount, prevTotalCount),
+                malariaDetectedTrend: calculateTrend(positiveCount, prevPositiveCount),
+                pendingReviewsTrend: calculateTrend(pendingCount, prevPendingCount),
+                reportsGeneratedTrend: calculateTrend(reportsCount, prevReportsCount),
+                totalUsersTrend: calculateTrend(totalUsers, prevTotalUsers)
+            };
 
             console.log(`Stats fetched for ${role}:`, {
                 userId: user.id,
                 totalSamples: totalCount,
                 positiveDetected: positiveCount,
                 pendingReviews: pendingCount,
-                reportsGenerated: reportsCount
+                reportsGenerated: reportsCount,
+                malariaCount,
+                leptoCount,
+                totalUsers,
+                trends
             });
 
             setStats({
                 totalSamples: totalCount,
                 malariaDetected: positiveCount,
                 pendingReviews: pendingCount,
-                reportsGenerated: reportsCount
+                reportsGenerated: reportsCount,
+                malariaCount,
+                leptoCount,
+                totalUsers,
+                trends
             });
         } catch (error) {
             console.error('Error fetching stats:', error);
@@ -281,7 +414,17 @@ const Overview = ({ role, user }) => {
                 totalSamples: 0,
                 malariaDetected: 0,
                 pendingReviews: 0,
-                reportsGenerated: 0
+                reportsGenerated: 0,
+                malariaCount: 0,
+                leptoCount: 0,
+                totalUsers: 0,
+                trends: {
+                    totalSamplesTrend: 0,
+                    malariaDetectedTrend: 0,
+                    pendingReviewsTrend: 0,
+                    reportsGeneratedTrend: 0,
+                    totalUsersTrend: 0
+                }
             });
         }
     };
@@ -301,7 +444,7 @@ const Overview = ({ role, user }) => {
 
                 let dayCount = 0;
 
-                if (role === 'admin' || role === 'health_officer') {
+                if (role === 'admin') {
                     // Admin sees all data
                     const { count } = await supabase
                         .from('analyses')
@@ -538,14 +681,14 @@ const Overview = ({ role, user }) => {
             subtitle: 'Monitor disease surveillance across your jurisdiction',
             emoji: '🏥',
             color: '59, 130, 246',
-            stats: ['Total Approved', 'Active Cases', 'Positivity Rate', 'Facilities Monitored']
+            stats: ['My Analyses', 'Positive Detections', 'Total Malaria', 'Total Leptospirosis']
         },
         admin: {
             title: 'Admin Dashboard',
             subtitle: 'System management and oversight',
             emoji: '👨‍💼',
             color: '249, 115, 22',
-            stats: ['Total Analyses', 'System Users', 'Pending Approvals', 'Reports Generated']
+            stats: ['Total Analyses', 'Positive Cases', 'Pending Approvals', 'Reports Generated', 'Total Users']
         }
     };
 
@@ -582,11 +725,49 @@ const Overview = ({ role, user }) => {
             </motion.div>
 
             {/* Stats Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
-                <StatCard title={currentRole.stats[0]} value={stats.totalSamples} change="+12.5%" icon={Activity} color={currentRole.color} delay={0.1} />
-                <StatCard title={currentRole.stats[1]} value={stats.malariaDetected} change="+5.2%" icon={AlertTriangle} color="255, 0, 85" delay={0.2} />
-                <StatCard title={currentRole.stats[2]} value={stats.pendingReviews} change="-2.4%" icon={Clock} color="255, 188, 46" delay={0.3} />
-                <StatCard title={currentRole.stats[3]} value={stats.reportsGenerated} change="+8.1%" icon={FileText} color="40, 200, 64" delay={0.4} />
+            <div style={{ display: 'grid', gridTemplateColumns: role === 'admin' ? 'repeat(5, 1fr)' : 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '3rem' }}>
+                <StatCard
+                    title={currentRole.stats[0]}
+                    value={stats.totalSamples}
+                    change={`${stats.trends.totalSamplesTrend >= 0 ? '+' : ''}${stats.trends.totalSamplesTrend.toFixed(1)}%`}
+                    icon={Activity}
+                    color={currentRole.color}
+                    delay={0.1}
+                />
+                <StatCard
+                    title={currentRole.stats[1]}
+                    value={stats.malariaDetected}
+                    change={`${stats.trends.malariaDetectedTrend >= 0 ? '+' : ''}${stats.trends.malariaDetectedTrend.toFixed(1)}%`}
+                    icon={AlertTriangle}
+                    color="255, 0, 85"
+                    delay={0.2}
+                />
+                <StatCard
+                    title={currentRole.stats[2]}
+                    value={role === 'health_officer' ? stats.malariaCount : stats.pendingReviews}
+                    change={`${stats.trends.pendingReviewsTrend >= 0 ? '+' : ''}${stats.trends.pendingReviewsTrend.toFixed(1)}%`}
+                    icon={Clock}
+                    color="255, 188, 46"
+                    delay={0.3}
+                />
+                <StatCard
+                    title={currentRole.stats[3]}
+                    value={role === 'health_officer' ? stats.leptoCount : stats.reportsGenerated}
+                    change={`${stats.trends.reportsGeneratedTrend >= 0 ? '+' : ''}${stats.trends.reportsGeneratedTrend.toFixed(1)}%`}
+                    icon={FileText}
+                    color="40, 200, 64"
+                    delay={0.4}
+                />
+                {role === 'admin' && (
+                    <StatCard
+                        title={currentRole.stats[4]}
+                        value={stats.totalUsers}
+                        change={`${stats.trends.totalUsersTrend >= 0 ? '+' : ''}${stats.trends.totalUsersTrend.toFixed(1)}%`}
+                        icon={Users}
+                        color="168, 85, 247"
+                        delay={0.5}
+                    />
+                )}
             </div>
 
             {/* Recent Activity & Charts Section */}
@@ -644,7 +825,7 @@ const Overview = ({ role, user }) => {
                         {['lab_technician', 'health_officer', 'admin'].includes(role) ? 'Analysis Distribution' : 'My Personal Analyses'}
                     </h3>
 
-                    {personalAnalyses.length === 0 && !((role === 'admin' || role === 'health_officer') && stats.totalSamples > 0) ? (
+                    {personalAnalyses.length === 0 && !(role === 'admin' && stats.totalSamples > 0) ? (
                         <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-muted)' }}>
                             <Activity size={32} style={{ opacity: 0.3, marginBottom: '0.5rem' }} />
                             <div>No analyses yet</div>
@@ -656,7 +837,7 @@ const Overview = ({ role, user }) => {
                             {(() => {
                                 let positive, negative, total;
 
-                                if (role === 'admin' || role === 'health_officer') {
+                                if (role === 'admin') {
                                     positive = stats.malariaDetected || 0;
                                     total = stats.totalSamples || 0;
                                     negative = Math.max(0, total - positive);
