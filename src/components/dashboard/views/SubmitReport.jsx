@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { BarChart3, Loader, AlertCircle, CheckCircle, XCircle, Eye, Send, X, Trash2, Edit2, Save } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { BarChart3, Loader, AlertCircle, CheckCircle, XCircle, Eye, Send, X, Trash2, Edit2, Save, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { analysisService } from '../../../services/analysisService';
@@ -39,19 +39,36 @@ const SubmitReport = ({ role, user }) => {
                 // Fetch report status for each analysis
                 const analysesWithStatus = await Promise.all(
                     (result.data || []).map(async (analysis) => {
-                        const { data: reports } = await supabase
-                            .from('reports')
-                            .select('id, status')
-                            .eq('analysis_id', analysis.id)
-                            .limit(1);
+                        try {
+                            const { data: report, error } = await supabase
+                                .from('reports')
+                                .select('id, status')
+                                .eq('analysis_id', analysis.id)
+                                .maybeSingle();
 
-                        const report = reports?.[0] || null;
+                            // If 406 error or other error, just return null report
+                            if (error) {
+                                console.warn(`Could not fetch report for analysis ${analysis.id}:`, error);
+                                return {
+                                    ...analysis,
+                                    report_status: null,
+                                    report_id: null
+                                };
+                            }
 
-                        return {
-                            ...analysis,
-                            report_status: report?.status || null,
-                            report_id: report?.id || null
-                        };
+                            return {
+                                ...analysis,
+                                report_status: report?.status || null,
+                                report_id: report?.id || null
+                            };
+                        } catch (err) {
+                            console.warn(`Error fetching report for analysis ${analysis.id}:`, err);
+                            return {
+                                ...analysis,
+                                report_status: null,
+                                report_id: null
+                            };
+                        }
                     })
                 );
                 setAnalyses(analysesWithStatus);
@@ -237,6 +254,39 @@ const SubmitReport = ({ role, user }) => {
         } catch (error) {
             console.error('Error updating analysis:', error);
             alert('Failed to update analysis: ' + error.message);
+        }
+    };
+
+    const downloadAnalysisPDF = async () => {
+        if (!selectedAnalysis) return;
+
+        try {
+            // Prepare data for custom PDF layout
+            const reportData = {
+                patientName: selectedAnalysis.patient_name,
+                registrationNumber: selectedAnalysis.registration_number,
+                icPassport: selectedAnalysis.ic_passport,
+                gender: selectedAnalysis.gender,
+                age: selectedAnalysis.age,
+                collectionDate: new Date(selectedAnalysis.collection_datetime).toLocaleString('en-MY'),
+                healthFacility: selectedAnalysis.health_facility,
+                aiResult: selectedAnalysis.ai_result,
+                // Fix confidence - check if already percentage or decimal
+                confidence: selectedAnalysis.confidence_score 
+                    ? (selectedAnalysis.confidence_score > 1 
+                        ? `${selectedAnalysis.confidence_score.toFixed(2)}%` 
+                        : `${(selectedAnalysis.confidence_score * 100).toFixed(2)}%`)
+                    : 'N/A',
+                analyzedAt: new Date(selectedAnalysis.analyzed_at).toLocaleString('en-MY'),
+                imageUrl: selectedAnalysis.image_path || selectedAnalysis.image_paths?.[0]
+            };
+
+            // Generate custom PDF layout
+            const { generateReportPDF } = await import('../../../utils/pdfGenerator');
+            await generateReportPDF(reportData);
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            alert('Failed to generate PDF. Please try again.');
         }
     };
 
@@ -811,14 +861,17 @@ const SubmitReport = ({ role, user }) => {
                         >
                             {/* PDF-Style Report Header */}
                             {!isEditing && (
-                                <div style={{
-                                    background: 'white',
-                                    color: '#000',
-                                    padding: '2rem',
-                                    borderRadius: '12px 12px 0 0',
-                                    marginBottom: '1.5rem',
-                                    position: 'relative'
-                                }}>
+                                <div 
+                                    data-analysis-content
+                                    style={{
+                                        background: 'white',
+                                        color: '#000',
+                                        padding: '2rem',
+                                        borderRadius: '12px 12px 0 0',
+                                        marginBottom: '1.5rem',
+                                        position: 'relative'
+                                    }}
+                                >
                                     <button
                                         onClick={() => {
                                             setSelectedAnalysis(null);
@@ -1280,23 +1333,33 @@ const SubmitReport = ({ role, user }) => {
                                         Edit Report
                                     </button>
                                     <button
-                                        onClick={() => alert('Print functionality coming soon!')}
+                                        onClick={downloadAnalysisPDF}
                                         style={{
                                             flex: 1,
                                             padding: '0.75rem 1.5rem',
-                                            background: 'rgba(255,255,255,0.05)',
-                                            border: '1px solid var(--color-glass-border)',
+                                            background: 'rgba(0, 240, 255, 0.1)',
+                                            border: '1px solid var(--color-primary)',
                                             borderRadius: '8px',
-                                            color: 'white',
+                                            color: 'var(--color-primary)',
                                             cursor: 'pointer',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             gap: '0.5rem',
-                                            fontWeight: '600'
+                                            fontWeight: '600',
+                                            transition: 'all 0.3s ease'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.target.style.background = 'rgba(0, 240, 255, 0.2)';
+                                            e.target.style.transform = 'translateY(-2px)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.target.style.background = 'rgba(0, 240, 255, 0.1)';
+                                            e.target.style.transform = 'translateY(0)';
                                         }}
                                     >
-                                        Print / PDF
+                                        <Download size={18} />
+                                        Download PDF
                                     </button>
                                 </div>
                             )}

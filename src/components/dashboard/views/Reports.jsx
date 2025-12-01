@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, CheckCircle, XCircle, Clock, ChevronDown, Search, Filter, RefreshCw, X, AlertTriangle } from 'lucide-react';
+import { CheckCircle, XCircle, Search, Filter, RefreshCw, X, AlertTriangle, Download } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { activityLogger } from '../../../services/activityLogger';
 
@@ -234,6 +234,45 @@ const Reports = ({ role, user }) => {
         } catch (error) {
             console.error('Error updating report:', error);
             alert('Failed to update report status: ' + error.message);
+        }
+    };
+
+    const downloadReportPDF = async () => {
+        if (!selectedReport) return;
+
+        try {
+            // Prepare data for custom PDF layout
+            const reportData = {
+                patientName: selectedReport.patient_name,
+                registrationNumber: selectedReport.registration_number,
+                icPassport: selectedReport.ic_passport,
+                gender: selectedReport.gender,
+                age: selectedReport.age,
+                collectionDate: new Date(selectedReport.collection_datetime).toLocaleString('en-MY'),
+                healthFacility: selectedReport.health_facility,
+                aiResult: selectedReport.ai_result,
+                // Fix confidence - check if already percentage or decimal
+                confidence: selectedReport.confidence_score 
+                    ? (selectedReport.confidence_score > 1 
+                        ? `${selectedReport.confidence_score.toFixed(2)}%` 
+                        : `${(selectedReport.confidence_score * 100).toFixed(2)}%`)
+                    : 'N/A',
+                analyzedAt: new Date(selectedReport.analyzed_at).toLocaleString('en-MY'),
+                imageUrl: selectedReport.image_path || selectedReport.image_paths?.[0],
+                moStatus: selectedReport.mo_status,
+                moReviewedAt: selectedReport.mo_reviewed_at ? new Date(selectedReport.mo_reviewed_at).toLocaleString('en-MY') : null,
+                moNotes: selectedReport.mo_notes,
+                pathologistStatus: selectedReport.pathologist_status,
+                pathologistReviewedAt: selectedReport.pathologist_reviewed_at ? new Date(selectedReport.pathologist_reviewed_at).toLocaleString('en-MY') : null,
+                pathologistNotes: selectedReport.pathologist_notes
+            };
+
+            // Generate custom PDF layout
+            const { generateReportPDF } = await import('../../../utils/pdfGenerator');
+            await generateReportPDF(reportData);
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            alert('Failed to generate PDF. Please try again.');
         }
     };
 
@@ -825,14 +864,17 @@ const Reports = ({ role, user }) => {
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* PDF-Style Report Header */}
-                            <div style={{
-                                background: 'white',
-                                color: '#000',
-                                padding: '2rem',
-                                borderRadius: '12px',
-                                marginBottom: '1.5rem',
-                                position: 'relative'
-                            }}>
+                            <div 
+                                data-report-content
+                                style={{
+                                    background: 'white',
+                                    color: '#000',
+                                    padding: '2rem',
+                                    borderRadius: '12px',
+                                    marginBottom: '1.5rem',
+                                    position: 'relative'
+                                }}
+                            >
                                 <button
                                     onClick={() => setSelectedReport(null)}
                                     style={{
@@ -1116,23 +1158,33 @@ const Reports = ({ role, user }) => {
                             {/* Action Buttons */}
                             <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
                                 <button
-                                    onClick={() => alert('Print functionality coming soon!')}
+                                    onClick={downloadReportPDF}
                                     style={{
                                         flex: 1,
                                         padding: '0.75rem 1.5rem',
-                                        background: 'rgba(255,255,255,0.05)',
-                                        border: '1px solid var(--color-glass-border)',
+                                        background: 'rgba(0, 240, 255, 0.1)',
+                                        border: '1px solid var(--color-primary)',
                                         borderRadius: '8px',
-                                        color: 'white',
+                                        color: 'var(--color-primary)',
                                         cursor: 'pointer',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         gap: '0.5rem',
-                                        fontWeight: '600'
+                                        fontWeight: '600',
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.target.style.background = 'rgba(0, 240, 255, 0.2)';
+                                        e.target.style.transform = 'translateY(-2px)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.target.style.background = 'rgba(0, 240, 255, 0.1)';
+                                        e.target.style.transform = 'translateY(0)';
                                     }}
                                 >
-                                    Print / PDF
+                                    <Download size={18} />
+                                    Download PDF
                                 </button>
                             </div>
 
