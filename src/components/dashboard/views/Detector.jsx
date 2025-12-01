@@ -78,7 +78,9 @@ const Detector = ({ role, user, onNavigate }) => {
                 setAnalysisProgress(prev => Math.min(prev + 5, 90));
             }, 200);
 
-            const response = await fetch('http://localhost:5000/batch-predict', {
+            // Use environment variable for API URL (production) or fallback to localhost (development)
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            const response = await fetch(`${apiUrl}/batch-predict`, {
                 method: 'POST',
                 body: formData
             });

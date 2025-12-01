@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: medai-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python malaria_api_working.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: PORT
+        generateValue: true
