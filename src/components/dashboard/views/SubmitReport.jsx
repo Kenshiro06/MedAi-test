@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart3, Loader, AlertCircle, CheckCircle, XCircle, Eye, Send, X, Trash2, Edit2, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { analysisService } from '../../../services/analysisService';
 import { supabase } from '../../../lib/supabase';
 import { activityLogger } from '../../../services/activityLogger';
 
 const SubmitReport = ({ role, user }) => {
+    const { t } = useTranslation();
     const [analyses, setAnalyses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -326,10 +328,10 @@ const SubmitReport = ({ role, user }) => {
                 style={{ marginBottom: '2rem' }}
             >
                 <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                    Submit Report
+                    {t('reports.submitReportTitle')}
                 </h1>
                 <p style={{ color: 'var(--color-text-muted)' }}>
-                    Review your analyses and submit reports to doctors
+                    {t('reports.submitReportSubtitle')}
                 </p>
             </motion.div>
 
@@ -1417,7 +1419,7 @@ const SubmitReport = ({ role, user }) => {
                                             }}
                                         >
                                             <Send size={18} />
-                                            {submitting ? 'Submitting...' : 'Submit Report'}
+                                            {submitting ? t('reports.submittingReport') : t('reports.submitReportTitle')}
                                         </button>
                                         <button
                                             onClick={() => {

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart3, Calendar, User, TrendingUp, Loader, AlertCircle, CheckCircle, XCircle, Eye, X, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { analysisService } from '../../../services/analysisService';
 import { activityLogger } from '../../../services/activityLogger';
 
 const Analyze = ({ role, user }) => {
+    const { t } = useTranslation();
     const [analyses, setAnalyses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -206,10 +208,10 @@ const Analyze = ({ role, user }) => {
                 style={{ marginBottom: '2rem' }}
             >
                 <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                    Analyze Results
+                    {t('analyze.title')}
                 </h1>
                 <p style={{ color: 'var(--color-text-muted)' }}>
-                    Review and analyze detection results from database
+                    {t('analyze.subtitle')}
                 </p>
             </motion.div>
 
@@ -257,7 +259,7 @@ const Analyze = ({ role, user }) => {
                         >
                             <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontSize: '3.5rem', opacity: 0.08 }}>📊</div>
                             <div style={{ position: 'relative', zIndex: 1 }}>
-                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Analyses</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('analyze.totalAnalyses')}</div>
                                 <motion.div
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
@@ -268,7 +270,7 @@ const Analyze = ({ role, user }) => {
                                 </motion.div>
                                 <div style={{ display: 'flex', gap: '1rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(0, 240, 255, 0.15)' }}>
                                     <div style={{ flex: 1 }}>
-                                        <div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', marginBottom: '0.25rem', textTransform: 'uppercase' }}>Positive</div>
+                                        <div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', marginBottom: '0.25rem', textTransform: 'uppercase' }}>{t('analyze.positive')}</div>
                                         <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#ff0055' }}>
                                             {analyses.filter(a => {
                                                 const result = a.ai_result?.toLowerCase() || '';
@@ -277,7 +279,7 @@ const Analyze = ({ role, user }) => {
                                         </div>
                                     </div>
                                     <div style={{ flex: 1 }}>
-                                        <div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', marginBottom: '0.25rem', textTransform: 'uppercase' }}>Negative</div>
+                                        <div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', marginBottom: '0.25rem', textTransform: 'uppercase' }}>{t('analyze.negative')}</div>
                                         <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#28c840' }}>
                                             {analyses.filter(a => {
                                                 const result = a.ai_result?.toLowerCase() || '';
@@ -308,7 +310,7 @@ const Analyze = ({ role, user }) => {
                         >
                             <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontSize: '3.5rem', opacity: 0.08 }}>🦟</div>
                             <div style={{ position: 'relative', zIndex: 1 }}>
-                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Malaria Cases</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('analyze.malariaCases')}</div>
                                 <motion.div
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
@@ -319,7 +321,7 @@ const Analyze = ({ role, user }) => {
                                 </motion.div>
                                 <div style={{ display: 'flex', gap: '1rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(255, 0, 85, 0.15)' }}>
                                     <div style={{ flex: 1 }}>
-                                        <div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', marginBottom: '0.25rem', textTransform: 'uppercase' }}>Positive</div>
+                                        <div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', marginBottom: '0.25rem', textTransform: 'uppercase' }}>{t('analyze.positive')}</div>
                                         <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#ff0055' }}>
                                             {analyses.filter(a => {
                                                 const result = a.ai_result?.toLowerCase() || '';
@@ -328,7 +330,7 @@ const Analyze = ({ role, user }) => {
                                         </div>
                                     </div>
                                     <div style={{ flex: 1 }}>
-                                        <div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', marginBottom: '0.25rem', textTransform: 'uppercase' }}>Negative</div>
+                                        <div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', marginBottom: '0.25rem', textTransform: 'uppercase' }}>{t('analyze.negative')}</div>
                                         <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#28c840' }}>
                                             {analyses.filter(a => {
                                                 const result = a.ai_result?.toLowerCase() || '';
@@ -359,7 +361,7 @@ const Analyze = ({ role, user }) => {
                         >
                             <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontSize: '3.5rem', opacity: 0.08 }}>🦠</div>
                             <div style={{ position: 'relative', zIndex: 1 }}>
-                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Leptospirosis</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('analyze.leptospirosis')}</div>
                                 <motion.div
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
@@ -370,7 +372,7 @@ const Analyze = ({ role, user }) => {
                                 </motion.div>
                                 <div style={{ display: 'flex', gap: '1rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(255, 188, 46, 0.15)' }}>
                                     <div style={{ flex: 1 }}>
-                                        <div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', marginBottom: '0.25rem', textTransform: 'uppercase' }}>Positive</div>
+                                        <div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', marginBottom: '0.25rem', textTransform: 'uppercase' }}>{t('analyze.positive')}</div>
                                         <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#ff0055' }}>
                                             {analyses.filter(a => {
                                                 const result = a.ai_result?.toLowerCase() || '';
@@ -379,7 +381,7 @@ const Analyze = ({ role, user }) => {
                                         </div>
                                     </div>
                                     <div style={{ flex: 1 }}>
-                                        <div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', marginBottom: '0.25rem', textTransform: 'uppercase' }}>Negative</div>
+                                        <div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', marginBottom: '0.25rem', textTransform: 'uppercase' }}>{t('analyze.negative')}</div>
                                         <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#28c840' }}>
                                             {analyses.filter(a => {
                                                 const result = a.ai_result?.toLowerCase() || '';
@@ -588,13 +590,13 @@ const Analyze = ({ role, user }) => {
                                             />
                                         </th>
                                         <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--color-text-muted)', fontWeight: '500', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>#</th>
-                                        <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--color-text-muted)', fontWeight: '500', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Patient</th>
-                                        <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--color-text-muted)', fontWeight: '500', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Disease</th>
-                                        <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--color-text-muted)', fontWeight: '500', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Result</th>
-                                        <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--color-text-muted)', fontWeight: '500', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Confidence</th>
-                                        <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--color-text-muted)', fontWeight: '500', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Analyst</th>
-                                        <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--color-text-muted)', fontWeight: '500', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Date</th>
-                                        <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--color-text-muted)', fontWeight: '500', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Action</th>
+                                        <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--color-text-muted)', fontWeight: '500', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('analyze.patient')}</th>
+                                        <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--color-text-muted)', fontWeight: '500', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('analyze.disease')}</th>
+                                        <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--color-text-muted)', fontWeight: '500', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('analyze.result')}</th>
+                                        <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--color-text-muted)', fontWeight: '500', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('analyze.confidence')}</th>
+                                        <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--color-text-muted)', fontWeight: '500', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('analyze.analyst')}</th>
+                                        <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--color-text-muted)', fontWeight: '500', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('analyze.date')}</th>
+                                        <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--color-text-muted)', fontWeight: '500', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('analyze.action')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -717,7 +719,7 @@ const Analyze = ({ role, user }) => {
                                                         }}
                                                     >
                                                         <Eye size={14} />
-                                                        View
+                                                        {t('analyze.view')}
                                                     </motion.button>
                                                 </td>
                                             </motion.tr>

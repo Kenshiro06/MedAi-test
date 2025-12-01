@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, Users, FileText, AlertTriangle, TrendingUp, Clock, Eye, X, CheckCircle, XCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../../../lib/supabase';
 
 const StatCard = ({ title, value, change, icon: Icon, color, delay }) => (
@@ -100,6 +101,7 @@ const StatCard = ({ title, value, change, icon: Icon, color, delay }) => (
 );
 
 const Overview = ({ role, user }) => {
+    const { t } = useTranslation();
     const [recentReports, setRecentReports] = useState([]);
     const [selectedReport, setSelectedReport] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -656,39 +658,39 @@ const Overview = ({ role, user }) => {
     // Role-specific configuration
     const roleConfig = {
         lab_technician: {
-            title: 'Lab Technician Dashboard',
-            subtitle: 'Analyze samples and submit reports for review',
+            title: t('overview.labTechTitle'),
+            subtitle: t('overview.labTechSubtitle'),
             emoji: '🔬',
             color: '0, 240, 255',
-            stats: ['My Analyses', 'Positive Detections', 'Pending Submissions', 'Submitted Reports']
+            stats: [t('overview.myAnalyses'), t('overview.positiveDetections'), t('overview.pendingSubmissions'), t('overview.submittedReports')]
         },
         medical_officer: {
-            title: 'Medical Officer Dashboard',
-            subtitle: 'Review and approve laboratory reports',
+            title: t('overview.medicalOfficerTitle'),
+            subtitle: t('overview.medicalOfficerSubtitle'),
             emoji: '👨‍⚕️',
             color: '0, 255, 136',
-            stats: ['Pending Reviews', 'Reviewed Cases', 'Approved Today', 'Reports Processed']
+            stats: [t('overview.pendingReviews'), t('overview.reviewedCases'), t('overview.approvedToday'), t('overview.reportsProcessed')]
         },
         pathologist: {
-            title: 'Pathologist Dashboard',
-            subtitle: 'Final verification and quality assurance',
+            title: t('overview.pathologistTitle'),
+            subtitle: t('overview.pathologistSubtitle'),
             emoji: '🔬',
             color: '168, 85, 247',
-            stats: ['Pending Verifications', 'Verified Cases', 'Complex Cases', 'Quality Score']
+            stats: [t('overview.pendingVerifications'), t('overview.verifiedCases'), t('overview.complexCases'), t('overview.qualityScore')]
         },
         health_officer: {
-            title: 'Health Officer Dashboard',
-            subtitle: 'Monitor disease surveillance across your jurisdiction',
+            title: t('overview.healthOfficerTitle'),
+            subtitle: t('overview.healthOfficerSubtitle'),
             emoji: '🏥',
             color: '59, 130, 246',
-            stats: ['My Analyses', 'Positive Detections', 'Total Malaria', 'Total Leptospirosis']
+            stats: [t('overview.myAnalyses'), t('overview.positiveDetections'), t('overview.totalMalaria'), t('overview.totalLeptospirosis')]
         },
         admin: {
-            title: 'Admin Dashboard',
-            subtitle: 'System management and oversight',
+            title: t('overview.adminTitle'),
+            subtitle: t('overview.adminSubtitle'),
             emoji: '👨‍💼',
             color: '249, 115, 22',
-            stats: ['Total Analyses', 'Positive Cases', 'Pending Approvals', 'Reports Generated', 'Total Users']
+            stats: [t('overview.totalAnalyses'), t('overview.positiveCases'), t('overview.pendingApprovals'), t('overview.reportsGenerated'), t('overview.totalUsers')]
         }
     };
 

@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
-import { Settings as SettingsIcon, Bell, Shield, Palette, Database, Download, Upload, Trash2, Save } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Bell, Palette, Database, Download, Upload, Trash2, Save } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import { supabase } from '../../../lib/supabase';
 
 const Settings = ({ user }) => {
+    const { t, i18n } = useTranslation();
     const [settings, setSettings] = useState({
         notifications: {
             email: true,
@@ -23,15 +26,73 @@ const Settings = ({ user }) => {
     });
 
     const [saving, setSaving] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    // Load settings from database on mount
+    useEffect(() => {
+        if (user) {
+            loadSettings();
+        }
+    }, [user]);
+
+    // Update i18n language when settings change
+    useEffect(() => {
+        i18n.changeLanguage(settings.appearance.language);
+    }, [settings.appearance.language, i18n]);
+
+    const loadSettings = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('user_settings')
+                .select('*')
+                .eq('account_id', user.id)
+                .single();
+
+            if (error && error.code !== 'PGRST116') throw error;
+
+            if (data) {
+                // Load from database and merge with defaults
+                setSettings(prev => ({
+                    ...prev,
+                    notifications: {
+                        ...prev.notifications,
+                        email: data.email_notifications ?? true,
+                        reports: data.report_notifications ?? true
+                    },
+                    appearance: {
+                        ...prev.appearance,
+                        language: data.language ?? 'en'
+                    }
+                }));
+            }
+        } catch (error) {
+            console.error('Error loading settings:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const saveSettings = async () => {
         setSaving(true);
         try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            alert('✅ Settings saved successfully!');
+            const { error } = await supabase
+                .from('user_settings')
+                .upsert({
+                    account_id: user.id,
+                    email_notifications: settings.notifications.email,
+                    report_notifications: settings.notifications.reports,
+                    language: settings.appearance.language,
+                    updated_at: new Date().toISOString()
+                }, {
+                    onConflict: 'account_id'
+                });
+
+            if (error) throw error;
+
+            alert('✅ ' + t('settings.saveSuccess'));
         } catch (error) {
-            alert('Failed to save settings');
+            console.error('Error saving settings:', error);
+            alert(t('settings.saveFailed') + ': ' + error.message);
         } finally {
             setSaving(false);
         }
@@ -104,6 +165,14 @@ const Settings = ({ user }) => {
         </div>
     );
 
+    if (loading) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
+                <div style={{ color: 'var(--color-primary)' }}>{t('settings.loading')}</div>
+            </div>
+        );
+    }
+
     return (
         <div>
             <motion.div
@@ -112,24 +181,24 @@ const Settings = ({ user }) => {
                 style={{ marginBottom: '2rem' }}
             >
                 <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                    Settings
+                    {t('settings.title')}
                 </h1>
                 <p style={{ color: 'var(--color-text-muted)' }}>
-                    Customize your MedAI experience
+                    {t('settings.subtitle')}
                 </p>
             </motion.div>
 
             <div className="glass-panel" style={{ padding: '2rem', maxWidth: '800px' }}>
-                {/* Notifications */}
-                <SettingSection title="Notifications" icon={Bell}>
+                {/* Notifications - Essential for medical workflow */}
+                <SettingSection title={t('settings.notifications')} icon={Bell}>
                     <ToggleSwitch
                         checked={settings.notifications.email}
                         onChange={(e) => setSettings({
                             ...settings,
                             notifications: { ...settings.notifications, email: e.target.checked }
                         })}
-                        label="Email Notifications"
-                        description="Receive updates via email"
+                        label={t('settings.emailNotifications')}
+                        description={t('settings.emailNotificationsDesc')}
                     />
                     <ToggleSwitch
                         checked={settings.notifications.reports}
@@ -137,69 +206,14 @@ const Settings = ({ user }) => {
                             ...settings,
                             notifications: { ...settings.notifications, reports: e.target.checked }
                         })}
-                        label="Report Notifications"
-                        description="Get notified when reports are reviewed"
-                    />
-                    <ToggleSwitch
-                        checked={settings.notifications.system}
-                        onChange={(e) => setSettings({
-                            ...settings,
-                            notifications: { ...settings.notifications, system: e.target.checked }
-                        })}
-                        label="System Notifications"
-                        description="Important system updates and maintenance"
+                        label={t('settings.reportNotifications')}
+                        description={t('settings.reportNotificationsDesc')}
                     />
                 </SettingSection>
 
-                {/* Privacy & Security */}
-                <SettingSection title="Privacy & Security" icon={Shield}>
-                    <ToggleSwitch
-                        checked={settings.privacy.profileVisible}
-                        onChange={(e) => setSettings({
-                            ...settings,
-                            privacy: { ...settings.privacy, profileVisible: e.target.checked }
-                        })}
-                        label="Profile Visibility"
-                        description="Make your profile visible to other users"
-                    />
-                    <ToggleSwitch
-                        checked={settings.privacy.analytics}
-                        onChange={(e) => setSettings({
-                            ...settings,
-                            privacy: { ...settings.privacy, analytics: e.target.checked }
-                        })}
-                        label="Usage Analytics"
-                        description="Help improve MedAI by sharing usage data"
-                    />
-                </SettingSection>
-
-                {/* Appearance */}
-                <SettingSection title="Appearance" icon={Palette}>
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', fontWeight: '500', marginBottom: '0.5rem' }}>Theme</label>
-                        <select
-                            value={settings.appearance.theme}
-                            onChange={(e) => setSettings({
-                                ...settings,
-                                appearance: { ...settings.appearance, theme: e.target.value }
-                            })}
-                            style={{
-                                width: '100%',
-                                padding: '0.75rem',
-                                background: 'rgba(255,255,255,0.05)',
-                                border: '1px solid var(--color-glass-border)',
-                                borderRadius: '8px',
-                                color: 'white',
-                                outline: 'none'
-                            }}
-                        >
-                            <option value="dark">Dark</option>
-                            <option value="light">Light</option>
-                            <option value="auto">Auto</option>
-                        </select>
-                    </div>
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', fontWeight: '500', marginBottom: '0.5rem' }}>Language</label>
+                {/* Language - Essential for Malaysian users */}
+                <SettingSection title={t('settings.language')} icon={Palette}>
+                    <div>
                         <select
                             value={settings.appearance.language}
                             onChange={(e) => setSettings({
@@ -213,18 +227,21 @@ const Settings = ({ user }) => {
                                 border: '1px solid var(--color-glass-border)',
                                 borderRadius: '8px',
                                 color: 'white',
-                                outline: 'none'
+                                outline: 'none',
+                                fontSize: '1rem'
                             }}
                         >
-                            <option value="en">English</option>
-                            <option value="ms">Bahasa Malaysia</option>
-                            <option value="zh">中文</option>
+                            <option value="en" style={{ background: '#1a1f2e', color: 'white' }}>🇬🇧 English</option>
+                            <option value="ms" style={{ background: '#1a1f2e', color: 'white' }}>🇲🇾 Bahasa Malaysia</option>
                         </select>
+                        <div style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginTop: '0.75rem' }}>
+                            {t('settings.languageDesc')}
+                        </div>
                     </div>
                 </SettingSection>
 
                 {/* Data Management */}
-                <SettingSection title="Data Management" icon={Database}>
+                <SettingSection title={t('settings.dataManagement')} icon={Database}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                         <button
                             onClick={exportData}
@@ -242,7 +259,7 @@ const Settings = ({ user }) => {
                             }}
                         >
                             <Download size={16} />
-                            Export Data
+                            {t('settings.exportData')}
                         </button>
                         <button
                             onClick={() => alert('Import functionality coming soon!')}
@@ -260,7 +277,7 @@ const Settings = ({ user }) => {
                             }}
                         >
                             <Upload size={16} />
-                            Import Data
+                            {t('settings.importData')}
                         </button>
                     </div>
                 </SettingSection>
@@ -269,10 +286,10 @@ const Settings = ({ user }) => {
                 <div style={{ padding: '1.5rem', background: 'rgba(255, 0, 85, 0.05)', border: '1px solid rgba(255, 0, 85, 0.2)', borderRadius: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
                         <Trash2 size={20} color="#ff0055" />
-                        <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#ff0055' }}>Danger Zone</h3>
+                        <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#ff0055' }}>{t('settings.dangerZone')}</h3>
                     </div>
                     <p style={{ color: 'var(--color-text-muted)', marginBottom: '1rem', fontSize: '0.9rem' }}>
-                        These actions are irreversible. Please be careful.
+                        {t('settings.dangerZoneDesc')}
                     </p>
                     <button
                         onClick={() => {
@@ -293,7 +310,7 @@ const Settings = ({ user }) => {
                         }}
                     >
                         <Trash2 size={16} />
-                        Delete All Data
+                        {t('settings.deleteAllData')}
                     </button>
                 </div>
 
@@ -313,7 +330,7 @@ const Settings = ({ user }) => {
                     }}
                 >
                     <Save size={18} />
-                    {saving ? 'Saving...' : 'Save Settings'}
+                    {saving ? t('settings.saving') : t('settings.saveSettings')}
                 </button>
             </div>
         </div>

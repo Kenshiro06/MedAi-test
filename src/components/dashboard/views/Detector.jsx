@@ -3,10 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, Scan, FileText, CheckCircle, AlertTriangle, Loader, X, Send, Plus, Image as ImageIcon, Info, ChevronRight, ArrowLeft, MapPin } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
 import { Float, Stars } from '@react-three/drei';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../../../lib/supabase';
 import { activityLogger } from '../../../services/activityLogger';
 
 const Detector = ({ role, user, onNavigate }) => {
+    const { t } = useTranslation();
     const [step, setStep] = useState('disease-selection'); // disease-selection, patient-details, upload, analyzing, result, report
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showImageModal, setShowImageModal] = useState(false);
@@ -347,8 +349,8 @@ const Detector = ({ role, user, onNavigate }) => {
             {/* Header */}
             <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
-                    <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>AI <span className="text-gradient">Detector</span></h1>
-                    <p style={{ color: 'var(--color-text-muted)' }}>Advanced Malaria & Leptospirosis Analysis</p>
+                    <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>{t('detector.title').split(' ')[0]} <span className="text-gradient">{t('detector.title').split(' ')[1]}</span></h1>
+                    <p style={{ color: 'var(--color-text-muted)' }}>{t('detector.subtitle')}</p>
                 </div>
                 <div style={{ display: 'flex', gap: '1rem' }}>
                     {['disease-selection', 'patient-details', 'upload', 'analyzing', 'result', 'report'].map((s, i) => (
@@ -372,7 +374,7 @@ const Detector = ({ role, user, onNavigate }) => {
                             exit={{ opacity: 0, x: -20 }}
                             style={{ padding: '2rem', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
                         >
-                            <h2 style={{ fontSize: '2rem', marginBottom: '3rem', textAlign: 'center' }}>Select Diagnosis Type</h2>
+                            <h2 style={{ fontSize: '2rem', marginBottom: '3rem', textAlign: 'center' }}>{t('detector.selectDisease')}</h2>
 
                             <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', justifyContent: 'center' }}>
                                 {/* Malaria Option */}
@@ -396,7 +398,7 @@ const Detector = ({ role, user, onNavigate }) => {
                                     <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255, 0, 85, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
                                         <AlertTriangle size={40} color="#ff0055" />
                                     </div>
-                                    <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Malaria</h3>
+                                    <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{t('detector.malaria')}</h3>
                                     <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
                                         Detection of Plasmodium parasites in blood smears.
                                     </p>
@@ -423,7 +425,7 @@ const Detector = ({ role, user, onNavigate }) => {
                                     <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255, 188, 46, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
                                         <Scan size={40} color="#ffbc2e" />
                                     </div>
-                                    <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Leptospirosis</h3>
+                                    <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{t('detector.leptospirosis')}</h3>
                                     <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
                                         Identification of Leptospira bacteria in samples.
                                     </p>
@@ -446,24 +448,24 @@ const Detector = ({ role, user, onNavigate }) => {
                                     <FileText color="var(--color-primary)" /> {patientData.diseaseType} Patient Metadata
                                 </h2>
                                 <button onClick={() => setStep('disease-selection')} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <ArrowLeft size={18} /> Back
+                                    <ArrowLeft size={18} /> {t('detector.back')}
                                 </button>
                             </div>
 
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
                                 {/* Personal Info */}
                                 <div>
-                                    <h3 style={{ marginBottom: '1rem', color: 'var(--color-text-muted)', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Personal Information</h3>
+                                    <h3 style={{ marginBottom: '1rem', color: 'var(--color-text-muted)', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('detector.patientDetails')}</h3>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                        <input type="text" name="name" placeholder="Full Name" value={patientData.name} onChange={handleInputChange} className="input-field" style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-glass-border)', borderRadius: '8px', color: 'white', width: '100%' }} />
+                                        <input type="text" name="name" placeholder={t('detector.patientName')} value={patientData.name} onChange={handleInputChange} className="input-field" style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-glass-border)', borderRadius: '8px', color: 'white', width: '100%' }} />
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                            <input type="number" name="age" placeholder="Age" value={patientData.age} onChange={handleInputChange} style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-glass-border)', borderRadius: '8px', color: 'white', width: '100%' }} />
+                                            <input type="number" name="age" placeholder={t('detector.age')} value={patientData.age} onChange={handleInputChange} style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-glass-border)', borderRadius: '8px', color: 'white', width: '100%' }} />
                                             <select name="gender" value={patientData.gender} onChange={handleInputChange} style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-glass-border)', borderRadius: '8px', color: 'white', width: '100%' }}>
-                                                <option value="Male" style={{ background: '#1a1f2e', color: 'white' }}>Male</option>
-                                                <option value="Female" style={{ background: '#1a1f2e', color: 'white' }}>Female</option>
+                                                <option value="Male" style={{ background: '#1a1f2e', color: 'white' }}>{t('detector.male')}</option>
+                                                <option value="Female" style={{ background: '#1a1f2e', color: 'white' }}>{t('detector.female')}</option>
                                             </select>
                                         </div>
-                                        <input type="text" name="icPassport" placeholder="IC / Passport Number" value={patientData.icPassport} onChange={handleInputChange} style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-glass-border)', borderRadius: '8px', color: 'white', width: '100%' }} />
+                                        <input type="text" name="icPassport" placeholder={t('detector.icPassport')} value={patientData.icPassport} onChange={handleInputChange} style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-glass-border)', borderRadius: '8px', color: 'white', width: '100%' }} />
                                     </div>
                                 </div>
 
@@ -471,12 +473,12 @@ const Detector = ({ role, user, onNavigate }) => {
                                 <div>
                                     <h3 style={{ marginBottom: '1rem', color: 'var(--color-text-muted)', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Sample Details</h3>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                        <input type="text" name="registrationNumber" placeholder="Registration Number (RN)" value={patientData.registrationNumber} onChange={handleInputChange} style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-glass-border)', borderRadius: '8px', color: 'white', width: '100%' }} />
-                                        <input type="text" name="slideNumber" placeholder="Slide / Lab Number" value={patientData.slideNumber} onChange={handleInputChange} style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-glass-border)', borderRadius: '8px', color: 'white', width: '100%' }} />
+                                        <input type="text" name="registrationNumber" placeholder={t('detector.registrationNumber')} value={patientData.registrationNumber} onChange={handleInputChange} style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-glass-border)', borderRadius: '8px', color: 'white', width: '100%' }} />
+                                        <input type="text" name="slideNumber" placeholder={t('detector.slideNumber')} value={patientData.slideNumber} onChange={handleInputChange} style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-glass-border)', borderRadius: '8px', color: 'white', width: '100%' }} />
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                             <select name="smearType" value={patientData.smearType} onChange={handleInputChange} style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-glass-border)', borderRadius: '8px', color: 'white', width: '100%' }}>
-                                                <option value="Thin" style={{ background: '#1a1f2e', color: 'white' }}>Thin Smear</option>
-                                                <option value="Thick" style={{ background: '#1a1f2e', color: 'white' }}>Thick Smear</option>
+                                                <option value="Thin" style={{ background: '#1a1f2e', color: 'white' }}>{t('detector.thin')}</option>
+                                                <option value="Thick" style={{ background: '#1a1f2e', color: 'white' }}>{t('detector.thick')}</option>
                                             </select>
                                             <input type="datetime-local" name="collectionDateTime" value={patientData.collectionDateTime} onChange={handleInputChange} style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-glass-border)', borderRadius: '8px', color: 'white', width: '100%' }} />
                                         </div>
@@ -687,7 +689,7 @@ const Detector = ({ role, user, onNavigate }) => {
 
                             <div style={{ marginTop: '3rem', display: 'flex', justifyContent: 'flex-end' }}>
                                 <button onClick={() => setStep('upload')} className="btn-primary" style={{ padding: '1rem 3rem', fontSize: '1.1rem' }}>
-                                    Next: Upload Samples <ChevronRight size={20} />
+                                    {t('detector.next')}: {t('detector.uploadImage')} <ChevronRight size={20} />
                                 </button>
                             </div>
                         </motion.div>
@@ -707,7 +709,7 @@ const Detector = ({ role, user, onNavigate }) => {
                                     <ImageIcon color="var(--color-primary)" /> Sample Upload
                                 </h2>
                                 <button onClick={() => setStep('patient-details')} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <ArrowLeft size={18} /> Back
+                                    <ArrowLeft size={18} /> {t('detector.back')}
                                 </button>
                             </div>
 
@@ -959,9 +961,9 @@ const Detector = ({ role, user, onNavigate }) => {
                                         )}
 
                                         <div style={{ padding: '1.5rem', background: diagnosis?.type.includes('Malaria') ? 'rgba(255, 0, 0, 0.05)' : 'rgba(0, 255, 0, 0.05)', border: `1px solid ${diagnosis?.type.includes('Malaria') ? '#ffcdd2' : '#c8e6c9'}`, borderRadius: '8px' }}>
-                                            <h4 style={{ margin: '0 0 0.5rem 0', color: diagnosis?.type.includes('Malaria') ? '#d32f2f' : '#2e7d32' }}>Final Diagnosis: {diagnosis?.type.toUpperCase()}</h4>
+                                            <h4 style={{ margin: '0 0 0.5rem 0', color: diagnosis?.type.includes('Malaria') ? '#d32f2f' : '#2e7d32' }}>{t('detector.diagnosis')}: {diagnosis?.type.toUpperCase()}</h4>
                                             <p style={{ margin: 0, fontSize: '0.9rem', color: '#444' }}>
-                                                Confidence: {(diagnosis?.confidence * 100).toFixed(1)}% | Severity: {diagnosis?.severity}
+                                                {t('detector.confidence')}: {(diagnosis?.confidence * 100).toFixed(1)}% | Severity: {diagnosis?.severity}
                                             </p>
                                         </div>
                                     </div>
@@ -1108,7 +1110,7 @@ const Detector = ({ role, user, onNavigate }) => {
                                         </button>
 
                                         <button onClick={() => { setStep('upload'); setUploadedImages([]); }} style={{ width: '100%', padding: '1rem', background: 'transparent', border: '1px solid var(--color-glass-border)', borderRadius: '99px', color: 'var(--color-text-muted)', cursor: 'pointer' }}>
-                                            Start New Analysis
+                                            {t('detector.uploadNew')}
                                         </button>
                                     </div>
                                 </div>

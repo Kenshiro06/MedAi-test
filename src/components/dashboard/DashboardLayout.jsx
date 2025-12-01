@@ -1,8 +1,12 @@
 import React from 'react';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
+import { useUserLanguage } from '../../hooks/useUserLanguage';
 
 const DashboardLayout = ({ role, user, currentView, setView, onLogout, children }) => {
+    // Load user's language preference from database
+    useUserLanguage(user);
+    
     return (
         <div style={{ display: 'flex', minHeight: '100vh', background: '#050a14' }}>
             <Sidebar role={role} currentView={currentView} setView={setView} />
