@@ -309,12 +309,14 @@ export const generateReportPDF = async (reportData) => {
     
     // Determine which signatures to show based on current user role
     const currentRole = reportData.currentUserRole?.toUpperCase();
-    const isHigherRole = ['MO', 'MEDICAL_OFFICER', 'PATH', 'PATHOLOGIST', 'HO', 'HEALTH_OFFICER', 'ADMIN'].includes(currentRole);
     
-    if (isHigherRole) {
-        // For MO, PATH, HO, ADMIN - Only show their own signature
-        let roleTitle = 'Medical Officer';
-        if (currentRole === 'PATH' || currentRole === 'PATHOLOGIST') {
+    // If currentUserRole is provided (from Analyze page), show only current user's signature
+    if (currentRole) {
+        // Determine role title
+        let roleTitle = 'Lab Technician';
+        if (currentRole === 'MO' || currentRole === 'MEDICAL_OFFICER') {
+            roleTitle = 'Medical Officer';
+        } else if (currentRole === 'PATH' || currentRole === 'PATHOLOGIST') {
             roleTitle = 'Pathologist';
         } else if (currentRole === 'HO' || currentRole === 'HEALTH_OFFICER') {
             roleTitle = 'Health Officer';
@@ -322,6 +324,7 @@ export const generateReportPDF = async (reportData) => {
             roleTitle = 'Administrator';
         }
         
+        // Show only current user's signature
         pdf.setFontSize(9);
         pdf.setFont('helvetica', 'bold');
         pdf.setTextColor(...darkColor);
@@ -332,7 +335,7 @@ export const generateReportPDF = async (reportData) => {
         pdf.text('Signature: _________________', 15, sigY + 17);
         pdf.text(`Date: ${reportData.labTechDate || '_____________________'}`, 15, sigY + 24);
     } else {
-        // For Lab Technician - Show all three signatures
+        // If no currentUserRole (from Reports page), show all three signatures
         // Lab Technician Signature (Auto-filled)
         pdf.setFontSize(9);
         pdf.setFont('helvetica', 'bold');
