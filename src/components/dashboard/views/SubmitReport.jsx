@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { analysisService } from '../../../services/analysisService';
 import { supabase } from '../../../lib/supabase';
 import { activityLogger } from '../../../services/activityLogger';
+import { formatMalaysiaDate, formatMalaysiaDateOnly } from '../../../utils/dateUtils';
 
 const SubmitReport = ({ role, user }) => {
     const { t } = useTranslation();
@@ -23,11 +24,50 @@ const SubmitReport = ({ role, user }) => {
     const [doctors, setDoctors] = useState([]);
     const [selectedDoctor, setSelectedDoctor] = useState(null);
     const [showDoctorSelection, setShowDoctorSelection] = useState(false);
+    const [userFullName, setUserFullName] = useState(null);
 
     useEffect(() => {
         fetchAnalyses();
         fetchDoctors();
+        fetchUserProfile();
     }, []);
+
+    // Refetch analyses when component becomes visible (user navigates to this page)
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (!document.hidden) {
+                fetchAnalyses();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        
+        // Also refetch when window gains focus
+        window.addEventListener('focus', fetchAnalyses);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('focus', fetchAnalyses);
+        };
+    }, []);
+
+    const fetchUserProfile = async () => {
+        if (!user?.id) return;
+        
+        try {
+            const { data: profile } = await supabase
+                .from('lab_technician_profile')
+                .select('full_name')
+                .eq('account_id', user.id)
+                .single();
+            
+            if (profile?.full_name) {
+                setUserFullName(profile.full_name);
+            }
+        } catch (error) {
+            console.warn('Could not fetch user profile:', error);
+        }
+    };
 
     const fetchAnalyses = async () => {
         setLoading(true);
@@ -268,7 +308,8 @@ const SubmitReport = ({ role, user }) => {
                 icPassport: selectedAnalysis.ic_passport,
                 gender: selectedAnalysis.gender,
                 age: selectedAnalysis.age,
-                collectionDate: new Date(selectedAnalysis.collection_datetime).toLocaleString('en-MY'),
+                // Format dates consistently - Malaysia timezone
+                collectionDate: formatMalaysiaDate(selectedAnalysis.collection_datetime),
                 healthFacility: selectedAnalysis.health_facility,
                 aiResult: selectedAnalysis.ai_result,
                 // Fix confidence - check if already percentage or decimal
@@ -277,8 +318,14 @@ const SubmitReport = ({ role, user }) => {
                         ? `${selectedAnalysis.confidence_score.toFixed(2)}%` 
                         : `${(selectedAnalysis.confidence_score * 100).toFixed(2)}%`)
                     : 'N/A',
-                analyzedAt: new Date(selectedAnalysis.analyzed_at).toLocaleString('en-MY'),
-                imageUrl: selectedAnalysis.image_path || selectedAnalysis.image_paths?.[0]
+                analyzedAt: formatMalaysiaDate(selectedAnalysis.analyzed_at),
+                analyzedBy: userFullName || user?.email || 'Lab Technician',
+                // Support multiple images
+                images: selectedAnalysis.image_paths || (selectedAnalysis.image_path ? [selectedAnalysis.image_path] : []),
+                imageUrl: selectedAnalysis.image_path || selectedAnalysis.image_paths?.[0],
+                // Signature data - Lab Tech auto-filled
+                labTechName: userFullName || user?.email || 'Lab Technician',
+                labTechDate: formatMalaysiaDateOnly(new Date())
             };
 
             // Generate custom PDF layout

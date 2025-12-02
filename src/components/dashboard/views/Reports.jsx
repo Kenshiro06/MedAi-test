@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, XCircle, Search, Filter, RefreshCw, X, AlertTriangle, Download } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { activityLogger } from '../../../services/activityLogger';
+import { formatMalaysiaDate, formatMalaysiaDateOnly } from '../../../utils/dateUtils';
 
 const Reports = ({ role, user }) => {
     const [selectedReport, setSelectedReport] = useState(null);
@@ -29,15 +30,21 @@ const Reports = ({ role, user }) => {
                     id,
                     status,
                     created_at,
+                    submitted_at,
                     submitted_by,
                     medical_officer_id,
                     pathologist_id,
                     mo_status,
+                    mo_reviewed_at,
+                    mo_notes,
                     pathologist_status,
+                    pathologist_reviewed_at,
+                    pathologist_notes,
                     analyses (
                         id,
                         ai_result,
                         confidence_score,
+                        analyzed_at,
                         patient_type,
                         patient_id,
                         image_path,
@@ -83,6 +90,11 @@ const Reports = ({ role, user }) => {
                 .from('medical_officer_profile')
                 .select('account_id, full_name');
 
+            // Fetch pathologist profiles to get names
+            const { data: pathologistProfiles } = await supabase
+                .from('pathologist_profile')
+                .select('account_id, full_name');
+
             const mappedReports = data.map(r => {
                 const analysis = r.analyses;
                 let patient = null;
@@ -102,16 +114,27 @@ const Reports = ({ role, user }) => {
                 const moAccount = accounts?.find(a => a.id === r.medical_officer_id);
                 const moProfile = moProfiles?.find(p => p.account_id === r.medical_officer_id);
 
+                // Find pathologist info
+                const pathologistAccount = accounts?.find(a => a.id === r.pathologist_id);
+                const pathologistProfile = pathologistProfiles?.find(p => p.account_id === r.pathologist_id);
+
                 return {
                     id: r.id,
                     status: r.status,
                     created_at: r.created_at,
+                    submitted_at: r.submitted_at,
                     type: analysis?.ai_result || 'Unknown',
                     severity: analysis?.ai_result?.toLowerCase().includes('positive') ? 'High' : 'Low',
                     confidence: analysis?.confidence_score,
+                    confidence_score: analysis?.confidence_score,
+                    ai_result: analysis?.ai_result,
+                    analyzed_at: analysis?.analyzed_at,
                     patient_name: patient?.name || 'Unknown',
                     patient_age: patient?.age,
                     patient_gender: patient?.gender,
+                    gender: patient?.gender,
+                    age: patient?.age,
+                    collection_datetime: patient?.collection_datetime,
                     registration_number: patient?.registration_number,
                     ic_passport: patient?.ic_passport,
                     health_facility: patient?.health_facility,
@@ -119,9 +142,21 @@ const Reports = ({ role, user }) => {
                     patient_type: analysis?.patient_type,
                     submitter_role: submitter?.role,
                     submitted_by_name: labTechProfile?.full_name || submitter?.email || 'Unknown',
-                    approved_by_mo_name: moProfile?.full_name || moAccount?.email || 'Unknown',
                     submitter_email: submitter?.email,
-                    mo_email: moAccount?.email || '',
+                    // MO info
+                    mo_name: moProfile?.full_name || moAccount?.email || null,
+                    mo_email: moAccount?.email || null,
+                    mo_status: r.mo_status,
+                    mo_reviewed_at: r.mo_reviewed_at,
+                    mo_notes: r.mo_notes,
+                    approved_by_mo_name: moProfile?.full_name || moAccount?.email || 'Unknown',
+                    // Pathologist info
+                    pathologist_name: pathologistProfile?.full_name || pathologistAccount?.email || null,
+                    pathologist_email: pathologistAccount?.email || null,
+                    pathologist_status: r.pathologist_status,
+                    pathologist_reviewed_at: r.pathologist_reviewed_at,
+                    pathologist_notes: r.pathologist_notes,
+                    // Images
                     image_path: analysis?.image_path || patient?.image_url,
                     image_paths: analysis?.image_paths || []
                 };
@@ -179,6 +214,7 @@ const Reports = ({ role, user }) => {
             else if (role === 'medical_officer' && newStatus === 'rejected') {
                 updateData = {
                     status: 'rejected',
+                    mo_status: 'rejected',
                     mo_reviewed_at: new Date().toISOString()
                 };
 
@@ -191,6 +227,7 @@ const Reports = ({ role, user }) => {
             else if (role === 'pathologist' && newStatus === 'approved') {
                 updateData = {
                     status: 'approved',
+                    pathologist_status: 'verified',
                     pathologist_reviewed_at: new Date().toISOString()
                 };
 
@@ -205,6 +242,7 @@ const Reports = ({ role, user }) => {
             else if (role === 'pathologist' && newStatus === 'rejected') {
                 updateData = {
                     status: 'rejected',
+                    pathologist_status: 'rejected',
                     pathologist_reviewed_at: new Date().toISOString()
                 };
 
@@ -228,9 +266,69 @@ const Reports = ({ role, user }) => {
 
             if (error) throw error;
 
-            // Refresh reports
-            fetchReports();
-            setSelectedReport(null);
+            // Refresh reports and update selected report
+            await fetchReports();
+            
+            // Fetch updated report data
+            const { data: updatedReport } = await supabase
+                .from('reports')
+                .select(`
+                    *,
+                    analyses (*)
+                `)
+                .eq('id', id)
+                .single();
+            
+            if (updatedReport) {
+                // Update selected report with new data
+                const analysis = updatedReport.analyses;
+                let patient = null;
+                if (analysis) {
+                    const { data: malariaPatients } = await supabase.from('malaria_patients').select('*');
+                    const { data: leptoPatients } = await supabase.from('leptospirosis_patients').select('*');
+                    
+                    if (analysis.patient_type === 'malaria') {
+                        patient = malariaPatients?.find(p => p.id === analysis.patient_id);
+                    } else {
+                        patient = leptoPatients?.find(p => p.id === analysis.patient_id);
+                    }
+                }
+                
+                // Fetch names
+                const { data: accounts } = await supabase.from('auth_accounts').select('id, email, role');
+                const { data: labTechProfiles } = await supabase.from('lab_technician_profile').select('account_id, full_name');
+                const { data: moProfiles } = await supabase.from('medical_officer_profile').select('account_id, full_name');
+                const { data: pathologistProfiles } = await supabase.from('pathologist_profile').select('account_id, full_name');
+                
+                const submitter = accounts?.find(a => a.id === updatedReport.submitted_by);
+                const labTechProfile = labTechProfiles?.find(p => p.account_id === updatedReport.submitted_by);
+                const moAccount = accounts?.find(a => a.id === updatedReport.medical_officer_id);
+                const moProfile = moProfiles?.find(p => p.account_id === updatedReport.medical_officer_id);
+                const pathologistAccount = accounts?.find(a => a.id === updatedReport.pathologist_id);
+                const pathologistProfile = pathologistProfiles?.find(p => p.account_id === updatedReport.pathologist_id);
+                
+                setSelectedReport({
+                    ...updatedReport,
+                    patient_name: patient?.name,
+                    gender: patient?.gender,
+                    age: patient?.age,
+                    collection_datetime: patient?.collection_datetime,
+                    registration_number: patient?.registration_number,
+                    ic_passport: patient?.ic_passport,
+                    health_facility: patient?.health_facility,
+                    ai_result: analysis?.ai_result,
+                    confidence_score: analysis?.confidence_score,
+                    analyzed_at: analysis?.analyzed_at,
+                    image_path: analysis?.image_path,
+                    image_paths: analysis?.image_paths,
+                    submitter_name: labTechProfile?.full_name || submitter?.email,
+                    submitter_email: submitter?.email,
+                    mo_name: moProfile?.full_name || moAccount?.email,
+                    mo_email: moAccount?.email,
+                    pathologist_name: pathologistProfile?.full_name || pathologistAccount?.email,
+                    pathologist_email: pathologistAccount?.email
+                });
+            }
         } catch (error) {
             console.error('Error updating report:', error);
             alert('Failed to update report status: ' + error.message);
@@ -248,7 +346,8 @@ const Reports = ({ role, user }) => {
                 icPassport: selectedReport.ic_passport,
                 gender: selectedReport.gender,
                 age: selectedReport.age,
-                collectionDate: new Date(selectedReport.collection_datetime).toLocaleString('en-MY'),
+                // Format dates consistently - Malaysia timezone
+                collectionDate: formatMalaysiaDate(selectedReport.collection_datetime),
                 healthFacility: selectedReport.health_facility,
                 aiResult: selectedReport.ai_result,
                 // Fix confidence - check if already percentage or decimal
@@ -257,13 +356,24 @@ const Reports = ({ role, user }) => {
                         ? `${selectedReport.confidence_score.toFixed(2)}%` 
                         : `${(selectedReport.confidence_score * 100).toFixed(2)}%`)
                     : 'N/A',
-                analyzedAt: new Date(selectedReport.analyzed_at).toLocaleString('en-MY'),
+                analyzedAt: formatMalaysiaDate(selectedReport.analyzed_at),
+                analyzedBy: selectedReport.submitted_by_name || selectedReport.submitter_name || 'Lab Technician',
+                // Support multiple images
+                images: selectedReport.image_paths || (selectedReport.image_path ? [selectedReport.image_path] : []),
                 imageUrl: selectedReport.image_path || selectedReport.image_paths?.[0],
+                // Signature data
+                labTechName: selectedReport.submitter_name || selectedReport.submitter_email || null,
+                labTechDate: formatMalaysiaDateOnly(selectedReport.submitted_at || selectedReport.analyzed_at),
+                moName: selectedReport.mo_reviewed_at ? (selectedReport.mo_name || selectedReport.mo_email) : null,
+                moDate: formatMalaysiaDateOnly(selectedReport.mo_reviewed_at),
+                pathologistName: selectedReport.pathologist_reviewed_at ? (selectedReport.pathologist_name || selectedReport.pathologist_email) : null,
+                pathologistDate: formatMalaysiaDateOnly(selectedReport.pathologist_reviewed_at),
+                // Review data
                 moStatus: selectedReport.mo_status,
-                moReviewedAt: selectedReport.mo_reviewed_at ? new Date(selectedReport.mo_reviewed_at).toLocaleString('en-MY') : null,
+                moReviewedAt: formatMalaysiaDate(selectedReport.mo_reviewed_at),
                 moNotes: selectedReport.mo_notes,
                 pathologistStatus: selectedReport.pathologist_status,
-                pathologistReviewedAt: selectedReport.pathologist_reviewed_at ? new Date(selectedReport.pathologist_reviewed_at).toLocaleString('en-MY') : null,
+                pathologistReviewedAt: formatMalaysiaDate(selectedReport.pathologist_reviewed_at),
                 pathologistNotes: selectedReport.pathologist_notes
             };
 

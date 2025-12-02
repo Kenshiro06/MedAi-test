@@ -7,6 +7,14 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '../../../lib/supabase';
 import { activityLogger } from '../../../services/activityLogger';
 
+// Helper to get Malaysia timezone timestamp
+const getMalaysiaTimestamp = () => {
+    const now = new Date();
+    // Convert to Malaysia timezone (GMT+8)
+    const malaysiaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kuala_Lumpur' }));
+    return malaysiaTime.toISOString();
+};
+
 const Detector = ({ role, user, onNavigate }) => {
     const { t } = useTranslation();
     const [step, setStep] = useState('disease-selection'); // disease-selection, patient-details, upload, analyzing, result, report
@@ -244,7 +252,7 @@ const Detector = ({ role, user, onNavigate }) => {
                 ic_passport: patientData.icPassport || 'N/A',
                 gender: patientData.gender || 'Male',
                 age: parseInt(patientData.age) || 0,
-                collection_datetime: patientData.collectionDateTime || new Date().toISOString(),
+                collection_datetime: patientData.collectionDateTime || getMalaysiaTimestamp(),
                 health_facility: patientData.healthFacility || 'Unknown Facility',
                 slide_number: patientData.slideNumber || 'N/A',
                 image_url: primaryImageUrl

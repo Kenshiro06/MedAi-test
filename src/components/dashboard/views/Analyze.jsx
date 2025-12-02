@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { analysisService } from '../../../services/analysisService';
 import { activityLogger } from '../../../services/activityLogger';
+import { formatMalaysiaDate, formatMalaysiaDateOnly } from '../../../utils/dateUtils';
 
 const Analyze = ({ role, user }) => {
     const { t } = useTranslation();
@@ -15,10 +16,39 @@ const Analyze = ({ role, user }) => {
     const [resultFilter, setResultFilter] = useState('all'); // all, positive, negative
     const [selectedIds, setSelectedIds] = useState([]);
     const [deleting, setDeleting] = useState(false);
+    const [userFullName, setUserFullName] = useState(null);
 
     useEffect(() => {
         fetchAnalyses();
+        fetchUserProfile();
     }, []);
+
+    const fetchUserProfile = async () => {
+        if (!user?.id) return;
+        
+        try {
+            const { supabase } = await import('../../../lib/supabase');
+            const { data: profile, error } = await supabase
+                .from('lab_technician_profile')
+                .select('full_name')
+                .eq('account_id', user.id)
+                .maybeSingle();
+            
+            if (error) {
+                console.warn('Profile fetch error:', error);
+                return;
+            }
+            
+            if (profile?.full_name) {
+                setUserFullName(profile.full_name);
+                console.log('User full name loaded:', profile.full_name);
+            } else {
+                console.warn('No profile found for user:', user.id);
+            }
+        } catch (error) {
+            console.warn('Could not fetch user profile:', error);
+        }
+    };
 
     const fetchAnalyses = async () => {
         setLoading(true);
@@ -45,6 +75,41 @@ const Analyze = ({ role, user }) => {
             setSelectedIds(filteredAnalyses.map(a => a.id));
         } else {
             setSelectedIds([]);
+        }
+    };
+
+    const downloadAnalysisPDF = async () => {
+        if (!selectedAnalysis) return;
+
+        try {
+            const reportData = {
+                patientName: selectedAnalysis.patient_name,
+                registrationNumber: selectedAnalysis.registration_number,
+                icPassport: selectedAnalysis.ic_passport,
+                gender: selectedAnalysis.gender,
+                age: selectedAnalysis.age,
+                collectionDate: formatMalaysiaDate(selectedAnalysis.collection_datetime),
+                healthFacility: selectedAnalysis.health_facility,
+                aiResult: selectedAnalysis.ai_result,
+                confidence: selectedAnalysis.confidence_score 
+                    ? (selectedAnalysis.confidence_score > 1 
+                        ? `${selectedAnalysis.confidence_score.toFixed(2)}%` 
+                        : `${(selectedAnalysis.confidence_score * 100).toFixed(2)}%`)
+                    : 'N/A',
+                analyzedAt: formatMalaysiaDate(selectedAnalysis.analyzed_at),
+                analyzedBy: userFullName || user?.email || 'Lab Technician',
+                images: selectedAnalysis.image_paths || (selectedAnalysis.image_path ? [selectedAnalysis.image_path] : []),
+                imageUrl: selectedAnalysis.image_path || selectedAnalysis.image_paths?.[0],
+                // Use actual analysis date, not today's date
+                labTechName: userFullName || user?.email || 'Lab Technician',
+                labTechDate: formatMalaysiaDateOnly(selectedAnalysis.analyzed_at)
+            };
+
+            const { generateReportPDF } = await import('../../../utils/pdfGenerator');
+            await generateReportPDF(reportData);
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            alert('Failed to generate PDF. Please try again.');
         }
     };
 
@@ -127,7 +192,7 @@ const Analyze = ({ role, user }) => {
         return CheckCircle;
     };
 
-    const exportToExcel = (useFiltered = false) => {
+    const exportToExcel = async (useFiltered = false) => {
         try {
             const dataToExport = useFiltered ? filteredAnalyses : analyses;
             const filterLabel = useFiltered
@@ -193,8 +258,14 @@ const Analyze = ({ role, user }) => {
             link.click();
             document.body.removeChild(link);
 
-            // Log activity
-            activityLogger.logExport(user, useFiltered ? 'Filtered Analysis Report' : 'All Analysis Report');
+            // Log activity (optional - export successful even if logging fails)
+            try {
+                if (activityLogger.logExport) {
+                    await activityLogger.logExport(user, useFiltered ? 'Filtered Analysis Report' : 'All Analysis Report');
+                }
+            } catch (logError) {
+                console.warn('Activity logging failed:', logError);
+            }
         } catch (err) {
             alert('Error exporting data: ' + err.message);
         }
@@ -980,27 +1051,57 @@ const Analyze = ({ role, user }) => {
                                     </motion.div>
                                 )}
 
-                                {/* Close Button */}
-                                <motion.button
-                                    whileHover={{ scale: 1.02, y: -2 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={() => setSelectedAnalysis(null)}
-                                    style={{
-                                        width: '100%',
-                                        padding: '0.875rem',
-                                        background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 240, 255, 0.1))',
-                                        border: '1px solid rgba(0, 240, 255, 0.3)',
-                                        borderRadius: '12px',
-                                        color: 'var(--color-primary)',
-                                        cursor: 'pointer',
-                                        fontWeight: '600',
-                                        fontSize: '0.95rem',
-                                        transition: 'all 0.3s ease',
-                                        boxShadow: '0 4px 15px rgba(0, 240, 255, 0.15)'
-                                    }}
-                                >
-                                    Close
-                                </motion.button>
+                                {/* Action Buttons */}
+                                <div style={{ display: 'flex', gap: '1rem' }}>
+                                    {/* PDF Download Button */}
+                                    <motion.button
+                                        whileHover={{ scale: 1.02, y: -2 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={downloadAnalysisPDF}
+                                        style={{
+                                            flex: 1,
+                                            padding: '0.875rem',
+                                            background: 'linear-gradient(135deg, rgba(40, 200, 64, 0.2), rgba(40, 200, 64, 0.1))',
+                                            border: '1px solid rgba(40, 200, 64, 0.3)',
+                                            borderRadius: '12px',
+                                            color: '#28c840',
+                                            cursor: 'pointer',
+                                            fontWeight: '600',
+                                            fontSize: '0.95rem',
+                                            transition: 'all 0.3s ease',
+                                            boxShadow: '0 4px 15px rgba(40, 200, 64, 0.15)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '0.5rem'
+                                        }}
+                                    >
+                                        <Download size={18} />
+                                        Download PDF
+                                    </motion.button>
+
+                                    {/* Close Button */}
+                                    <motion.button
+                                        whileHover={{ scale: 1.02, y: -2 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={() => setSelectedAnalysis(null)}
+                                        style={{
+                                            flex: 1,
+                                            padding: '0.875rem',
+                                            background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 240, 255, 0.1))',
+                                            border: '1px solid rgba(0, 240, 255, 0.3)',
+                                            borderRadius: '12px',
+                                            color: 'var(--color-primary)',
+                                            cursor: 'pointer',
+                                            fontWeight: '600',
+                                            fontSize: '0.95rem',
+                                            transition: 'all 0.3s ease',
+                                            boxShadow: '0 4px 15px rgba(0, 240, 255, 0.15)'
+                                        }}
+                                    >
+                                        Close
+                                    </motion.button>
+                                </div>
                             </div>
                         </motion.div>
                     </motion.div>
