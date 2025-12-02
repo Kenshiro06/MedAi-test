@@ -307,36 +307,63 @@ export const generateReportPDF = async (reportData) => {
     const sigY = signatureY + 5;
     const sigWidth = (pageWidth - 45) / 3;
     
-    // Lab Technician Signature (Auto-filled)
-    pdf.setFontSize(9);
-    pdf.setFont('helvetica', 'bold');
-    pdf.setTextColor(...darkColor);
-    pdf.text('Lab Technician', 15, sigY);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(0, 0, 0);
-    pdf.text(`Name: ${reportData.labTechName || '_____________________'}`, 15, sigY + 10);
-    pdf.text('Signature: _________________', 15, sigY + 17);
-    pdf.text(`Date: ${reportData.labTechDate || '_____________________'}`, 15, sigY + 24);
+    // Determine which signatures to show based on current user role
+    const currentRole = reportData.currentUserRole?.toUpperCase();
+    const isHigherRole = ['MO', 'MEDICAL_OFFICER', 'PATH', 'PATHOLOGIST', 'HO', 'HEALTH_OFFICER', 'ADMIN'].includes(currentRole);
     
-    // Medical Officer Signature (Filled when approved)
-    pdf.setFont('helvetica', 'bold');
-    pdf.setTextColor(...darkColor);
-    pdf.text('Medical Officer', 15 + sigWidth + 15, sigY);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(0, 0, 0);
-    pdf.text(`Name: ${reportData.moName || '_____________________'}`, 15 + sigWidth + 15, sigY + 10);
-    pdf.text('Signature: _________________', 15 + sigWidth + 15, sigY + 17);
-    pdf.text(`Date: ${reportData.moDate || '_____________________'}`, 15 + sigWidth + 15, sigY + 24);
-    
-    // Pathologist Signature (Filled when verified)
-    pdf.setFont('helvetica', 'bold');
-    pdf.setTextColor(...darkColor);
-    pdf.text('Pathologist', 15 + (sigWidth + 15) * 2, sigY);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(0, 0, 0);
-    pdf.text(`Name: ${reportData.pathologistName || '_____________________'}`, 15 + (sigWidth + 15) * 2, sigY + 10);
-    pdf.text('Signature: _________________', 15 + (sigWidth + 15) * 2, sigY + 17);
-    pdf.text(`Date: ${reportData.pathologistDate || '_____________________'}`, 15 + (sigWidth + 15) * 2, sigY + 24);
+    if (isHigherRole) {
+        // For MO, PATH, HO, ADMIN - Only show their own signature
+        let roleTitle = 'Medical Officer';
+        if (currentRole === 'PATH' || currentRole === 'PATHOLOGIST') {
+            roleTitle = 'Pathologist';
+        } else if (currentRole === 'HO' || currentRole === 'HEALTH_OFFICER') {
+            roleTitle = 'Health Officer';
+        } else if (currentRole === 'ADMIN') {
+            roleTitle = 'Administrator';
+        }
+        
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(...darkColor);
+        pdf.text(roleTitle, 15, sigY);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(0, 0, 0);
+        pdf.text(`Name: ${reportData.currentUserName || '_____________________'}`, 15, sigY + 10);
+        pdf.text('Signature: _________________', 15, sigY + 17);
+        pdf.text(`Date: ${reportData.labTechDate || '_____________________'}`, 15, sigY + 24);
+    } else {
+        // For Lab Technician - Show all three signatures
+        // Lab Technician Signature (Auto-filled)
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(...darkColor);
+        pdf.text('Lab Technician', 15, sigY);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(0, 0, 0);
+        pdf.text(`Name: ${reportData.labTechName || '_____________________'}`, 15, sigY + 10);
+        pdf.text('Signature: _________________', 15, sigY + 17);
+        pdf.text(`Date: ${reportData.labTechDate || '_____________________'}`, 15, sigY + 24);
+        
+        // Medical Officer Signature (Filled when approved)
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(...darkColor);
+        pdf.text('Medical Officer', 15 + sigWidth + 15, sigY);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(0, 0, 0);
+        pdf.text(`Name: ${reportData.moName || '_____________________'}`, 15 + sigWidth + 15, sigY + 10);
+        pdf.text('Signature: _________________', 15 + sigWidth + 15, sigY + 17);
+        pdf.text(`Date: ${reportData.moDate || '_____________________'}`, 15 + sigWidth + 15, sigY + 24);
+        
+        // Pathologist Signature (Filled when verified)
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(...darkColor);
+        pdf.text('Pathologist', 15 + (sigWidth + 15) * 2, sigY);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(0, 0, 0);
+        pdf.text(`Name: ${reportData.pathologistName || '_____________________'}`, 15 + (sigWidth + 15) * 2, sigY + 10);
+        pdf.text('Signature: _________________', 15 + (sigWidth + 15) * 2, sigY + 17);
+        pdf.text(`Date: ${reportData.pathologistDate || '_____________________'}`, 15 + (sigWidth + 15) * 2, sigY + 24);
+    }
     
     // Footer
     pdf.setFillColor(...darkColor);

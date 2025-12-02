@@ -21,15 +21,30 @@ const Analyze = ({ role, user }) => {
     useEffect(() => {
         fetchAnalyses();
         fetchUserProfile();
-    }, []);
+    }, [role]);
 
     const fetchUserProfile = async () => {
-        if (!user?.id) return;
+        if (!user?.id || !role) return;
         
         try {
             const { supabase } = await import('../../../lib/supabase');
+            
+            // Determine which profile table to query based on role
+            let profileTable = 'lab_technician_profile';
+            const upperRole = role.toUpperCase();
+            
+            if (upperRole === 'MO' || upperRole === 'MEDICAL_OFFICER') {
+                profileTable = 'medical_officer_profile';
+            } else if (upperRole === 'PATH' || upperRole === 'PATHOLOGIST') {
+                profileTable = 'pathologist_profile';
+            } else if (upperRole === 'HO' || upperRole === 'HEALTH_OFFICER') {
+                profileTable = 'health_officer_profile';
+            } else if (upperRole === 'ADMIN') {
+                profileTable = 'admin_profile';
+            }
+            
             const { data: profile, error } = await supabase
-                .from('lab_technician_profile')
+                .from(profileTable)
                 .select('full_name')
                 .eq('account_id', user.id)
                 .maybeSingle();
@@ -102,7 +117,10 @@ const Analyze = ({ role, user }) => {
                 imageUrl: selectedAnalysis.image_path || selectedAnalysis.image_paths?.[0],
                 // Use actual analysis date, not today's date
                 labTechName: userFullName || user?.email || 'Lab Technician',
-                labTechDate: formatMalaysiaDateOnly(selectedAnalysis.analyzed_at)
+                labTechDate: formatMalaysiaDateOnly(selectedAnalysis.analyzed_at),
+                // Pass current user role and info for signature customization
+                currentUserRole: role,
+                currentUserName: userFullName || user?.email
             };
 
             const { generateReportPDF } = await import('../../../utils/pdfGenerator');
