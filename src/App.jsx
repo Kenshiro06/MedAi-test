@@ -105,7 +105,7 @@ function App() {
           />
 
           <main style={{ paddingTop: '100px' }}>
-            <Hero />
+            <Hero onLoginClick={() => setIsLoginOpen(true)} />
             <HowItWorks />
             <AIModelShowcase />
             <LiveDemo />

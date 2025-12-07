@@ -3,7 +3,14 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Activity } from 'lucide-react';
 import Scene3D from './Scene3D';
 
-const Hero = () => {
+const Hero = ({ onLoginClick }) => {
+    const scrollToDemo = () => {
+        const demoSection = document.getElementById('live-demo');
+        if (demoSection) {
+            demoSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
     return (
         <section style={{ position: 'relative', height: '100vh', width: '100%', overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
             <Scene3D />
@@ -31,20 +38,28 @@ const Hero = () => {
                     </p>
 
                     <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                        <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.125rem', padding: '1rem 2rem' }}>
+                        <button
+                            onClick={onLoginClick}
+                            className="btn-primary"
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.125rem', padding: '1rem 2rem' }}
+                        >
                             Start Detection <ArrowRight size={20} />
                         </button>
 
-                        <button style={{
-                            background: 'rgba(255,255,255,0.05)',
-                            border: '1px solid rgba(255,255,255,0.2)',
-                            color: 'white',
-                            padding: '1rem 2rem',
-                            borderRadius: '99px',
-                            fontSize: '1.125rem',
-                            fontWeight: '600',
-                            backdropFilter: 'blur(10px)'
-                        }}>
+                        <button
+                            onClick={scrollToDemo}
+                            style={{
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid rgba(255,255,255,0.2)',
+                                color: 'white',
+                                padding: '1rem 2rem',
+                                borderRadius: '99px',
+                                fontSize: '1.125rem',
+                                fontWeight: '600',
+                                backdropFilter: 'blur(10px)',
+                                cursor: 'pointer'
+                            }}
+                        >
                             View Demo
                         </button>
                     </div>
