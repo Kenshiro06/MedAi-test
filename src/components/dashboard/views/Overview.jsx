@@ -113,6 +113,9 @@ const Overview = ({ role, user }) => {
         malariaCount: 0,
         leptoCount: 0,
         totalUsers: 0,
+        totalUsers: 0,
+        personalAnalysesCount: 0,
+        approvedCount: 0,
         trends: {
             totalSamplesTrend: 0,
             malariaDetectedTrend: 0,
@@ -178,6 +181,8 @@ const Overview = ({ role, user }) => {
             let totalCount = 0;
             let positiveCount = 0;
             let pendingCount = 0;
+            let approvedCount = 0;
+            let personalAnalysesCount = 0;
             let reportsCount = 0;
             let malariaCount = 0;
             let leptoCount = 0;
@@ -309,7 +314,8 @@ const Overview = ({ role, user }) => {
 
                     assignedAnalysisIds = assignedReports?.map(r => r.analysis_id) || [];
                     assignedReportsCount = assignedReports?.length || 0;
-                    assignedPendingCount = assignedReports?.filter(r => r.status === 'pending').length || 0;
+                    assignedPendingCount = assignedReports?.filter(r => r.status === 'pending' || r.status === 'submitted').length || 0;
+                    approvedCount = assignedReports?.filter(r => r.status === 'approved').length || 0;
                 } else if (role === 'pathologist') {
                     // Pathologist: reports assigned to them
                     const { data: assignedReports } = await supabase
@@ -319,7 +325,7 @@ const Overview = ({ role, user }) => {
 
                     assignedAnalysisIds = assignedReports?.map(r => r.analysis_id) || [];
                     assignedReportsCount = assignedReports?.length || 0;
-                    assignedPendingCount = assignedReports?.filter(r => r.status === 'pending').length || 0;
+                    assignedPendingCount = assignedReports?.filter(r => r.status === 'pending' || r.status === 'submitted').length || 0;
                 }
 
                 // 3. Count analyses from assigned reports (excluding personal ones to avoid double counting)
@@ -363,6 +369,7 @@ const Overview = ({ role, user }) => {
                 }
 
                 // 4. Combine personal + assigned
+                personalAnalysesCount = personalAnalyses || 0;
                 totalCount = (personalAnalyses || 0) + assignedAnalysesCount;
                 positiveCount = (personalPositive || 0) + assignedPositiveCount;
                 pendingCount = assignedPendingCount;
@@ -407,7 +414,11 @@ const Overview = ({ role, user }) => {
                 reportsGenerated: reportsCount,
                 malariaCount,
                 leptoCount,
+                malariaCount,
+                leptoCount,
                 totalUsers,
+                personalAnalysesCount,
+                approvedCount,
                 trends
             });
         } catch (error) {
@@ -738,26 +749,30 @@ const Overview = ({ role, user }) => {
                 />
                 <StatCard
                     title={currentRole.stats[1]}
-                    value={stats.malariaDetected}
-                    change={`${stats.trends.malariaDetectedTrend >= 0 ? '+' : ''}${stats.trends.malariaDetectedTrend.toFixed(1)}%`}
-                    icon={AlertTriangle}
-                    color="255, 0, 85"
+                    value={(role === 'medical_officer' || role === 'pathologist') ? stats.personalAnalysesCount : stats.malariaDetected}
+                    change={role === 'medical_officer'
+                        ? `${stats.trends.reportsGeneratedTrend >= 0 ? '+' : ''}${stats.trends.reportsGeneratedTrend.toFixed(1)}%`
+                        : `${stats.trends.malariaDetectedTrend >= 0 ? '+' : ''}${stats.trends.malariaDetectedTrend.toFixed(1)}%`}
+                    icon={role === 'medical_officer' ? FileText : AlertTriangle}
+                    color={(role === 'medical_officer' || role === 'pathologist') ? "59, 130, 246" : "255, 0, 85"}
                     delay={0.2}
                 />
                 <StatCard
                     title={currentRole.stats[2]}
-                    value={role === 'health_officer' ? stats.malariaCount : stats.pendingReviews}
+                    value={role === 'health_officer' ? stats.malariaCount : (role === 'medical_officer' ? stats.pendingReviews : stats.pendingReviews)}
                     change={`${stats.trends.pendingReviewsTrend >= 0 ? '+' : ''}${stats.trends.pendingReviewsTrend.toFixed(1)}%`}
                     icon={Clock}
-                    color="255, 188, 46"
+                    color={role === 'medical_officer' ? "255, 188, 46" : "255, 188, 46"}
                     delay={0.3}
                 />
                 <StatCard
                     title={currentRole.stats[3]}
-                    value={role === 'health_officer' ? stats.leptoCount : stats.reportsGenerated}
-                    change={`${stats.trends.reportsGeneratedTrend >= 0 ? '+' : ''}${stats.trends.reportsGeneratedTrend.toFixed(1)}%`}
-                    icon={FileText}
-                    color="40, 200, 64"
+                    value={role === 'health_officer' ? stats.leptoCount : (role === 'medical_officer' ? stats.reportsGenerated : stats.reportsGenerated)}
+                    change={role === 'medical_officer'
+                        ? `${stats.trends.malariaDetectedTrend >= 0 ? '+' : ''}${stats.trends.malariaDetectedTrend.toFixed(1)}%`
+                        : `${stats.trends.reportsGeneratedTrend >= 0 ? '+' : ''}${stats.trends.reportsGeneratedTrend.toFixed(1)}%`}
+                    icon={role === 'medical_officer' ? AlertTriangle : FileText}
+                    color={role === 'medical_officer' ? "255, 0, 85" : "40, 200, 64"}
                     delay={0.4}
                 />
                 {role === 'admin' && (
