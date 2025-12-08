@@ -149,7 +149,7 @@ const LiveDemo = () => {
 
                                         {/* Scanning Line */}
                                         <motion.div
-                                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '4px', background: 'var(--color-primary)', boxShadow: '0 0 20px var(--color-primary)', zIndex: 3 }}
+                                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '4px', background: 'var(--color-primary)', boxShadow: '0 0 20px #00f0ff', zIndex: 3 }}
                                             animate={{ top: ['0%', '100%', '0%'] }}
                                             transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
                                         />

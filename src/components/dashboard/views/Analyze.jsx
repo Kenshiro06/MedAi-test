@@ -25,14 +25,14 @@ const Analyze = ({ role, user }) => {
 
     const fetchUserProfile = async () => {
         if (!user?.id || !role) return;
-        
+
         try {
             const { supabase } = await import('../../../lib/supabase');
-            
+
             // Determine which profile table to query based on role
             let profileTable = 'lab_technician_profile';
             const upperRole = role.toUpperCase();
-            
+
             if (upperRole === 'MO' || upperRole === 'MEDICAL_OFFICER') {
                 profileTable = 'medical_officer_profile';
             } else if (upperRole === 'PATH' || upperRole === 'PATHOLOGIST') {
@@ -42,18 +42,18 @@ const Analyze = ({ role, user }) => {
             } else if (upperRole === 'ADMIN') {
                 profileTable = 'admin_profile';
             }
-            
+
             const { data: profile, error } = await supabase
                 .from(profileTable)
                 .select('full_name')
                 .eq('account_id', user.id)
                 .maybeSingle();
-            
+
             if (error) {
                 console.warn('Profile fetch error:', error);
                 return;
             }
-            
+
             if (profile?.full_name) {
                 setUserFullName(profile.full_name);
                 console.log('User full name loaded:', profile.full_name);
@@ -106,9 +106,9 @@ const Analyze = ({ role, user }) => {
                 collectionDate: formatMalaysiaDate(selectedAnalysis.collection_datetime),
                 healthFacility: selectedAnalysis.health_facility,
                 aiResult: selectedAnalysis.ai_result,
-                confidence: selectedAnalysis.confidence_score 
-                    ? (selectedAnalysis.confidence_score > 1 
-                        ? `${selectedAnalysis.confidence_score.toFixed(2)}%` 
+                confidence: selectedAnalysis.confidence_score
+                    ? (selectedAnalysis.confidence_score > 1
+                        ? `${selectedAnalysis.confidence_score.toFixed(2)}%`
                         : `${(selectedAnalysis.confidence_score * 100).toFixed(2)}%`)
                     : 'N/A',
                 analyzedAt: formatMalaysiaDate(selectedAnalysis.analyzed_at),
@@ -331,8 +331,8 @@ const Analyze = ({ role, user }) => {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '1.5rem' }}>
                         {/* Total All Card */}
                         <motion.div
-                            initial={{ opacity: 0, y: 20, boxShadow: '0 0px 0px rgba(0, 240, 255, 0)' }}
-                            animate={{ opacity: 1, y: 0, boxShadow: '0 0px 0px rgba(0, 240, 255, 0)' }}
+                            initial={{ opacity: 0, y: 20, boxShadow: '0px 0px 0px rgba(0, 240, 255, 0)' }}
+                            animate={{ opacity: 1, y: 0, boxShadow: '0px 0px 0px rgba(0, 240, 255, 0)' }}
                             transition={{ delay: 0.05, type: 'spring', stiffness: 200 }}
                             whileHover={{ y: -5, boxShadow: '0 15px 30px rgba(0, 240, 255, 0.2)' }}
                             className="glass-panel"
@@ -382,8 +382,8 @@ const Analyze = ({ role, user }) => {
 
                         {/* Malaria Card */}
                         <motion.div
-                            initial={{ opacity: 0, y: 20, boxShadow: '0 0px 0px rgba(255, 0, 85, 0)' }}
-                            animate={{ opacity: 1, y: 0, boxShadow: '0 0px 0px rgba(255, 0, 85, 0)' }}
+                            initial={{ opacity: 0, y: 20, boxShadow: '0px 0px 0px rgba(255, 0, 85, 0)' }}
+                            animate={{ opacity: 1, y: 0, boxShadow: '0px 0px 0px rgba(255, 0, 85, 0)' }}
                             transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
                             whileHover={{ y: -5, boxShadow: '0 15px 30px rgba(255, 0, 85, 0.2)' }}
                             className="glass-panel"
@@ -433,8 +433,8 @@ const Analyze = ({ role, user }) => {
 
                         {/* Leptospirosis Card */}
                         <motion.div
-                            initial={{ opacity: 0, y: 20, boxShadow: '0 0px 0px rgba(255, 188, 46, 0)' }}
-                            animate={{ opacity: 1, y: 0, boxShadow: '0 0px 0px rgba(255, 188, 46, 0)' }}
+                            initial={{ opacity: 0, y: 20, boxShadow: '0px 0px 0px rgba(255, 188, 46, 0)' }}
+                            animate={{ opacity: 1, y: 0, boxShadow: '0px 0px 0px rgba(255, 188, 46, 0)' }}
                             transition={{ delay: 0.15, type: 'spring', stiffness: 200 }}
                             whileHover={{ y: -5, boxShadow: '0 15px 30px rgba(255, 188, 46, 0.2)' }}
                             className="glass-panel"

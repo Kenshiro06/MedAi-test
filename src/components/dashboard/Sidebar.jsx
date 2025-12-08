@@ -170,8 +170,8 @@ const Sidebar = ({ role, currentView, setView, onLogout }) => {
                                         top: 0,
                                         width: '4px',
                                         height: '100%',
-                                        background: 'var(--color-primary)',
-                                        boxShadow: '0 0 10px var(--color-primary)'
+                                        background: '#00f0ff',
+                                        boxShadow: '0 0 10px #00f0ff'
                                     }}
                                 />
                             )}

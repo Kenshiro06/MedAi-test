@@ -268,7 +268,7 @@ const Reports = ({ role, user }) => {
 
             // Refresh reports and update selected report
             await fetchReports();
-            
+
             // Fetch updated report data
             const { data: updatedReport } = await supabase
                 .from('reports')
@@ -278,7 +278,7 @@ const Reports = ({ role, user }) => {
                 `)
                 .eq('id', id)
                 .single();
-            
+
             if (updatedReport) {
                 // Update selected report with new data
                 const analysis = updatedReport.analyses;
@@ -286,27 +286,27 @@ const Reports = ({ role, user }) => {
                 if (analysis) {
                     const { data: malariaPatients } = await supabase.from('malaria_patients').select('*');
                     const { data: leptoPatients } = await supabase.from('leptospirosis_patients').select('*');
-                    
+
                     if (analysis.patient_type === 'malaria') {
                         patient = malariaPatients?.find(p => p.id === analysis.patient_id);
                     } else {
                         patient = leptoPatients?.find(p => p.id === analysis.patient_id);
                     }
                 }
-                
+
                 // Fetch names
                 const { data: accounts } = await supabase.from('auth_accounts').select('id, email, role');
                 const { data: labTechProfiles } = await supabase.from('lab_technician_profile').select('account_id, full_name');
                 const { data: moProfiles } = await supabase.from('medical_officer_profile').select('account_id, full_name');
                 const { data: pathologistProfiles } = await supabase.from('pathologist_profile').select('account_id, full_name');
-                
+
                 const submitter = accounts?.find(a => a.id === updatedReport.submitted_by);
                 const labTechProfile = labTechProfiles?.find(p => p.account_id === updatedReport.submitted_by);
                 const moAccount = accounts?.find(a => a.id === updatedReport.medical_officer_id);
                 const moProfile = moProfiles?.find(p => p.account_id === updatedReport.medical_officer_id);
                 const pathologistAccount = accounts?.find(a => a.id === updatedReport.pathologist_id);
                 const pathologistProfile = pathologistProfiles?.find(p => p.account_id === updatedReport.pathologist_id);
-                
+
                 setSelectedReport({
                     ...updatedReport,
                     patient_name: patient?.name,
@@ -351,9 +351,9 @@ const Reports = ({ role, user }) => {
                 healthFacility: selectedReport.health_facility,
                 aiResult: selectedReport.ai_result,
                 // Fix confidence - check if already percentage or decimal
-                confidence: selectedReport.confidence_score 
-                    ? (selectedReport.confidence_score > 1 
-                        ? `${selectedReport.confidence_score.toFixed(2)}%` 
+                confidence: selectedReport.confidence_score
+                    ? (selectedReport.confidence_score > 1
+                        ? `${selectedReport.confidence_score.toFixed(2)}%`
                         : `${(selectedReport.confidence_score * 100).toFixed(2)}%`)
                     : 'N/A',
                 analyzedAt: formatMalaysiaDate(selectedReport.analyzed_at),
@@ -484,8 +484,8 @@ const Reports = ({ role, user }) => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', marginBottom: '1.5rem' }}>
                     {/* Total Reports Card */}
                     <motion.div
-                        initial={{ opacity: 0, y: 20, boxShadow: '0 0px 0px rgba(0, 240, 255, 0)' }}
-                        animate={{ opacity: 1, y: 0, boxShadow: '0 0px 0px rgba(0, 240, 255, 0)' }}
+                        initial={{ opacity: 0, y: 20, boxShadow: '0px 0px 0px rgba(0, 240, 255, 0)' }}
+                        animate={{ opacity: 1, y: 0, boxShadow: '0px 0px 0px rgba(0, 240, 255, 0)' }}
                         transition={{ delay: 0.05, type: 'spring', stiffness: 200 }}
                         whileHover={{ y: -5, boxShadow: '0 15px 30px rgba(0, 240, 255, 0.2)' }}
                         className="glass-panel"
@@ -515,8 +515,8 @@ const Reports = ({ role, user }) => {
 
                     {/* Pending Card */}
                     <motion.div
-                        initial={{ opacity: 0, y: 20, boxShadow: '0 0px 0px rgba(254, 188, 46, 0)' }}
-                        animate={{ opacity: 1, y: 0, boxShadow: '0 0px 0px rgba(254, 188, 46, 0)' }}
+                        initial={{ opacity: 0, y: 20, boxShadow: '0px 0px 0px rgba(254, 188, 46, 0)' }}
+                        animate={{ opacity: 1, y: 0, boxShadow: '0px 0px 0px rgba(254, 188, 46, 0)' }}
                         transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
                         whileHover={{ y: -5, boxShadow: '0 15px 30px rgba(254, 188, 46, 0.2)' }}
                         className="glass-panel"
@@ -546,8 +546,8 @@ const Reports = ({ role, user }) => {
 
                     {/* Approved Card */}
                     <motion.div
-                        initial={{ opacity: 0, y: 20, boxShadow: '0 0px 0px rgba(40, 200, 64, 0)' }}
-                        animate={{ opacity: 1, y: 0, boxShadow: '0 0px 0px rgba(40, 200, 64, 0)' }}
+                        initial={{ opacity: 0, y: 20, boxShadow: '0px 0px 0px rgba(40, 200, 64, 0)' }}
+                        animate={{ opacity: 1, y: 0, boxShadow: '0px 0px 0px rgba(40, 200, 64, 0)' }}
                         transition={{ delay: 0.15, type: 'spring', stiffness: 200 }}
                         whileHover={{ y: -5, boxShadow: '0 15px 30px rgba(40, 200, 64, 0.2)' }}
                         className="glass-panel"
@@ -577,8 +577,8 @@ const Reports = ({ role, user }) => {
 
                     {/* Rejected Card */}
                     <motion.div
-                        initial={{ opacity: 0, y: 20, boxShadow: '0 0px 0px rgba(255, 0, 85, 0)' }}
-                        animate={{ opacity: 1, y: 0, boxShadow: '0 0px 0px rgba(255, 0, 85, 0)' }}
+                        initial={{ opacity: 0, y: 20, boxShadow: '0px 0px 0px rgba(255, 0, 85, 0)' }}
+                        animate={{ opacity: 1, y: 0, boxShadow: '0px 0px 0px rgba(255, 0, 85, 0)' }}
                         transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
                         whileHover={{ y: -5, boxShadow: '0 15px 30px rgba(255, 0, 85, 0.2)' }}
                         className="glass-panel"
@@ -899,10 +899,10 @@ const Reports = ({ role, user }) => {
                                                             ? 'linear-gradient(135deg, rgba(255, 0, 85, 0.15), rgba(255, 0, 85, 0.05))'
                                                             : 'linear-gradient(135deg, rgba(254, 188, 46, 0.15), rgba(254, 188, 46, 0.05))',
                                                     border: `1px solid ${report.status === 'approved'
-                                                            ? 'rgba(40, 200, 64, 0.3)'
-                                                            : report.status === 'rejected'
-                                                                ? 'rgba(255, 0, 85, 0.3)'
-                                                                : 'rgba(254, 188, 46, 0.3)'
+                                                        ? 'rgba(40, 200, 64, 0.3)'
+                                                        : report.status === 'rejected'
+                                                            ? 'rgba(255, 0, 85, 0.3)'
+                                                            : 'rgba(254, 188, 46, 0.3)'
                                                         }`,
                                                     fontSize: '0.85rem',
                                                     fontWeight: '600'
@@ -974,7 +974,7 @@ const Reports = ({ role, user }) => {
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* PDF-Style Report Header */}
-                            <div 
+                            <div
                                 data-report-content
                                 style={{
                                     background: 'white',
