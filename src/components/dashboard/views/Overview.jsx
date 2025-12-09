@@ -113,7 +113,6 @@ const Overview = ({ role, user }) => {
         malariaCount: 0,
         leptoCount: 0,
         totalUsers: 0,
-        totalUsers: 0,
         personalAnalysesCount: 0,
         approvedCount: 0,
         trends: {
@@ -412,8 +411,6 @@ const Overview = ({ role, user }) => {
                 malariaDetected: positiveCount,
                 pendingReviews: pendingCount,
                 reportsGenerated: reportsCount,
-                malariaCount,
-                leptoCount,
                 malariaCount,
                 leptoCount,
                 totalUsers,
