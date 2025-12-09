@@ -27,7 +27,8 @@ print("=" * 60)
 print(f"Loading model from {MODEL_PATH}...")
 
 try:
-    model = load_model(MODEL_PATH)
+    # Load model with compile=False to avoid compatibility issues
+    model = load_model(MODEL_PATH, compile=False)
     print("✅ Model loaded successfully!")
     print(f"Model input shape: {model.input_shape}")
     print(f"Model output shape: {model.output_shape}")
