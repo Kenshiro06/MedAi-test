@@ -27,7 +27,7 @@ const Navbar = ({ onLoginClick, isLoggedIn }) => {
 
                 {/* Desktop Menu */}
                 <div className="desktop-menu" style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-                    {!isLoggedIn && ['How it Works', 'AI Models', 'Live Demo', 'Use Cases'].map((item) => (
+                    {!isLoggedIn && ['How it Works', 'AI Models', 'Live Demo', 'Use Cases', 'Testimonials', 'Contact'].map((item) => (
                         <a key={item} href={`#${item.toLowerCase().replaceAll(' ', '-')}`} style={{ color: 'var(--color-text-muted)', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color = 'var(--color-primary)'} onMouseLeave={(e) => e.target.style.color = 'var(--color-text-muted)'}>
                             {item}
                         </a>
@@ -55,7 +55,7 @@ const Navbar = ({ onLoginClick, isLoggedIn }) => {
                         className="glass-panel"
                         style={{ position: 'absolute', top: '100%', left: 0, right: 0, margin: '0 1rem', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}
                     >
-                        {!isLoggedIn && ['How it Works', 'AI Models', 'Live Demo', 'Use Cases'].map((item) => (
+                        {!isLoggedIn && ['How it Works', 'AI Models', 'Live Demo', 'Use Cases', 'Testimonials', 'Contact'].map((item) => (
                             <a key={item} href={`#${item.toLowerCase().replaceAll(' ', '-')}`} onClick={() => setIsOpen(false)} style={{ padding: '0.5rem 0' }}>
                                 {item}
                             </a>

@@ -5,6 +5,8 @@ import HowItWorks from './components/HowItWorks';
 import AIModelShowcase from './components/AIModelShowcase';
 import LiveDemo from './components/LiveDemo';
 import UseCases from './components/UseCases';
+import Testimonials from './components/Testimonials';
+import Contact from './components/Contact';
 import Footer from './components/Footer';
 import LoginModal from './components/LoginModal';
 import DashboardLayout from './components/dashboard/DashboardLayout';
@@ -110,6 +112,8 @@ function App() {
             <AIModelShowcase />
             <LiveDemo />
             <UseCases />
+            <Testimonials />
+            <Contact />
           </main>
 
           <Footer />

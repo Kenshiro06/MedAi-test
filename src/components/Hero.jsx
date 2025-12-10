@@ -57,8 +57,11 @@ const Hero = ({ onLoginClick }) => {
                                 fontSize: '1.125rem',
                                 fontWeight: '600',
                                 backdropFilter: 'blur(10px)',
-                                cursor: 'pointer'
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease'
                             }}
+                            onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
+                            onMouseLeave={(e) => e.target.style.background = 'rgba(255,255,255,0.05)'}
                         >
                             View Demo
                         </button>
