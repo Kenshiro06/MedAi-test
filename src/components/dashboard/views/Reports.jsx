@@ -4,6 +4,7 @@ import { CheckCircle, XCircle, Search, Filter, RefreshCw, X, AlertTriangle, Down
 import { supabase } from '../../../lib/supabase';
 import { activityLogger } from '../../../services/activityLogger';
 import { formatMalaysiaDate, formatMalaysiaDateOnly } from '../../../utils/dateUtils';
+import { getBFMPData } from '../../../utils/bfmpCalculator';
 
 const Reports = ({ role, user }) => {
     const [selectedReport, setSelectedReport] = useState(null);
@@ -129,6 +130,7 @@ const Reports = ({ role, user }) => {
                     confidence_score: analysis?.confidence_score,
                     ai_result: analysis?.ai_result,
                     analyzed_at: analysis?.analyzed_at,
+                    analysis_id: analysis?.id,
                     patient_name: patient?.name || 'Unknown',
                     patient_age: patient?.age,
                     patient_gender: patient?.gender,
@@ -374,7 +376,10 @@ const Reports = ({ role, user }) => {
                 moNotes: selectedReport.mo_notes,
                 pathologistStatus: selectedReport.pathologist_status,
                 pathologistReviewedAt: formatMalaysiaDate(selectedReport.pathologist_reviewed_at),
-                pathologistNotes: selectedReport.pathologist_notes
+                pathologistNotes: selectedReport.pathologist_notes,
+
+                // BFMP Protocol Data (Simulated)
+                bfmpData: getBFMPData(selectedReport)
             };
 
             // Generate custom PDF layout
@@ -1105,48 +1110,49 @@ const Reports = ({ role, user }) => {
                                             </tr>
                                             {selectedReport.patient_type?.toLowerCase() === 'malaria' && (
                                                 <>
-                                                    <tr style={{ borderBottom: '1px solid #ddd', background: '#fff3cd' }}>
-                                                        <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>Parasites Counted</td>
-                                                        <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>
-                                                            {selectedReport.severity === 'High' ? Math.floor(Math.random() * 20) + 5 : 0}
-                                                        </td>
-                                                        <td style={{ padding: '0.75rem', color: '#666' }}>Asexual forms</td>
-                                                    </tr>
-                                                    <tr style={{ borderBottom: '1px solid #ddd', background: '#fff3cd' }}>
-                                                        <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>WBCs Counted</td>
-                                                        <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>
-                                                            {Math.floor(Math.random() * 50) + 200}
-                                                        </td>
-                                                        <td style={{ padding: '0.75rem', color: '#666' }}>≥200 (WHO Standard)</td>
-                                                    </tr>
-                                                    <tr style={{ borderBottom: '1px solid #ddd', background: '#d1ecf1' }}>
-                                                        <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>Parasite Density</td>
-                                                        <td style={{ padding: '0.75rem', fontWeight: 'bold', fontSize: '1.1rem' }}>
-                                                            {(() => {
-                                                                const parasites = selectedReport.severity === 'High' ? Math.floor(Math.random() * 20) + 5 : 0;
-                                                                const wbcs = Math.floor(Math.random() * 50) + 200;
-                                                                const density = parasites > 0 ? Math.round((parasites / wbcs) * 8000) : 0;
-                                                                return `${density} parasites/µL`;
-                                                            })()}
-                                                        </td>
-                                                        <td style={{ padding: '0.75rem', color: '#666' }}>
-                                                            {(() => {
-                                                                const parasites = selectedReport.severity === 'High' ? Math.floor(Math.random() * 20) + 5 : 0;
-                                                                const wbcs = Math.floor(Math.random() * 50) + 200;
-                                                                const density = parasites > 0 ? Math.round((parasites / wbcs) * 8000) : 0;
-                                                                return density === 0 ? 'Negative' :
-                                                                    density < 1000 ? 'Low' :
-                                                                        density < 10000 ? 'Moderate' : 'High';
-                                                            })()}
-                                                        </td>
-                                                    </tr>
-                                                    <tr style={{ borderBottom: '1px solid #ddd', background: '#d1ecf1' }}>
-                                                        <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>AI Confidence Score</td>
-                                                        <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>
-                                                            {selectedReport.confidence ? `${selectedReport.confidence.toFixed(1)}%` : 'N/A'}
-                                                        </td>
-                                                        <td style={{ padding: '0.75rem', color: '#666' }}>For staff validation</td>
-                                                    </tr>
+                                                    {(() => {
+                                                        const bfmp = getBFMPData(selectedReport);
+                                                        return (
+                                                            <>
+                                                                <tr style={{ borderBottom: '1px solid #ddd', background: '#fff3cd' }}>
+                                                                    <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>Parasites Counted</td>
+                                                                    <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>
+                                                                        {bfmp ? bfmp.parasitesCounted : 0}
+                                                                    </td>
+                                                                    <td style={{ padding: '0.75rem', color: '#666' }}>Asexual forms</td>
+                                                                </tr>
+                                                                <tr style={{ borderBottom: '1px solid #ddd', background: '#fff3cd' }}>
+                                                                    <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>WBCs Counted</td>
+                                                                    <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>
+                                                                        {bfmp ? bfmp.wbcCounted : 'N/A'}
+                                                                    </td>
+                                                                    <td style={{ padding: '0.75rem', color: '#666' }}>-</td>
+                                                                </tr>
+                                                                <tr style={{ borderBottom: '1px solid #ddd', background: '#d1ecf1' }}>
+                                                                    <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>Parasite Density</td>
+                                                                    <td style={{ padding: '0.75rem', fontWeight: 'bold', fontSize: '1.1rem' }}>
+                                                                        {bfmp ? `${bfmp.density} parasites/µL` : '0 parasites/µL'}
+                                                                    </td>
+                                                                    <td style={{ padding: '0.75rem', color: '#666' }}>
+                                                                        {(() => {
+                                                                            if (!bfmp) return 'Negative';
+                                                                            const d = bfmp.density;
+                                                                            return d === 0 ? 'Negative' :
+                                                                                d < 1000 ? 'Low' :
+                                                                                    d < 10000 ? 'Moderate' : 'High';
+                                                                        })()}
+                                                                    </td>
+                                                                </tr>
+                                                                <tr style={{ borderBottom: '1px solid #ddd', background: '#d1ecf1' }}>
+                                                                    <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>AI Confidence Score</td>
+                                                                    <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>
+                                                                        {selectedReport.confidence ? `${selectedReport.confidence.toFixed(1)}%` : 'N/A'}
+                                                                    </td>
+                                                                    <td style={{ padding: '0.75rem', color: '#666' }}>For staff validation</td>
+                                                                </tr>
+                                                            </>
+                                                        );
+                                                    })()}
                                                 </>
                                             )}
                                             <tr style={{ borderBottom: '1px solid #ddd' }}>
@@ -1158,7 +1164,7 @@ const Reports = ({ role, user }) => {
                                                 }}>
                                                     {selectedReport.type || 'Pending'}
                                                 </td>
-                                                <td style={{ padding: '0.75rem' }}>Negative (Normal)</td>
+                                                <td style={{ padding: '0.75rem' }}>-</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -1169,10 +1175,9 @@ const Reports = ({ role, user }) => {
                                             <br />
                                             <span style={{ fontFamily: 'monospace', fontSize: '0.9rem', marginTop: '0.5rem', display: 'block' }}>
                                                 {(() => {
-                                                    const parasites = Math.floor(Math.random() * 20) + 5;
-                                                    const wbcs = Math.floor(Math.random() * 50) + 200;
-                                                    const density = Math.round((parasites / wbcs) * 8000);
-                                                    return `= (${parasites} ÷ ${wbcs}) × 8000 = ${density} parasites/µL`;
+                                                    const bfmp = getBFMPData(selectedReport);
+                                                    if (!bfmp) return 'Calculation data unavailable';
+                                                    return `= (${bfmp.parasitesCounted} ÷ ${bfmp.wbcCounted}) × 8000 = ${bfmp.density} parasites/µL`;
                                                 })()}
                                             </span>
                                         </div>

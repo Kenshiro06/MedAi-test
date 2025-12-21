@@ -6,6 +6,7 @@ import { analysisService } from '../../../services/analysisService';
 import { supabase } from '../../../lib/supabase';
 import { activityLogger } from '../../../services/activityLogger';
 import { formatMalaysiaDate, formatMalaysiaDateOnly } from '../../../utils/dateUtils';
+import { getBFMPData } from '../../../utils/bfmpCalculator';
 
 const SubmitReport = ({ role, user }) => {
     const { t } = useTranslation();
@@ -41,7 +42,7 @@ const SubmitReport = ({ role, user }) => {
         };
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
-        
+
         // Also refetch when window gains focus
         window.addEventListener('focus', fetchAnalyses);
 
@@ -53,14 +54,14 @@ const SubmitReport = ({ role, user }) => {
 
     const fetchUserProfile = async () => {
         if (!user?.id) return;
-        
+
         try {
             const { data: profile } = await supabase
                 .from('lab_technician_profile')
                 .select('full_name')
                 .eq('account_id', user.id)
                 .single();
-            
+
             if (profile?.full_name) {
                 setUserFullName(profile.full_name);
             }
@@ -302,20 +303,23 @@ const SubmitReport = ({ role, user }) => {
 
         try {
             // Prepare data for custom PDF layout
+            // Note: Patient details are nested in patient_data object from the join
+            const pData = selectedAnalysis.patient_data || {};
+
             const reportData = {
-                patientName: selectedAnalysis.patient_name,
-                registrationNumber: selectedAnalysis.registration_number,
-                icPassport: selectedAnalysis.ic_passport,
-                gender: selectedAnalysis.gender,
-                age: selectedAnalysis.age,
+                patientName: selectedAnalysis.patient_name || pData.full_name || 'N/A',
+                registrationNumber: pData.registration_number || selectedAnalysis.registration_number || 'N/A',
+                icPassport: pData.ic_passport || selectedAnalysis.ic_passport || 'N/A',
+                gender: pData.gender || selectedAnalysis.gender || 'N/A',
+                age: pData.age || selectedAnalysis.age || 'N/A',
                 // Format dates consistently - Malaysia timezone
-                collectionDate: formatMalaysiaDate(selectedAnalysis.collection_datetime),
-                healthFacility: selectedAnalysis.health_facility,
+                collectionDate: formatMalaysiaDate(pData.collection_datetime || selectedAnalysis.collection_datetime),
+                healthFacility: pData.health_facility || selectedAnalysis.health_facility || 'N/A',
                 aiResult: selectedAnalysis.ai_result,
                 // Fix confidence - check if already percentage or decimal
-                confidence: selectedAnalysis.confidence_score 
-                    ? (selectedAnalysis.confidence_score > 1 
-                        ? `${selectedAnalysis.confidence_score.toFixed(2)}%` 
+                confidence: selectedAnalysis.confidence_score
+                    ? (selectedAnalysis.confidence_score > 1
+                        ? `${selectedAnalysis.confidence_score.toFixed(2)}%`
                         : `${(selectedAnalysis.confidence_score * 100).toFixed(2)}%`)
                     : 'N/A',
                 analyzedAt: formatMalaysiaDate(selectedAnalysis.analyzed_at),
@@ -323,11 +327,13 @@ const SubmitReport = ({ role, user }) => {
                 // Support multiple images
                 images: selectedAnalysis.image_paths || (selectedAnalysis.image_path ? [selectedAnalysis.image_path] : []),
                 imageUrl: selectedAnalysis.image_path || selectedAnalysis.image_paths?.[0],
-                // Signature data - Lab Tech auto-filled
+                // Use actual analysis date, not today's date
                 labTechName: userFullName || user?.email || 'Lab Technician',
-                labTechDate: formatMalaysiaDateOnly(new Date())
-            };
+                labTechDate: formatMalaysiaDateOnly(selectedAnalysis.analyzed_at || new Date()),
 
+                // BFMP Protocol Data (Simulated based on AI Result for now)
+                bfmpData: getBFMPData(selectedAnalysis)
+            };
             // Generate custom PDF layout
             const { generateReportPDF } = await import('../../../utils/pdfGenerator');
             await generateReportPDF(reportData);
@@ -375,6 +381,7 @@ const SubmitReport = ({ role, user }) => {
                     submitted_by: user.id,
                     medical_officer_id: selectedDoctor.id,
                     status: 'pending',
+                    submitted_at: new Date().toISOString(),
                     summary_note: `Report assigned to ${selectedDoctor.medical_officer_profile[0]?.full_name || selectedDoctor.email}`
                 }])
                 .select()
@@ -908,7 +915,7 @@ const SubmitReport = ({ role, user }) => {
                         >
                             {/* PDF-Style Report Header */}
                             {!isEditing && (
-                                <div 
+                                <div
                                     data-analysis-content
                                     style={{
                                         background: 'white',
@@ -1052,41 +1059,42 @@ const SubmitReport = ({ role, user }) => {
                                                 </tr>
                                                 {selectedAnalysis.patient_type?.toLowerCase() === 'malaria' && (
                                                     <>
-                                                        <tr style={{ borderBottom: '1px solid #ddd', background: '#fff3cd' }}>
-                                                            <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>Parasites Counted</td>
-                                                            <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>
-                                                                {selectedAnalysis.ai_result?.toLowerCase().includes('positive') ? Math.floor(Math.random() * 20) + 5 : 0}
-                                                            </td>
-                                                            <td style={{ padding: '0.75rem', color: '#666' }}>Asexual forms</td>
-                                                        </tr>
-                                                        <tr style={{ borderBottom: '1px solid #ddd', background: '#fff3cd' }}>
-                                                            <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>WBCs Counted</td>
-                                                            <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>
-                                                                {Math.floor(Math.random() * 50) + 200}
-                                                            </td>
-                                                            <td style={{ padding: '0.75rem', color: '#666' }}>≥200 (WHO Standard)</td>
-                                                        </tr>
-                                                        <tr style={{ borderBottom: '1px solid #ddd', background: '#d1ecf1' }}>
-                                                            <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>Parasite Density</td>
-                                                            <td style={{ padding: '0.75rem', fontWeight: 'bold', fontSize: '1.1rem' }}>
-                                                                {(() => {
-                                                                    const parasites = selectedAnalysis.ai_result?.toLowerCase().includes('positive') ? Math.floor(Math.random() * 20) + 5 : 0;
-                                                                    const wbcs = Math.floor(Math.random() * 50) + 200;
-                                                                    const density = parasites > 0 ? Math.round((parasites / wbcs) * 8000) : 0;
-                                                                    return `${density} parasites/µL`;
-                                                                })()}
-                                                            </td>
-                                                            <td style={{ padding: '0.75rem', color: '#666' }}>
-                                                                {(() => {
-                                                                    const parasites = selectedAnalysis.ai_result?.toLowerCase().includes('positive') ? Math.floor(Math.random() * 20) + 5 : 0;
-                                                                    const wbcs = Math.floor(Math.random() * 50) + 200;
-                                                                    const density = parasites > 0 ? Math.round((parasites / wbcs) * 8000) : 0;
-                                                                    return density === 0 ? 'Negative' :
-                                                                        density < 1000 ? 'Low' :
-                                                                            density < 10000 ? 'Moderate' : 'High';
-                                                                })()}
-                                                            </td>
-                                                        </tr>
+                                                        {(() => {
+                                                            const bfmp = getBFMPData(selectedAnalysis);
+                                                            return (
+                                                                <>
+                                                                    <tr style={{ borderBottom: '1px solid #ddd', background: '#fff3cd' }}>
+                                                                        <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>Parasites Counted</td>
+                                                                        <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>
+                                                                            {bfmp ? bfmp.parasitesCounted : 0}
+                                                                        </td>
+                                                                        <td style={{ padding: '0.75rem', color: '#666' }}>Asexual forms</td>
+                                                                    </tr>
+                                                                    <tr style={{ borderBottom: '1px solid #ddd', background: '#fff3cd' }}>
+                                                                        <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>WBCs Counted</td>
+                                                                        <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>
+                                                                            {bfmp ? bfmp.wbcCounted : 'N/A'}
+                                                                        </td>
+                                                                        <td style={{ padding: '0.75rem', color: '#666' }}>Avg 200</td>
+                                                                    </tr>
+                                                                    <tr style={{ borderBottom: '1px solid #ddd', background: '#d1ecf1' }}>
+                                                                        <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>Parasite Density</td>
+                                                                        <td style={{ padding: '0.75rem', fontWeight: 'bold', fontSize: '1.1rem' }}>
+                                                                            {bfmp ? `${bfmp.density} parasites/µL` : '0 parasites/µL'}
+                                                                        </td>
+                                                                        <td style={{ padding: '0.75rem', color: '#666' }}>
+                                                                            {(() => {
+                                                                                if (!bfmp) return 'Negative';
+                                                                                const d = bfmp.density;
+                                                                                return d === 0 ? 'Negative' :
+                                                                                    d < 1000 ? 'Low' :
+                                                                                        d < 10000 ? 'Moderate' : 'High';
+                                                                            })()}
+                                                                        </td>
+                                                                    </tr>
+                                                                </>
+                                                            );
+                                                        })()}
                                                         <tr style={{ borderBottom: '1px solid #ddd', background: '#d1ecf1' }}>
                                                             <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>AI Confidence Score</td>
                                                             <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>
@@ -1105,7 +1113,7 @@ const SubmitReport = ({ role, user }) => {
                                                     }}>
                                                         {selectedAnalysis.ai_result || 'Pending'}
                                                     </td>
-                                                    <td style={{ padding: '0.75rem' }}>Negative (Normal)</td>
+                                                    <td style={{ padding: '0.75rem' }}>-</td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -1116,10 +1124,9 @@ const SubmitReport = ({ role, user }) => {
                                                 <br />
                                                 <span style={{ fontFamily: 'monospace', fontSize: '0.9rem', marginTop: '0.5rem', display: 'block' }}>
                                                     {(() => {
-                                                        const parasites = Math.floor(Math.random() * 20) + 5;
-                                                        const wbcs = Math.floor(Math.random() * 50) + 200;
-                                                        const density = Math.round((parasites / wbcs) * 8000);
-                                                        return `= (${parasites} ÷ ${wbcs}) × 8000 = ${density} parasites/µL`;
+                                                        const bfmp = getBFMPData(selectedAnalysis);
+                                                        if (!bfmp) return 'Calculation data unavailable';
+                                                        return `= (${bfmp.parasitesCounted} ÷ ${bfmp.wbcCounted}) × 8000 = ${bfmp.density} parasites/µL`;
                                                     })()}
                                                 </span>
                                             </div>

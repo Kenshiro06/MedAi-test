@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { analysisService } from '../../../services/analysisService';
 import { activityLogger } from '../../../services/activityLogger';
 import { formatMalaysiaDate, formatMalaysiaDateOnly } from '../../../utils/dateUtils';
+import { getBFMPData } from '../../../utils/bfmpCalculator';
 
 const Analyze = ({ role, user }) => {
     const { t } = useTranslation();
@@ -97,14 +98,17 @@ const Analyze = ({ role, user }) => {
         if (!selectedAnalysis) return;
 
         try {
+            // Note: Patient details are nested in patient_data object from the join
+            const pData = selectedAnalysis.patient_data || {};
+
             const reportData = {
-                patientName: selectedAnalysis.patient_name,
-                registrationNumber: selectedAnalysis.registration_number,
-                icPassport: selectedAnalysis.ic_passport,
-                gender: selectedAnalysis.gender,
-                age: selectedAnalysis.age,
-                collectionDate: formatMalaysiaDate(selectedAnalysis.collection_datetime),
-                healthFacility: selectedAnalysis.health_facility,
+                patientName: selectedAnalysis.patient_name || pData.full_name || 'N/A',
+                registrationNumber: pData.registration_number || selectedAnalysis.registration_number || 'N/A',
+                icPassport: pData.ic_passport || selectedAnalysis.ic_passport || 'N/A',
+                gender: pData.gender || selectedAnalysis.gender || 'N/A',
+                age: pData.age || selectedAnalysis.age || 'N/A',
+                collectionDate: formatMalaysiaDate(pData.collection_datetime || selectedAnalysis.collection_datetime),
+                healthFacility: pData.health_facility || selectedAnalysis.health_facility || 'N/A',
                 aiResult: selectedAnalysis.ai_result,
                 confidence: selectedAnalysis.confidence_score
                     ? (selectedAnalysis.confidence_score > 1
@@ -117,10 +121,13 @@ const Analyze = ({ role, user }) => {
                 imageUrl: selectedAnalysis.image_path || selectedAnalysis.image_paths?.[0],
                 // Use actual analysis date, not today's date
                 labTechName: userFullName || user?.email || 'Lab Technician',
-                labTechDate: formatMalaysiaDateOnly(selectedAnalysis.analyzed_at),
+                labTechDate: formatMalaysiaDateOnly(selectedAnalysis.analyzed_at || new Date()),
                 // Pass current user role and info for signature customization
                 currentUserRole: role,
-                currentUserName: userFullName || user?.email
+                currentUserName: userFullName || user?.email,
+
+                // BFMP Protocol Data (Simulated based on AI Result for now)
+                bfmpData: getBFMPData(selectedAnalysis)
             };
 
             const { generateReportPDF } = await import('../../../utils/pdfGenerator');
@@ -1036,36 +1043,36 @@ const Analyze = ({ role, user }) => {
                                         <div style={{ fontSize: '0.75rem', color: '#2196f3', marginBottom: '1rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                                             📊 BFMP Protocol - Raw Counts
                                         </div>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                            <div>
-                                                <div style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Parasites Counted</div>
-                                                <div style={{ fontWeight: '700', fontSize: '1.25rem', color: '#febc2e' }}>
-                                                    {selectedAnalysis.ai_result?.toLowerCase().includes('positive') ? Math.floor(Math.random() * 20) + 5 : 0}
+                                        {(() => {
+                                            const bfmp = getBFMPData(selectedAnalysis);
+                                            return (
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                                    <div>
+                                                        <div style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Parasites Counted</div>
+                                                        <div style={{ fontWeight: '700', fontSize: '1.25rem', color: '#febc2e' }}>
+                                                            {bfmp ? bfmp.parasitesCounted : 0}
+                                                        </div>
+                                                        <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>Asexual forms</div>
+                                                    </div>
+                                                    <div>
+                                                        <div style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>WBCs Counted</div>
+                                                        <div style={{ fontWeight: '700', fontSize: '1.25rem', color: '#febc2e' }}>
+                                                            {bfmp ? bfmp.wbcCounted : 'N/A'}
+                                                        </div>
+                                                        <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>≥200 WHO Standard</div>
+                                                    </div>
+                                                    <div style={{ gridColumn: '1 / -1' }}>
+                                                        <div style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Parasite Density</div>
+                                                        <div style={{ fontWeight: '700', fontSize: '1.5rem', color: '#00f0ff' }}>
+                                                            {bfmp ? `${bfmp.density} parasites/µL` : '0 parasites/µL'}
+                                                        </div>
+                                                        <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>
+                                                            Formula: (Parasites ÷ WBCs) × 8000
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>Asexual forms</div>
-                                            </div>
-                                            <div>
-                                                <div style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>WBCs Counted</div>
-                                                <div style={{ fontWeight: '700', fontSize: '1.25rem', color: '#febc2e' }}>
-                                                    {Math.floor(Math.random() * 50) + 200}
-                                                </div>
-                                                <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>≥200 WHO Standard</div>
-                                            </div>
-                                            <div style={{ gridColumn: '1 / -1' }}>
-                                                <div style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Parasite Density</div>
-                                                <div style={{ fontWeight: '700', fontSize: '1.5rem', color: '#00f0ff' }}>
-                                                    {(() => {
-                                                        const parasites = selectedAnalysis.ai_result?.toLowerCase().includes('positive') ? Math.floor(Math.random() * 20) + 5 : 0;
-                                                        const wbcs = Math.floor(Math.random() * 50) + 200;
-                                                        const density = parasites > 0 ? Math.round((parasites / wbcs) * 8000) : 0;
-                                                        return `${density} parasites/µL`;
-                                                    })()}
-                                                </div>
-                                                <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>
-                                                    Formula: (Parasites ÷ WBCs) × 8000
-                                                </div>
-                                            </div>
-                                        </div>
+                                            );
+                                        })()}
                                     </motion.div>
                                 )}
 

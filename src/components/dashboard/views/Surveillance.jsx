@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, TrendingUp, MapPin, Download, RefreshCw, AlertTriangle, Users, BarChart3, CheckCircle, Clock, Eye, FileText, UserCheck, XCircle, Calendar } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
+import { formatMalaysiaDate, formatMalaysiaDateOnly, getMalaysiaTimeNow } from '../../../utils/dateUtils';
 
 const Surveillance = ({ user }) => {
     const [loading, setLoading] = useState(true);
@@ -259,7 +260,7 @@ const Surveillance = ({ user }) => {
         // Header Section
         csvRows.push('DISEASE SURVEILLANCE REPORT');
         csvRows.push('');
-        csvRows.push(`Generated,${new Date().toLocaleString()}`);
+        csvRows.push(`Generated,${getMalaysiaTimeNow()}`);
         csvRows.push(`Time Period,${timeRange === '7d' ? 'Last 7 Days' : timeRange === '30d' ? 'Last 30 Days' : 'Last 90 Days'}`);
         csvRows.push(`District,${user?.health_officer_profile?.district || 'Unknown'}`);
         csvRows.push(`State,${user?.health_officer_profile?.state || 'Unknown'}`);
@@ -312,7 +313,7 @@ const Surveillance = ({ user }) => {
                     escapeCSV(r.facility || 'N/A'),
                     escapeCSV(r.submittedBy || 'N/A'),
                     r.approvalTime || 'N/A',
-                    r.pathoReviewedAt ? new Date(r.pathoReviewedAt).toLocaleDateString() : 'N/A'
+                    r.pathoReviewedAt ? formatMalaysiaDate(r.pathoReviewedAt) : 'N/A'
                 ].join(','));
             });
         } else {
@@ -329,6 +330,8 @@ const Surveillance = ({ user }) => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
+        // Use ISO string slice for filename date to keep it safe, but could use local if needed. 
+        // Keeping simple for filename:
         a.download = `Surveillance_Report_${timeRange}_${new Date().toISOString().split('T')[0]}.csv`;
         a.click();
         URL.revokeObjectURL(url);
@@ -458,7 +461,7 @@ const Surveillance = ({ user }) => {
     <div class="header">
         <h1>🏥 DISEASE SURVEILLANCE REPORT</h1>
         <div class="meta">
-            <strong>Generated:</strong> ${new Date().toLocaleString()} | 
+            <strong>Generated:</strong> ${getMalaysiaTimeNow()} | 
             <strong>Period:</strong> ${timeRange === '7d' ? 'Last 7 Days' : timeRange === '30d' ? 'Last 30 Days' : 'Last 90 Days'} | 
             <strong>District:</strong> ${user?.health_officer_profile?.district || 'Unknown'} | 
             <strong>State:</strong> ${user?.health_officer_profile?.state || 'Unknown'}

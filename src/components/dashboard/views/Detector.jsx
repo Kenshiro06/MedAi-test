@@ -6,6 +6,7 @@ import { Float, Stars } from '@react-three/drei';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../../lib/supabase';
 import { activityLogger } from '../../../services/activityLogger';
+import { getBFMPData } from '../../../utils/bfmpCalculator';
 
 // Helper to get Malaysia timezone timestamp
 const getMalaysiaTimestamp = () => {
@@ -29,7 +30,8 @@ const Detector = ({ role, user, onNavigate }) => {
         gender: 'Male',
         registrationNumber: '',
         icPassport: '',
-        collectionDateTime: new Date().toISOString().slice(0, 16),
+        // Initialize with Malaysia time for datetime-local input (YYYY-MM-DDTHH:mm)
+        collectionDateTime: new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Kuala_Lumpur' }).replace(' ', 'T').slice(0, 16),
         healthFacility: 'General Hospital KL', // Auto-filled mock
         slideNumber: '',
         smearType: 'Thin'
@@ -147,11 +149,45 @@ const Detector = ({ role, user, onNavigate }) => {
                 confidence = aggregate.average_confidence;
             }
 
-            // Calculate parasite density (simulated for demo - in real system, this would come from WBC counting)
-            const simulatedWBCCount = Math.floor(Math.random() * 50) + 200; // 200-250 WBCs (WHO standard)
-            const parasiteDensity = aggregate.parasitized_count > 0
-                ? Math.round((aggregate.parasitized_count / simulatedWBCCount) * 8000)
-                : 0;
+            // Calculate initial confidence and result
+            // Note: We will overwrite rawCounts later if we successfully save to DB
+            // to ensure consistency with other parts of the app that use getBFMPData(analysis.id)
+
+            // Auto-save report to database (MUST await this!)
+            console.log('💾 Saving analysis to database...');
+            const savedAnalysis = await saveReportToDatabase(resultType, severity, confidence);
+
+            let rawCounts = {
+                parasitesCounted: 0,
+                wbcsCounted: 0,
+                parasiteDensity: 0,
+                confidenceScore: confidence
+            };
+
+            // If we have a saved analysis ID, use it to generate consistent BFMP data
+            if (savedAnalysis && savedAnalysis.id && resultType.includes('Positive')) {
+                const bfmpData = getBFMPData(savedAnalysis);
+                // Also update the local state to match what everyone else sees
+                if (bfmpData) {
+                    rawCounts.parasitesCounted = bfmpData.parasitesCounted;
+                    rawCounts.wbcsCounted = bfmpData.wbcCounted;
+                    rawCounts.parasiteDensity = bfmpData.density;
+                }
+            } else if (resultType.includes('Positive')) {
+                // Fallback for failed save or offline mode (inconsistent but better than crash)
+                // Try to shim an analysis object for the calculator
+                const shimAnalysis = {
+                    id: Math.floor(Math.random() * 1000000), // Random ID fallback
+                    ai_result: resultType,
+                    confidence_score: confidence
+                };
+                const bfmpData = getBFMPData(shimAnalysis);
+                if (bfmpData) {
+                    rawCounts.parasitesCounted = bfmpData.parasitesCounted;
+                    rawCounts.wbcsCounted = bfmpData.wbcCounted;
+                    rawCounts.parasiteDensity = bfmpData.density;
+                }
+            }
 
             setDiagnosis({
                 type: resultType,
@@ -163,18 +199,10 @@ const Detector = ({ role, user, onNavigate }) => {
                     uninfectedFields: aggregate.uninfected_count,
                     averageConfidence: aggregate.average_confidence
                 },
-                // Raw counts for BFMP protocol
-                rawCounts: {
-                    parasitesCounted: aggregate.parasitized_count,
-                    wbcsCounted: simulatedWBCCount,
-                    parasiteDensity: parasiteDensity, // parasites per µL
-                    confidenceScore: confidence
-                }
+                // Updated Raw counts for BFMP protocol
+                rawCounts: rawCounts
             });
 
-            // Auto-save report to database (MUST await this!)
-            console.log('💾 Saving analysis to database...');
-            await saveReportToDatabase(resultType, severity, confidence);
             console.log('✅ Analysis saved successfully, showing results...');
             setStep('result');
         } catch (error) {
@@ -328,6 +356,8 @@ const Detector = ({ role, user, onNavigate }) => {
             console.log(`📁 ${uploadedUrls.length} images uploaded to storage`);
             console.log(`⏱️ Total save time: ${totalTime}s (Upload: ${uploadTime}s, Patient: ${patientTime}s, Analysis: ${analysisTime}s)`);
             console.log("ℹ️ Report not submitted yet - staff must submit manually");
+
+            return analysisResult; // Return the saved analysis object
         } catch (error) {
             console.error('❌ Error saving report:', error);
             console.error('Error details:', {
@@ -337,6 +367,7 @@ const Detector = ({ role, user, onNavigate }) => {
                 uploadedImages: uploadedImages.length
             });
             alert(`Failed to save analysis to database:\n\n${error.message}\n\nCheck browser console for details.`);
+            return null;
         }
     };
 
@@ -712,7 +743,7 @@ const Detector = ({ role, user, onNavigate }) => {
                             exit={{ opacity: 0, x: -20 }}
                             style={{ padding: '2rem', height: '100%', display: 'flex', flexDirection: 'column' }}
                         >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                                 <h2 style={{ fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                                     <ImageIcon color="var(--color-primary)" /> Sample Upload
                                 </h2>
@@ -720,6 +751,32 @@ const Detector = ({ role, user, onNavigate }) => {
                                     <ArrowLeft size={18} /> {t('detector.back')}
                                 </button>
                             </div>
+
+                            {/* Important Notice */}
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                style={{
+                                    background: 'linear-gradient(135deg, rgba(255, 188, 46, 0.1), rgba(255, 188, 46, 0.05))',
+                                    border: '1px solid rgba(255, 188, 46, 0.3)',
+                                    borderRadius: '12px',
+                                    padding: '1rem',
+                                    marginBottom: '2rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.75rem'
+                                }}
+                            >
+                                <Info size={20} color="#ffbc2e" style={{ flexShrink: 0 }} />
+                                <div>
+                                    <p style={{ margin: 0, fontSize: '0.9rem', color: '#ffbc2e', fontWeight: '500' }}>
+                                        <strong>Important:</strong> Only upload {patientData.diseaseType.toLowerCase()} microscopic images for accurate detection.
+                                    </p>
+                                    <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+                                        Other image types may produce incorrect results. Ensure images are clear blood smear microscopy.
+                                    </p>
+                                </div>
+                            </motion.div>
 
                             <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem' }}>
                                 {/* Upload Area */}

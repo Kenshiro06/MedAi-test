@@ -12,31 +12,31 @@ const MALAYSIA_TIMEZONE = 'Asia/Kuala_Lumpur';
  */
 export const formatMalaysiaDate = (date, includeTime = true) => {
     if (!date) return 'N/A';
-    
+
     try {
         const dateObj = new Date(date);
-        
+
         // Check if date is valid
         if (isNaN(dateObj.getTime())) {
             return 'Invalid Date';
         }
-        
+
         const options = {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
             timeZone: MALAYSIA_TIMEZONE
         };
-        
+
         if (includeTime) {
             options.hour = '2-digit';
             options.minute = '2-digit';
             options.hour12 = true;
         }
-        
+
         // Use en-GB for consistent DD/MM/YYYY format, then convert to Malaysia timezone
         const formatted = dateObj.toLocaleString('en-GB', options);
-        
+
         // Convert to en-MY format (DD/MM/YYYY, HH:MM AM/PM)
         return formatted.replace(',', '');
     } catch (error) {
@@ -60,7 +60,7 @@ export const getMalaysiaTimeNow = () => {
  */
 export const utcToMalaysia = (utcTimestamp) => {
     if (!utcTimestamp) return null;
-    
+
     try {
         const date = new Date(utcTimestamp);
         return date.toLocaleString('en-MY', {
@@ -85,7 +85,7 @@ export const utcToMalaysia = (utcTimestamp) => {
  */
 export const formatMalaysiaDateOnly = (date) => {
     if (!date) return null;
-    
+
     try {
         return new Date(date).toLocaleDateString('en-MY', {
             year: 'numeric',
