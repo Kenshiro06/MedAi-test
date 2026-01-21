@@ -326,6 +326,7 @@ const SubmitReport = ({ role, user }) => {
                 analyzedBy: userFullName || user?.email || 'Lab Technician',
                 // Support multiple images
                 images: selectedAnalysis.image_paths || (selectedAnalysis.image_path ? [selectedAnalysis.image_path] : []),
+                gradcamImages: selectedAnalysis.gradcam_paths || [],
                 imageUrl: selectedAnalysis.image_path || selectedAnalysis.image_paths?.[0],
                 // Use actual analysis date, not today's date
                 labTechName: userFullName || user?.email || 'Lab Technician',
@@ -1154,66 +1155,157 @@ const SubmitReport = ({ role, user }) => {
                                         </div>
                                     </div>
 
-                                    {/* Microscope Images Section */}
+                                    {/* Microscope Images Section with AI Visualization (Grad-CAM) */}
                                     {(selectedAnalysis.image_paths || selectedAnalysis.image_path) && (() => {
                                         // Get all images - either from image_paths array or fallback to single image_path
                                         const images = selectedAnalysis.image_paths && Array.isArray(selectedAnalysis.image_paths) && selectedAnalysis.image_paths.length > 0
                                             ? selectedAnalysis.image_paths
                                             : [selectedAnalysis.image_path].filter(Boolean);
 
+                                        // Get GradCAM images if available
+                                        const gradcamImages = selectedAnalysis.gradcam_paths && Array.isArray(selectedAnalysis.gradcam_paths)
+                                            ? selectedAnalysis.gradcam_paths
+                                            : [];
+
+                                        const hasGradCAM = gradcamImages.length > 0 && gradcamImages.some(Boolean);
+
                                         if (images.length === 0) return null;
 
                                         return (
                                             <div style={{ marginTop: '1.5rem' }}>
-                                                <h4 style={{
-                                                    fontSize: '0.95rem',
-                                                    fontWeight: 'bold',
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.5px',
-                                                    marginBottom: '1rem',
-                                                    paddingBottom: '0.5rem',
-                                                    borderBottom: '2px solid #000'
-                                                }}>MICROSCOPE IMAGES ({images.length} Field{images.length > 1 ? 's' : ''} Examined)</h4>
-                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '2px solid #000', paddingBottom: '0.5rem' }}>
+                                                    <h4 style={{
+                                                        fontSize: '0.95rem',
+                                                        fontWeight: 'bold',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.5px',
+                                                        margin: 0
+                                                    }}>MICROSCOPE IMAGES {hasGradCAM ? 'WITH AI VISUALIZATION' : ''} ({images.length} Field{images.length > 1 ? 's' : ''} Examined)</h4>
+                                                </div>
+
+                                                {/* Hidden Debug Info */}
+                                                <div style={{ display: 'none' }}>
+                                                    {(() => {
+                                                        console.log('🖼️ Analysis ID:', selectedAnalysis.id);
+                                                        console.log('🖼️ Image Paths:', images);
+                                                        console.log('🖼️ GradCAM Paths:', gradcamImages);
+                                                        return null;
+                                                    })()}
+                                                </div>
+
+                                                <div style={{
+                                                    display: 'grid',
+                                                    gridTemplateColumns: hasGradCAM ? 'repeat(auto-fit, minmax(220px, 1fr))' : 'repeat(auto-fit, minmax(180px, 1fr))',
+                                                    gap: '1rem'
+                                                }}>
                                                     {images.map((imgUrl, idx) => (
-                                                        <div key={idx} style={{ border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden', background: '#f8f9fa' }}>
-                                                            <div style={{ position: 'relative', paddingTop: '100%', background: '#000' }}>
-                                                                <img
-                                                                    src={imgUrl}
-                                                                    alt={`Field ${idx + 1}`}
-                                                                    style={{
+                                                        <div key={idx} style={{
+                                                            border: '1px solid #ddd',
+                                                            borderRadius: '8px',
+                                                            overflow: 'hidden',
+                                                            background: '#f8f9fa'
+                                                        }}>
+                                                            {/* Side-by-side Original and GradCAM images */}
+                                                            <div style={{ display: 'grid', gridTemplateColumns: hasGradCAM ? '1fr 1fr' : '1fr', gap: '1px' }}>
+                                                                {/* Original Image */}
+                                                                <div style={{ position: 'relative', paddingTop: '100%', background: '#000' }}>
+                                                                    <img
+                                                                        src={imgUrl}
+                                                                        alt={`Field ${idx + 1}`}
+                                                                        style={{
+                                                                            position: 'absolute',
+                                                                            top: 0,
+                                                                            left: 0,
+                                                                            width: '100%',
+                                                                            height: '100%',
+                                                                            objectFit: 'cover'
+                                                                        }}
+                                                                        onError={(e) => {
+                                                                            e.target.style.display = 'none';
+                                                                            e.target.parentElement.innerHTML = '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666; text-align: center; font-size: 0.6rem;">N/A</div>';
+                                                                        }}
+                                                                    />
+                                                                    <div style={{
                                                                         position: 'absolute',
-                                                                        top: 0,
+                                                                        bottom: 0,
                                                                         left: 0,
-                                                                        width: '100%',
-                                                                        height: '100%',
-                                                                        objectFit: 'cover'
-                                                                    }}
-                                                                    onError={(e) => {
-                                                                        e.target.style.display = 'none';
-                                                                        e.target.parentElement.innerHTML = '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666; text-align: center; font-size: 0.75rem;">Image not available</div>';
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                            <div style={{ padding: '0.75rem', textAlign: 'center' }}>
-                                                                <div style={{ fontWeight: '600', fontSize: '0.875rem', marginBottom: '0.25rem' }}>
-                                                                    Field {idx + 1}
+                                                                        right: 0,
+                                                                        background: 'rgba(0,0,0,0.6)',
+                                                                        color: 'white',
+                                                                        padding: '0.15rem',
+                                                                        fontSize: '0.6rem',
+                                                                        textAlign: 'center'
+                                                                    }}>
+                                                                        Original
+                                                                    </div>
                                                                 </div>
-                                                                <div style={{
-                                                                    fontSize: '0.75rem',
-                                                                    color: '#2e7d32',
-                                                                    fontWeight: '500'
-                                                                }}>
-                                                                    Good
+                                                                {/* GradCAM Image */}
+                                                                {hasGradCAM && (
+                                                                    <div style={{ position: 'relative', paddingTop: '100%', background: '#111' }}>
+                                                                        {gradcamImages[idx] ? (
+                                                                            <>
+                                                                                <img
+                                                                                    src={gradcamImages[idx]}
+                                                                                    alt={`Field ${idx + 1} - AI Focus`}
+                                                                                    style={{
+                                                                                        position: 'absolute',
+                                                                                        top: 0,
+                                                                                        left: 0,
+                                                                                        width: '100%',
+                                                                                        height: '100%',
+                                                                                        objectFit: 'cover'
+                                                                                    }}
+                                                                                    onError={(e) => {
+                                                                                        e.target.style.display = 'none';
+                                                                                        e.target.nextSibling.textContent = 'Err';
+                                                                                    }}
+                                                                                />
+                                                                                <div style={{
+                                                                                    position: 'absolute',
+                                                                                    bottom: 0,
+                                                                                    left: 0,
+                                                                                    right: 0,
+                                                                                    background: 'rgba(33, 150, 243, 0.8)',
+                                                                                    color: 'white',
+                                                                                    padding: '0.15rem',
+                                                                                    fontSize: '0.6rem',
+                                                                                    textAlign: 'center'
+                                                                                }}>
+                                                                                    AI Focus
+                                                                                </div>
+                                                                            </>
+                                                                        ) : (
+                                                                            <div style={{
+                                                                                position: 'absolute',
+                                                                                top: 0,
+                                                                                left: 0,
+                                                                                width: '100%',
+                                                                                height: '100%',
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                                color: '#555',
+                                                                                fontSize: '0.6rem'
+                                                                            }}>
+                                                                                No AI
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div style={{ padding: '0.4rem', textAlign: 'center', background: '#fff', borderTop: '1px solid #eee' }}>
+                                                                <div style={{ fontWeight: '600', fontSize: '0.75rem' }}>
+                                                                    Field {idx + 1}
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     ))}
                                                 </div>
-                                                <div style={{ marginTop: '1rem', padding: '1rem', background: '#f8f9fa', borderRadius: '8px', fontSize: '0.875rem', color: '#666' }}>
-                                                    <strong>Note:</strong> All microscope images were analyzed using AI-powered detection system.
-                                                    Images marked as "Good" quality contributed to the final diagnosis with high confidence.
-                                                </div>
+                                                {hasGradCAM && (
+                                                    <div style={{ marginTop: '1rem', padding: '0.75rem', background: '#e3f2fd', borderRadius: '8px', fontSize: '0.8rem', color: '#1565c0', border: '1px solid #90caf9' }}>
+                                                        <strong>🔬 AI Visualization:</strong> Grad-CAM highlights key regions focused during analysis.
+                                                    </div>
+                                                )}
                                             </div>
                                         );
                                     })()}
@@ -1569,7 +1661,7 @@ const SubmitReport = ({ role, user }) => {
                     to { transform: rotate(360deg); }
                 }
             `}</style>
-        </div>
+        </div >
     );
 };
 

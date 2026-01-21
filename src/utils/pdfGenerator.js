@@ -237,46 +237,84 @@ export const generateReportPDF = async (reportData) => {
             { label: 'Parasite Density:', value: `${reportData.bfmpData.density || 0} parasites/µL`, boldLabel: true }
         ];
 
-        rightY = drawTable(rightColX, rightY, colWidth, bfmpRows, { rowHeight: 12, col1Width: colWidth * 0.45 });
-        rightY += 10;
+        rightY = drawTable(rightColX, rightY, colWidth, bfmpRows, { rowHeight: 9, col1Width: colWidth * 0.45 });
+        rightY += 15; // Increased spacing after table
     }
 
     // Images
-    const images = reportData.images || (reportData.imageUrl ? [reportData.imageUrl] : []);
+    const images = reportData.images || [];
+    const gradcamImages = reportData.gradcamImages || [];
+    const hasGradCAM = gradcamImages.length > 0 && gradcamImages.some(img => img && img.length > 0);
 
     if (images.length > 0) {
         try {
-            pdf.setFontSize(12);
+            pdf.setFontSize(10);
             pdf.setFont('helvetica', 'bold');
             pdf.setTextColor(...darkColor);
-            pdf.text(`MICROSCOPE IMAGE${images.length > 1 ? 'S' : ''}`, rightColX, rightY);
-            rightY += 5;
+            pdf.text(hasGradCAM ? 'MICROSCOPE IMAGES WITH AI VISUALIZATION' : 'MICROSCOPE IMAGES', rightColX, rightY);
+            rightY += 8;
 
-            // Calculate image dimensions based on count
-            const imageCount = Math.min(images.length, 4); // Max 4 images
-            const imagesPerRow = imageCount === 1 ? 1 : 2;
-            const imageWidth = imageCount === 1 ? colWidth : (colWidth - 5) / 2;
-            const imageHeight = imageCount <= 2 ? 60 : 30;
+            // Show max 2 fields to fit in the column
+            const maxFields = 2;
+            const fieldCount = Math.min(images.length, maxFields);
 
-            images.slice(0, 4).forEach((imgUrl, index) => {
+            // Maintain a consistent slot size to prevent stretching
+            const slotWidth = (colWidth - 10) / 2; // Always use half width for correct aspect ratio
+            const imageHeight = 25; // Set to 25mm as requested
+
+            for (let i = 0; i < fieldCount; i++) {
+                // Add field number label
+                pdf.setFontSize(6.5);
+                pdf.setTextColor(...darkColor);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text(`FIELD ${i + 1}:`, rightColX, rightY);
+                rightY += 3;
+
+                // Original Image
                 try {
-                    const row = Math.floor(index / imagesPerRow);
-                    const col = index % imagesPerRow;
-                    const imgX = rightColX + (col * (imageWidth + 5));
-                    const imgY = rightY + (row * (imageHeight + 5));
-
-                    // Image with border
+                    const imgX = rightColX;
+                    const imgY = rightY;
                     pdf.setDrawColor(...borderColor);
-                    pdf.setLineWidth(0.5);
-                    pdf.rect(imgX, imgY, imageWidth, imageHeight);
+                    pdf.setLineWidth(0.15);
+                    pdf.rect(imgX, imgY, slotWidth, imageHeight);
+                    pdf.addImage(images[i], 'JPEG', imgX + 0.2, imgY + 0.2, slotWidth - 0.4, imageHeight - 0.4);
 
-                    pdf.addImage(imgUrl, 'JPEG', imgX + 1, imgY + 1, imageWidth - 2, imageHeight - 2);
+                    pdf.setFontSize(5.5);
+                    pdf.setTextColor(120, 120, 120);
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.text('Original Source', imgX, imgY - 1);
                 } catch (err) {
-                    console.warn(`Could not add image ${index + 1} to PDF:`, err);
+                    console.warn(`Could not add original image ${i + 1} to PDF:`, err);
                 }
-            });
 
-            rightY += (Math.ceil(imageCount / imagesPerRow) * (imageHeight + 5)) + 5;
+                // AI Focus (Grad-CAM) Image - Only if enabled
+                if (hasGradCAM) {
+                    try {
+                        const imgX = rightColX + slotWidth + 5;
+                        const imgY = rightY;
+
+                        pdf.setDrawColor(...borderColor);
+                        pdf.rect(imgX, imgY, slotWidth, imageHeight);
+
+                        if (gradcamImages[i]) {
+                            pdf.addImage(gradcamImages[i], 'JPEG', imgX + 0.2, imgY + 0.2, slotWidth - 0.4, imageHeight - 0.4);
+                        } else {
+                            pdf.setFontSize(6);
+                            pdf.setTextColor(180, 180, 180);
+                            pdf.text('No AI', imgX + (slotWidth / 2) - 4, imgY + (imageHeight / 2));
+                        }
+
+                        pdf.setFontSize(5.5);
+                        pdf.setTextColor(33, 150, 243);
+                        pdf.setFont('helvetica', 'normal');
+                        pdf.text('AI Focus', imgX, imgY - 1);
+                    } catch (err) {
+                        console.warn(`Could not add AI focus image ${i + 1} to PDF:`, err);
+                    }
+                }
+
+                rightY += imageHeight + 8; // Stayed at 8mm as requested
+            }
         } catch (err) {
             console.warn('Could not add images to PDF:', err);
             rightY += 5;

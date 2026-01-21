@@ -118,6 +118,7 @@ const Analyze = ({ role, user }) => {
                 analyzedAt: formatMalaysiaDate(selectedAnalysis.analyzed_at),
                 analyzedBy: userFullName || user?.email || 'Lab Technician',
                 images: selectedAnalysis.image_paths || (selectedAnalysis.image_path ? [selectedAnalysis.image_path] : []),
+                gradcamImages: selectedAnalysis.gradcam_paths || [],
                 imageUrl: selectedAnalysis.image_path || selectedAnalysis.image_paths?.[0],
                 // Use actual analysis date, not today's date
                 labTechName: userFullName || user?.email || 'Lab Technician',

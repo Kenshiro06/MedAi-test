@@ -41,6 +41,7 @@ const Detector = ({ role, user, onNavigate }) => {
     const [uploadedImages, setUploadedImages] = useState([]);
     const [analysisProgress, setAnalysisProgress] = useState(0);
     const [diagnosis, setDiagnosis] = useState(null);
+    const [showGradCAM, setShowGradCAM] = useState(false);
 
     const fileInputRef = useRef(null);
 
@@ -149,13 +150,29 @@ const Detector = ({ role, user, onNavigate }) => {
                 confidence = aggregate.average_confidence;
             }
 
+            // Store Grad-CAM images from API response only if enabled
+            console.log('📊 API Results:', results);
+            const updatedImages = uploadedImages.map((img, index) => {
+                const apiResult = results.find(r => r.index === index);
+                console.log(`Image ${index}:`, {
+                    hasGradcam: !!apiResult?.gradcam,
+                    gradcamLength: apiResult?.gradcam?.length || 0
+                });
+                return {
+                    ...img,
+                    gradcam: showGradCAM ? (apiResult?.gradcam || null) : null  // Only add if toggle was ON
+                };
+            });
+            setUploadedImages(updatedImages);
+            console.log('✅ Updated images with Grad-CAM policy:', updatedImages.map(i => ({ hasGradcam: !!i.gradcam })));
+
             // Calculate initial confidence and result
             // Note: We will overwrite rawCounts later if we successfully save to DB
             // to ensure consistency with other parts of the app that use getBFMPData(analysis.id)
 
             // Auto-save report to database (MUST await this!)
-            console.log('💾 Saving analysis to database...');
-            const savedAnalysis = await saveReportToDatabase(resultType, severity, confidence);
+            console.log('💾 Saving analysis to database (v2)...');
+            const savedAnalysis = await saveReportToDatabase(resultType, severity, confidence, updatedImages);
 
             let rawCounts = {
                 parasitesCounted: 0,
@@ -200,10 +217,12 @@ const Detector = ({ role, user, onNavigate }) => {
                     averageConfidence: aggregate.average_confidence
                 },
                 // Updated Raw counts for BFMP protocol
-                rawCounts: rawCounts
+                rawCounts: rawCounts,
+                // Grad-CAM images are now stored in uploadedImages
+                hasGradcam: results.some(r => r.gradcam)
             });
 
-            console.log('✅ Analysis saved successfully, showing results...');
+            console.log('✅ Analysis saved successfully with Grad-CAM, showing results...');
             setStep('result');
         } catch (error) {
             console.error('❌ Error in finalizeAnalysis:', error);
@@ -213,8 +232,11 @@ const Detector = ({ role, user, onNavigate }) => {
         }
     };
 
-    const saveReportToDatabase = async (type, severity, confidence = 0.95) => {
+    const saveReportToDatabase = async (type, severity, confidence = 0.95, imagesToUpload = null) => {
         const startTime = Date.now();
+        // Use provided images or fallback to state
+        const images = imagesToUpload || uploadedImages;
+
         try {
             // Get current user from localStorage
             const userStr = localStorage.getItem('user');
@@ -227,15 +249,15 @@ const Detector = ({ role, user, onNavigate }) => {
 
             // 1. Upload images to Supabase Storage (in parallel for speed)
             const uploadStartTime = Date.now();
-            console.log(`📤 Uploading ${uploadedImages.length} images in parallel...`);
+            console.log(`📤 Uploading ${images.length} images in parallel...`);
             const bucketName = patientData.diseaseType === 'Malaria' ? 'malaria-images' : 'lepto-images';
 
-            const uploadPromises = uploadedImages.map(async (img, index) => {
+            const uploadPromises = images.map(async (img, index) => {
                 const fileName = `${patientData.registrationNumber}_${Date.now()}_${index}_${img.id}.png`;
                 const filePath = `patients/${fileName}`;
 
                 try {
-                    // Upload file
+                    // Upload original file
                     const { data: uploadData, error: uploadError } = await supabase.storage
                         .from(bucketName)
                         .upload(filePath, img.file, {
@@ -245,28 +267,65 @@ const Detector = ({ role, user, onNavigate }) => {
 
                     if (uploadError) {
                         console.warn(`Failed to upload ${fileName}:`, uploadError.message);
-                        return null;
+                        return { originalUrl: null, gradcamUrl: null };
                     }
 
-                    // Get public URL
+                    // Get public URL for original image
                     const { data: urlData } = supabase.storage
                         .from(bucketName)
                         .getPublicUrl(filePath);
 
-                    return urlData.publicUrl;
+                    let gradcamUrl = null;
+
+                    // Upload GradCAM image if available
+                    if (img.gradcam) {
+                        try {
+                            // Convert base64 to Blob
+                            const gradcamBlob = await fetch(`data:image/jpeg;base64,${img.gradcam}`).then(res => res.blob());
+                            const gradcamFileName = `${patientData.registrationNumber}_${Date.now()}_${index}_${img.id}_gradcam.jpg`;
+                            const gradcamFilePath = `patients/gradcam/${gradcamFileName}`;
+
+                            const { error: gradcamUploadError } = await supabase.storage
+                                .from(bucketName)
+                                .upload(gradcamFilePath, gradcamBlob, {
+                                    cacheControl: '3600',
+                                    upsert: false,
+                                    contentType: 'image/jpeg'
+                                });
+
+                            if (!gradcamUploadError) {
+                                const { data: gradcamUrlData } = supabase.storage
+                                    .from(bucketName)
+                                    .getPublicUrl(gradcamFilePath);
+                                gradcamUrl = gradcamUrlData.publicUrl;
+                                console.log(`✅ GradCAM image uploaded: ${gradcamFileName}`);
+                            } else {
+                                console.warn(`Failed to upload GradCAM ${gradcamFileName}:`, gradcamUploadError.message);
+                            }
+                        } catch (gradcamError) {
+                            console.warn(`Error uploading GradCAM for ${fileName}:`, gradcamError);
+                        }
+                    }
+
+                    return { originalUrl: urlData.publicUrl, gradcamUrl };
                 } catch (error) {
                     console.warn(`Error uploading ${fileName}:`, error);
-                    return null;
+                    return { originalUrl: null, gradcamUrl: null };
                 }
             });
 
             // Wait for all uploads to complete
             const uploadResults = await Promise.all(uploadPromises);
-            const uploadedUrls = uploadResults.filter(url => url !== null);
+            // We need to keep indices consistent. Map to arrays of the same length.
+            const uploadedUrls = uploadResults.map(r => r.originalUrl);
+            const gradcamUrls = uploadResults.map(r => r.gradcamUrl);
+
+            // Filter out cases where primary upload failed completely for the payload
+            const validUploadedUrls = uploadedUrls.filter(url => url !== null);
+            const primaryImageUrl = validUploadedUrls[0] || null;
 
             const uploadTime = ((Date.now() - uploadStartTime) / 1000).toFixed(2);
-            console.log(`✅ Uploaded ${uploadedUrls.length}/${uploadedImages.length} images in ${uploadTime}s`);
-            const primaryImageUrl = uploadedUrls[0] || null;
+            console.log(`✅ Uploaded ${validUploadedUrls.length}/${images.length} images in ${uploadTime}s`);
 
             // 2. Insert Patient Data
             const patientStartTime = Date.now();
@@ -321,6 +380,12 @@ const Detector = ({ role, user, onNavigate }) => {
             // Add image_paths if column exists (for multiple images support)
             if (uploadedUrls.length > 0) {
                 analysisPayload.image_paths = uploadedUrls;
+            }
+
+            // Add gradcam_paths if GradCAM images were uploaded and valid
+            if (gradcamUrls.length > 0 && gradcamUrls.some(Boolean)) {
+                analysisPayload.gradcam_paths = gradcamUrls;
+                console.log(`📊 GradCAM paths to save: ${gradcamUrls.filter(Boolean).length} images`);
             }
 
             console.log('Inserting analysis data:', analysisPayload);
@@ -836,6 +901,52 @@ const Detector = ({ role, user, onNavigate }) => {
                                         )}
                                     </div>
 
+                                    {patientData.diseaseType === 'Malaria' && (
+                                        <div style={{
+                                            padding: '0.75rem',
+                                            background: 'rgba(0, 240, 255, 0.05)',
+                                            borderRadius: '8px',
+                                            marginBottom: '1rem',
+                                            border: '1px solid rgba(0, 240, 255, 0.2)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between'
+                                        }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: showGradCAM ? 'var(--color-primary)' : '#666' }}></div>
+                                                    <span style={{ fontSize: '0.8rem', fontWeight: '500' }}>AI Focus (Grad-CAM)</span>
+                                                </div>
+                                                <p style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', margin: '2px 0 0 13px' }}>
+                                                    Visualize AI reasoning areas
+                                                </p>
+                                            </div>
+                                            <div
+                                                onClick={() => setShowGradCAM(!showGradCAM)}
+                                                style={{
+                                                    width: '36px',
+                                                    height: '20px',
+                                                    borderRadius: '10px',
+                                                    background: showGradCAM ? 'var(--color-primary)' : 'rgba(255,255,255,0.1)',
+                                                    position: 'relative',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.3s ease'
+                                                }}
+                                            >
+                                                <div style={{
+                                                    width: '14px',
+                                                    height: '14px',
+                                                    borderRadius: '50%',
+                                                    background: 'white',
+                                                    position: 'absolute',
+                                                    top: '3px',
+                                                    left: showGradCAM ? '19px' : '3px',
+                                                    transition: 'all 0.3s ease'
+                                                }}></div>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <button
                                         onClick={startAnalysis}
                                         disabled={uploadedImages.length === 0}
@@ -1033,28 +1144,101 @@ const Detector = ({ role, user, onNavigate }) => {
                                         </div>
                                     </div>
 
-                                    {/* Microscope Images Section */}
+                                    {/* Microscope Images Section with Grad-CAM */}
                                     {uploadedImages.length > 0 && (
                                         <div style={{ marginBottom: '2rem', pageBreakBefore: 'always' }}>
-                                            <h3 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '1rem', textTransform: 'uppercase', color: '#444' }}>
-                                                Microscope Images ({uploadedImages.length} Fields Examined)
-                                            </h3>
-                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                                <h3 style={{ fontSize: '1rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#444', margin: 0 }}>
+                                                    Microscope Images {showGradCAM ? 'with AI Visualization' : ''} ({uploadedImages.length} Fields Examined)
+                                                </h3>
+                                            </div>
+
+                                            <div style={{
+                                                display: 'grid',
+                                                gridTemplateColumns: showGradCAM ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(200px, 1fr))',
+                                                gap: '1.5rem'
+                                            }}>
                                                 {uploadedImages.map((img, idx) => (
                                                     <div key={idx} style={{ border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden', background: '#f8f9fa' }}>
-                                                        <div style={{ position: 'relative', paddingTop: '100%', background: '#000' }}>
-                                                            <img
-                                                                src={img.preview}
-                                                                alt={`Field ${idx + 1}`}
-                                                                style={{
+                                                        {/* Original and Grad-CAM side by side */}
+                                                        <div style={{ display: 'grid', gridTemplateColumns: showGradCAM ? '1fr 1fr' : '1fr', gap: '0' }}>
+                                                            {/* Original Image */}
+                                                            <div style={{ position: 'relative', paddingTop: '100%', background: '#000', borderRight: '1px solid #ddd' }}>
+                                                                <img
+                                                                    src={img.preview}
+                                                                    alt={`Field ${idx + 1} - Original`}
+                                                                    style={{
+                                                                        position: 'absolute',
+                                                                        top: 0,
+                                                                        left: 0,
+                                                                        width: '100%',
+                                                                        height: '100%',
+                                                                        objectFit: 'cover'
+                                                                    }}
+                                                                />
+                                                                <div style={{
                                                                     position: 'absolute',
-                                                                    top: 0,
+                                                                    bottom: 0,
                                                                     left: 0,
-                                                                    width: '100%',
-                                                                    height: '100%',
-                                                                    objectFit: 'cover'
-                                                                }}
-                                                            />
+                                                                    right: 0,
+                                                                    background: 'rgba(0,0,0,0.7)',
+                                                                    color: 'white',
+                                                                    padding: '0.25rem',
+                                                                    fontSize: '0.7rem',
+                                                                    textAlign: 'center'
+                                                                }}>
+                                                                    Original
+                                                                </div>
+                                                            </div>
+                                                            {/* Grad-CAM Image */}
+                                                            {showGradCAM && (
+                                                                <div style={{ position: 'relative', paddingTop: '100%', background: '#000' }}>
+                                                                    {img.gradcam ? (
+                                                                        <>
+                                                                            <img
+                                                                                src={`data:image/jpeg;base64,${img.gradcam}`}
+                                                                                alt={`Field ${idx + 1} - Grad-CAM`}
+                                                                                style={{
+                                                                                    position: 'absolute',
+                                                                                    top: 0,
+                                                                                    left: 0,
+                                                                                    width: '100%',
+                                                                                    height: '100%',
+                                                                                    objectFit: 'cover'
+                                                                                }}
+                                                                            />
+                                                                            <div style={{
+                                                                                position: 'absolute',
+                                                                                bottom: 0,
+                                                                                left: 0,
+                                                                                right: 0,
+                                                                                background: 'rgba(33, 150, 243, 0.9)',
+                                                                                color: 'white',
+                                                                                padding: '0.25rem',
+                                                                                fontSize: '0.7rem',
+                                                                                textAlign: 'center'
+                                                                            }}>
+                                                                                AI Focus (Grad-CAM)
+                                                                            </div>
+                                                                        </>
+                                                                    ) : (
+                                                                        <div style={{
+                                                                            position: 'absolute',
+                                                                            top: 0,
+                                                                            left: 0,
+                                                                            width: '100%',
+                                                                            height: '100%',
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            justifyContent: 'center',
+                                                                            color: '#999',
+                                                                            fontSize: '0.75rem'
+                                                                        }}>
+                                                                            No Grad-CAM
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
                                                         </div>
                                                         <div style={{ padding: '0.75rem', textAlign: 'center' }}>
                                                             <div style={{ fontWeight: '600', fontSize: '0.875rem', marginBottom: '0.25rem' }}>
@@ -1074,6 +1258,21 @@ const Detector = ({ role, user, onNavigate }) => {
                                             <div style={{ marginTop: '1rem', padding: '1rem', background: '#f8f9fa', borderRadius: '8px', fontSize: '0.875rem', color: '#666' }}>
                                                 <strong>Note:</strong> All microscope images were analyzed using AI-powered detection system.
                                                 Images marked as "Good" quality contributed to the final diagnosis with high confidence.
+                                            </div>
+
+                                            {/* Grad-CAM Information Box */}
+                                            <div style={{ marginTop: '1rem', padding: '1rem', background: 'linear-gradient(135deg, rgba(33, 150, 243, 0.1), rgba(33, 150, 243, 0.05))', border: '1px solid rgba(33, 150, 243, 0.3)', borderRadius: '8px', fontSize: '0.875rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                                    <span style={{ fontSize: '1.2rem' }}>🔬</span>
+                                                    <strong style={{ color: '#1976d2' }}>AI Visualization (Grad-CAM)</strong>
+                                                </div>
+                                                <p style={{ margin: '0.5rem 0', color: '#555', lineHeight: '1.5' }}>
+                                                    The right side shows Grad-CAM heatmaps highlighting where the AI detected parasites or pathogens.
+                                                    <strong> Red/yellow areas</strong> indicate high AI focus (parasite presence), while <strong>blue/green areas</strong> show healthy cells.
+                                                </p>
+                                                <p style={{ margin: '0.5rem 0 0 0', color: '#666', fontSize: '0.8rem', fontStyle: 'italic' }}>
+                                                    💡 This visualization helps medical professionals verify that the AI is focusing on medically relevant features.
+                                                </p>
                                             </div>
                                         </div>
                                     )}
