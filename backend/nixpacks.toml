@@ -1,28 +1,11 @@
 # Nixpacks configuration for Railway deployment
-# Fixed to resolve "No module named pip" error and add system dependencies
-
-[variables]
-PYTHON_VERSION = "3.10"
-NIXPACKS_PYTHON_VERSION = "3.10"
+# Python Flask API with proper pip setup
 
 [phases.setup]
-
-nixPkgs = [
-    "python310",
-    "python310Packages.pip",
-    "python310Packages.setuptools",
-    "gcc",
-    "libGL",
-    "libGLU",
-    "glib",
-    "zlib"
-]
+nixPkgs = ["python310", "python310Packages.pip", "python310Packages.setuptools"]
 
 [phases.install]
-cmds = [
-    "pip install --upgrade pip --break-system-packages",
-    "pip install -r requirements.txt --break-system-packages"
-]
+cmds = ["python3 -m pip install --upgrade pip", "python3 -m pip install -r requirements.txt"]
 
 [start]
 cmd = "python3 malaria_api_gradcam.py"
