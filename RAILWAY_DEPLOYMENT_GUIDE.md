@@ -1,8 +1,10 @@
-# 🚂 Railway Deployment Guide - MedAI Platform
+# 🚂 Railway + Vercel Deployment Guide - MedAI Platform
 
 ## 📋 **Overview**
 
-This guide will help you deploy both the **frontend** (React) and **backend** (Python Flask) of your MedAI platform on Railway.
+This guide will help you deploy your MedAI platform using the optimal setup:
+- **Frontend**: Vercel (React) - Fast, optimized for React apps
+- **Backend**: Railway (Python Flask) - Great for Python APIs with large files
 
 ---
 
@@ -12,13 +14,13 @@ This guide will help you deploy both the **frontend** (React) and **backend** (P
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Frontend      │    │    Backend      │    │   Database      │
 │   (React)       │───▶│   (Flask API)   │───▶│   (Supabase)    │
-│   Railway       │    │   Railway       │    │   Cloud         │
+│   Vercel        │    │   Railway       │    │   Cloud         │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
 ---
 
-## 🚀 **Step 1: Deploy Backend (Python API)**
+## 🚀 **Step 1: Deploy Backend on Railway (Python API)**
 
 ### **1.1 Create New Railway Project**
 1. Go to [railway.app](https://railway.app)
@@ -60,46 +62,37 @@ backend/
 
 ---
 
-## 🎨 **Step 2: Deploy Frontend (React)**
+## 🎨 **Step 2: Deploy Frontend on Vercel (React)**
 
-### **2.1 Create Frontend Service**
-1. In the same Railway project, click **"+ New Service"**
-2. Select **"GitHub Repo"**
-3. Choose the **same repository**
-4. Name it: `medai-frontend`
+### **2.1 Connect to Vercel**
+1. Go to [vercel.com](https://vercel.com)
+2. Click **"New Project"**
+3. Import your **MedAI GitHub repository**
+4. Vercel will auto-detect it's a Vite React app
 
-### **2.2 Configure Frontend Service**
-1. **Root Directory**: Leave as root (default)
-2. **Build Command**: `npm run build`
-3. **Start Command**: `npm run preview`
+### **2.2 Configure Build Settings**
+Vercel should auto-configure, but verify:
+- **Framework Preset**: Vite
+- **Build Command**: `npm run build`
+- **Output Directory**: `dist`
+- **Install Command**: `npm install`
 
-### **2.3 Frontend Environment Variables**
-Add these in Railway dashboard:
+### **2.3 Environment Variables**
+Add these in Vercel dashboard → Settings → Environment Variables:
 
 ```bash
-# Node.js Configuration
-NODE_ENV=production
-
-# Supabase Configuration (get from your Supabase dashboard)
+# Supabase Configuration
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
 
-# Backend API URL (will be your Railway backend URL)
+# Backend API URL (your Railway backend URL)
 VITE_API_URL=https://medai-backend-production.up.railway.app
 ```
 
-### **2.4 Update package.json**
-Make sure your `package.json` has the preview script:
-
-```json
-{
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview --host 0.0.0.0 --port $PORT"
-  }
-}
-```
+### **2.4 Deploy**
+1. Click **"Deploy"**
+2. Vercel will build and deploy automatically
+3. Get your frontend URL (e.g., `https://medai.vercel.app`)
 
 ---
 
@@ -129,43 +122,45 @@ Make sure your `package.json` has the preview script:
 }
 ```
 
-### **3.2 Frontend Railway Config** (`railway.json`)
+### **3.2 Vercel Config** (`vercel.json`)
 ```json
 {
-  "$schema": "https://railway.app/railway.schema.json",
-  "build": {
-    "builder": "NIXPACKS"
-  },
-  "deploy": {
-    "startCommand": "npm run build && npm run preview",
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10
-  },
-  "environments": {
-    "production": {
-      "variables": {
-        "NODE_ENV": "production",
-        "VITE_SUPABASE_URL": "$VITE_SUPABASE_URL",
-        "VITE_SUPABASE_ANON_KEY": "$VITE_SUPABASE_ANON_KEY",
-        "VITE_API_URL": "$VITE_API_URL"
-      }
-    }
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "env": {
+    "VITE_SUPABASE_URL": "@vite_supabase_url",
+    "VITE_SUPABASE_ANON_KEY": "@vite_supabase_anon_key", 
+    "VITE_API_URL": "@vite_api_url"
   }
 }
 ```
 
 ---
 
-## 🔧 **Step 4: Update API URL in Frontend**
+## 🔧 **Step 4: Update CORS for Vercel Frontend**
 
-After backend is deployed, update your frontend to use the Railway backend URL:
+After both services are deployed, update your Flask API CORS settings:
 
-### **4.1 Get Backend URL**
-1. Go to your backend service in Railway
-2. Copy the **public URL** (e.g., `https://medai-backend-production.up.railway.app`)
+### **4.1 Update Backend CORS**
+In `backend/malaria_api_gradcam.py`:
 
-### **4.2 Update Frontend Environment**
-Set the `VITE_API_URL` environment variable to your backend URL.
+```python
+from flask_cors import CORS
+
+app = Flask(__name__)
+# Allow requests from your Vercel frontend
+CORS(app, origins=[
+    'https://medai.vercel.app',  # Your Vercel URL
+    'https://medai-*.vercel.app',  # Vercel preview deployments
+    'http://localhost:5173',  # Local development
+    'http://localhost:3000'   # Alternative local port
+])
+```
+
+### **4.2 Get Your URLs**
+- **Backend (Railway)**: `https://medai-backend-production.up.railway.app`
+- **Frontend (Vercel)**: `https://medai.vercel.app` (or your custom domain)
 
 ---
 
@@ -192,27 +187,23 @@ Check that the model file is properly uploaded:
 
 ## 🚦 **Step 6: Testing Deployment**
 
-### **6.1 Backend Health Check**
+### **6.1 Backend Health Check (Railway)**
 Test your backend API:
 ```bash
 curl https://your-backend-url.up.railway.app/health
 ```
 
-Expected response:
-```json
-{
-  "status": "healthy",
-  "model_loaded": true,
-  "model_path": "malaria_finetune_stage2_tf215.h5",
-  "message": "Malaria Detection API with Grad-CAM is running"
-}
-```
-
-### **6.2 Frontend Access**
-1. Visit your frontend URL
-2. Test login functionality
+### **6.2 Frontend Access (Vercel)**
+1. Visit your Vercel URL
+2. Test login functionality  
 3. Upload a test image in Detector
 4. Verify AI predictions work
+
+### **6.3 Integration Test**
+- Ensure frontend can communicate with Railway backend
+- Test image upload and AI analysis
+- Verify PDF generation works
+- Check all user roles function properly
 
 ---
 
@@ -220,44 +211,51 @@ Expected response:
 
 ### **7.1 Environment Variables Checklist**
 
-**Backend:**
+**Backend (Railway):**
 - ✅ `PYTHON_VERSION=3.10.12`
 - ✅ `FLASK_ENV=production`
 - ✅ `PORT=${{RAILWAY_PORT}}`
 
-**Frontend:**
-- ✅ `NODE_ENV=production`
+**Frontend (Vercel):**
 - ✅ `VITE_SUPABASE_URL=your-supabase-url`
 - ✅ `VITE_SUPABASE_ANON_KEY=your-anon-key`
-- ✅ `VITE_API_URL=your-backend-railway-url`
+- ✅ `VITE_API_URL=your-railway-backend-url`
 
 ### **7.2 CORS Configuration**
-Your Flask API should allow requests from your frontend domain:
+Your Flask API should allow requests from your Vercel domain:
 
 ```python
 # In malaria_api_gradcam.py
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app, origins=['https://your-frontend-url.up.railway.app'])
+CORS(app, origins=[
+    'https://medai.vercel.app',
+    'https://medai-*.vercel.app',  # Preview deployments
+    'http://localhost:5173'        # Local development
+])
 ```
 
 ---
 
-## 📊 **Step 8: Monitoring & Logs**
+## 📊 **Step 8: Monitoring & Performance**
 
-### **8.1 Railway Dashboard**
-- **Deployments**: Track build and deployment status
+### **8.1 Railway Dashboard (Backend)**
+- **Deployments**: Track API build and deployment status
 - **Metrics**: Monitor CPU, memory, and network usage
-- **Logs**: View real-time application logs
+- **Logs**: View real-time Flask application logs
 - **Environment**: Manage environment variables
 
-### **8.2 Health Monitoring**
-Set up monitoring for:
-- API response times
-- Model loading status
-- Error rates
-- Resource usage
+### **8.2 Vercel Dashboard (Frontend)**
+- **Deployments**: Automatic deployments on git push
+- **Analytics**: Page views, performance metrics
+- **Functions**: Monitor serverless function usage
+- **Domains**: Custom domain management
+
+### **8.3 Performance Benefits**
+- **Vercel**: Global CDN, instant cache invalidation
+- **Railway**: Optimized for Python apps, persistent storage
+- **Combined**: Best of both platforms
 
 ---
 
@@ -293,19 +291,21 @@ Access to fetch at 'backend-url' from origin 'frontend-url' has been blocked by 
 
 ---
 
-## 💰 **Railway Pricing**
+## 💰 **Pricing Comparison**
 
-### **Free Tier Limits:**
-- **$5 credit per month**
-- **500 hours of usage**
-- **1GB RAM per service**
-- **1GB disk space**
+### **Railway (Backend):**
+- **Free Tier**: $5 credit per month
+- **Developer Plan**: $20/month (recommended)
+- **Pro Plan**: $50/month (high traffic)
 
-### **Recommended Plan:**
-- **Developer Plan**: $20/month
-- **8GB RAM per service**
-- **100GB disk space**
-- **Priority support**
+### **Vercel (Frontend):**
+- **Hobby Plan**: Free (perfect for most use cases)
+- **Pro Plan**: $20/month (custom domains, analytics)
+- **Enterprise**: Custom pricing
+
+### **Total Cost:**
+- **Development**: Free (Railway free tier + Vercel hobby)
+- **Production**: $20/month (Railway developer + Vercel hobby)
 
 ---
 
@@ -317,17 +317,17 @@ Access to fetch at 'backend-url' from origin 'frontend-url' has been blocked by 
 - ✅ Model file uploaded via Git LFS
 - ✅ Railway configurations created
 
-### **Backend Deployment:**
+### **Backend Deployment (Railway):**
 - ✅ Railway project created
 - ✅ Backend service configured
 - ✅ Environment variables set
 - ✅ Health check passes
 
-### **Frontend Deployment:**
-- ✅ Frontend service created
-- ✅ Build configuration set
-- ✅ API URL updated
-- ✅ Application accessible
+### **Frontend Deployment (Vercel):**
+- ✅ Vercel project connected to GitHub
+- ✅ Build configuration verified
+- ✅ Environment variables set
+- ✅ Custom domain configured (optional)
 
 ### **Post-deployment:**
 - ✅ End-to-end testing completed
@@ -354,11 +354,17 @@ Access to fetch at 'backend-url' from origin 'frontend-url' has been blocked by 
 ## 🎉 **Success!**
 
 Once deployed, your MedAI platform will be accessible at:
-- **Frontend**: `https://medai-frontend-production.up.railway.app`
+- **Frontend**: `https://medai.vercel.app` (or your custom domain)
 - **Backend API**: `https://medai-backend-production.up.railway.app`
+
+**Benefits of this setup:**
+- ⚡ **Vercel**: Lightning-fast React app with global CDN
+- 🐍 **Railway**: Optimized Python environment with large file support
+- 💰 **Cost-effective**: Best pricing for each service type
+- 🚀 **Performance**: Optimal for both frontend and backend needs
 
 Your AI-powered medical diagnostic platform is now live and ready to help healthcare professionals worldwide! 🏥🚀
 
 ---
 
-*This guide ensures your MedAI platform is properly deployed on Railway with optimal performance and security.*
+*This guide ensures your MedAI platform is optimally deployed using Vercel for the frontend and Railway for the backend, providing the best performance and cost efficiency.*

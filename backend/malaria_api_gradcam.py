@@ -18,7 +18,14 @@ from io import BytesIO
 from PIL import Image
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for React
+CORS(app, origins=[
+    'https://medai.vercel.app',      # Production Vercel URL
+    'https://medaifrontend-tan.vercel.app/',    # Vercel preview deployments
+    'http://localhost:5173',         # Local Vite dev server
+    'http://localhost:3000',         # Alternative local port
+    'http://127.0.0.1:5173',        # Alternative localhost
+    'http://127.0.0.1:3000'         # Alternative localhost
+])  # Enable CORS for React frontend
 
 # Configuration
 MODEL_PATH = "malaria_finetune_stage2_tf215.h5"  # Use converted model (TF 2.15 compatible)
