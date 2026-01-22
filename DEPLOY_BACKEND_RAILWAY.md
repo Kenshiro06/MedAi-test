@@ -20,17 +20,22 @@
 
 ### **Step 3: Configure Service**
 1. **Service Name**: `medai-backend`
-2. **Root Directory**: `backend`
-3. **Start Command**: `python3 malaria_api_gradcam.py` (Railway will auto-detect this)
+2. **IMPORTANT: Set Root Directory**:
+   - Go to Settings → General
+   - Set **Root Directory** to `backend`
+   - This is crucial! Railway must know to look in the backend folder
+3. **Start Command**: Railway will auto-detect from `railway.toml`
 
-### **Step 4: Set Environment Variables**
-In Railway dashboard → Variables:
+### **Step 4: Remove Frontend Environment Variables**
+⚠️ **IMPORTANT**: Remove these variables if they exist (they're for frontend only):
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+
+Only keep these backend variables:
 ```bash
 PYTHON_VERSION=3.10.12
 FLASK_ENV=production
 ```
-
-**Note**: Railway automatically provides the PORT variable, so don't set it manually.
 
 ### **Step 5: Deploy & Get URL**
 1. Railway will build and deploy automatically
