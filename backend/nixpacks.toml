@@ -1,11 +1,15 @@
 # Nixpacks configuration for Railway deployment
-# Python Flask API with proper pip setup
+# Use ensurepip to install pip properly
 
 [phases.setup]
-nixPkgs = ["python310", "python310Packages.pip", "python310Packages.setuptools"]
+nixPkgs = ["python310", "python310Packages.setuptools"]
 
 [phases.install]
-cmds = ["python3 -m pip install --upgrade pip", "python3 -m pip install -r requirements.txt"]
+cmds = [
+  "python3 -m ensurepip --upgrade",
+  "python3 -m pip install --upgrade pip",
+  "python3 -m pip install -r requirements.txt"
+]
 
 [start]
 cmd = "python3 malaria_api_gradcam.py"
