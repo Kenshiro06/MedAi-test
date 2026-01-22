@@ -19,12 +19,14 @@ from PIL import Image
 
 app = Flask(__name__)
 CORS(app, origins=[
-    'https://medai.vercel.app',      # Production Vercel URL
-    'https://medaifrontend-tan.vercel.app/',    # Vercel preview deployments
-    'http://localhost:5173',         # Local Vite dev server
-    'http://localhost:3000',         # Alternative local port
-    'http://127.0.0.1:5173',        # Alternative localhost
-    'http://127.0.0.1:3000'         # Alternative localhost
+    'https://medaifrontend-tan.vercel.app',                           # Your production domain
+    'https://medaifrontend-git-main-musabsahrim-3331s-projects.vercel.app',  # Git branch domain
+    'https://medaifrontend-9ctokrh8g-musabsahrim-3331s-projects.vercel.app', # Preview domain
+    'https://medaifrontend-*.vercel.app',                            # Any other Vercel previews
+    'http://localhost:5173',                                         # Local Vite dev server
+    'http://localhost:3000',                                         # Alternative local port
+    'http://127.0.0.1:5173',                                        # Alternative localhost
+    'http://127.0.0.1:3000'                                         # Alternative localhost
 ])  # Enable CORS for React frontend
 
 # Configuration
