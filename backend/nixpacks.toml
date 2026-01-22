@@ -1,11 +1,11 @@
+# Nixpacks configuration for Railway deployment
+# Simple and clean - just Python Flask API
+
 [phases.setup]
-nixPkgs = ['python310', 'python310Packages.pip']
+nixPkgs = ["python310"]
 
 [phases.install]
-cmds = ['python railway-start.py']
-
-[phases.build]
-cmds = ['echo "✅ MedAI Backend ready"']
+cmds = ["pip3 install -r requirements.txt"]
 
 [start]
-cmd = 'python malaria_api_gradcam.py'
+cmd = "python3 malaria_api_gradcam.py"
