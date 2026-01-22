@@ -8,7 +8,7 @@ cmds = ['chmod +x install-deps.sh', './install-deps.sh']
 cmds = ['echo "Python Flask API build complete"']
 
 [start]
-cmd = 'python3 malaria_api_gradcam.py'
+cmd = 'python malaria_api_gradcam.py'
 
 [variables]
 PYTHON_UNBUFFERED = "1"
