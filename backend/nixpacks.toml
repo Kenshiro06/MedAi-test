@@ -20,10 +20,11 @@ nixPkgs = [
 
 [phases.install]
 cmds = [
-    "pip install --upgrade pip",
-    "pip install -r requirements.txt"
+    "pip install --upgrade pip --break-system-packages",
+    "pip install -r requirements.txt --break-system-packages"
 ]
 
 [start]
 cmd = "python3 malaria_api_gradcam.py"
+
 
