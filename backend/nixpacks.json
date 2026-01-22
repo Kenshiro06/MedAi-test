@@ -1,0 +1,20 @@
+{
+  "phases": {
+    "setup": {
+      "nixPkgs": ["python310", "python310Packages.pip"]
+    },
+    "install": {
+      "cmds": [
+        "python --version || python3 --version",
+        "python -m pip install --upgrade pip || python3 -m pip install --upgrade pip",
+        "python -m pip install -r requirements.txt || python3 -m pip install -r requirements.txt"
+      ]
+    },
+    "build": {
+      "cmds": ["echo '✅ MedAI Backend ready'"]
+    }
+  },
+  "start": {
+    "cmd": "python malaria_api_gradcam.py || python3 malaria_api_gradcam.py"
+  }
+}
