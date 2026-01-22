@@ -12,7 +12,6 @@
     "production": {
       "variables": {
         "PYTHON_VERSION": "3.10.12",
-        "PORT": "$PORT",
         "FLASK_ENV": "production"
       }
     }

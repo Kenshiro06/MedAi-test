@@ -28,8 +28,9 @@ In Railway dashboard → Variables:
 ```bash
 PYTHON_VERSION=3.10.12
 FLASK_ENV=production
-PORT=${{RAILWAY_PORT}}
 ```
+
+**Note**: Railway automatically provides the PORT variable, so don't set it manually.
 
 ### **Step 5: Deploy & Get URL**
 1. Railway will build and deploy automatically

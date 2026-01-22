@@ -479,8 +479,14 @@ if __name__ == "__main__":
     print("\n✅ Server ready to accept requests!")
     print("=" * 60)
     
-    # Get port from environment variable
-    port = int(os.environ.get("PORT", 5000))
+    # Get port from environment variable with proper error handling
+    try:
+        port = int(os.environ.get("PORT", 5000))
+    except (ValueError, TypeError):
+        port = 5000
+        print(f"⚠️  Invalid PORT environment variable, using default port {port}")
+    
+    print(f"🚀 Starting server on port {port}")
     
     # Run server
     app.run(host="0.0.0.0", port=port, debug=False)
