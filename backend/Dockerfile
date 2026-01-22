@@ -22,7 +22,7 @@ COPY . .
 # Download the model file from Google Drive if it doesn't exist
 RUN if [ ! -f malaria_finetune_stage2_tf215.h5 ]; then \
     echo "Downloading model from Google Drive..."; \
-    gdown --id 16NSvxlywn0y12UV6tWZZQxRf1dywM9uJ -O malaria_finetune_stage2_tf215.h5; \
+    gdown --id 1iKuu-mNQuZWVyhcN4IghdrtczI9NM9Io -O malaria_finetune_stage2_tf215.h5; \
     echo "Model downloaded successfully!"; \
     ls -lh malaria_finetune_stage2_tf215.h5; \
     fi
