@@ -1,12 +1,11 @@
 [phases.setup]
-nixPkgs = ['python310', 'python310Packages.pip']
-aptPkgs = ['python3', 'python3-pip', 'python3-dev', 'build-essential']
+nixPkgs = ['python310', 'python310Packages.pip', 'gcc', 'pkg-config']
 
 [phases.install]
-cmds = ['python3 -m pip install --upgrade pip', 'python3 -m pip install -r requirements.txt']
+cmds = ['chmod +x install-deps.sh', './install-deps.sh']
 
 [phases.build]
-cmds = ['echo "Build complete - Python app ready"']
+cmds = ['echo "Python Flask API build complete"']
 
 [start]
 cmd = 'python3 malaria_api_gradcam.py'
