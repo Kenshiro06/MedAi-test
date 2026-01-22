@@ -2,15 +2,10 @@
 nixPkgs = ['python310', 'python310Packages.pip']
 
 [phases.install]
-cmds = [
-  'python3 --version',
-  'python3 -m pip --version', 
-  'python3 -m pip install --upgrade pip',
-  'python3 -m pip install -r requirements.txt'
-]
+cmds = ['python railway-start.py']
 
 [phases.build]
-cmds = ['echo "✅ Python Flask API ready"']
+cmds = ['echo "✅ MedAI Backend ready"']
 
 [start]
-cmd = 'python3 malaria_api_gradcam.py'
+cmd = 'python malaria_api_gradcam.py'
