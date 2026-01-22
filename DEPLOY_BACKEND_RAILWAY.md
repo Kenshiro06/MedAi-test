@@ -21,7 +21,7 @@
 ### **Step 3: Configure Service**
 1. **Service Name**: `medai-backend`
 2. **Root Directory**: `backend`
-3. **Start Command**: `python malaria_api_gradcam.py`
+3. **Start Command**: `python3 malaria_api_gradcam.py` (Railway will auto-detect this)
 
 ### **Step 4: Set Environment Variables**
 In Railway dashboard → Variables:
@@ -91,6 +91,9 @@ Your MedAI platform will be fully functional:
 
 ## 🚨 **If You Get Errors**
 
+### **"python: command not found":**
+✅ **Fixed**: Updated to use `python3` instead of `python`
+
 ### **"Failed to fetch" still appears:**
 1. Check Railway backend is running (visit `/health` endpoint)
 2. Verify `VITE_API_URL` in Vercel matches your Railway URL
@@ -105,6 +108,11 @@ Your MedAI platform will be fully functional:
 1. Your domains are already configured in the code
 2. Make sure Railway backend is accessible
 3. Check browser network tab for actual error details
+
+### **Build fails:**
+1. Check Railway build logs
+2. Ensure `requirements.txt` is in backend folder
+3. Verify Python version in environment variables
 
 ---
 

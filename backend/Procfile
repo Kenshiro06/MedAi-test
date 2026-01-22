@@ -1,1 +1,1 @@
-web: python malaria_api_gradcam.py
+web: python3 malaria_api_gradcam.py
