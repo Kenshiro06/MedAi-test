@@ -2,10 +2,14 @@ services:
   - type: web
     name: medai-backend
     env: python
+    region: singapore
+    plan: starter
     buildCommand: pip install -r requirements.txt
-    startCommand: python malaria_api_FINAL_WORKING.py
+    startCommand: python malaria_api_gradcam.py
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.12
-      - key: PORT
-        generateValue: true
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHON_UNBUFFERED
+        value: "1"
