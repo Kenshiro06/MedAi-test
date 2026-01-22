@@ -24,18 +24,18 @@
    - Go to Settings → General
    - Set **Root Directory** to `backend`
    - This is crucial! Railway must know to look in the backend folder
-3. **Start Command**: Railway will auto-detect from `railway.toml`
+3. **Builder**: Railway will auto-detect Dockerfile
 
-### **Step 4: Remove Frontend Environment Variables**
-⚠️ **IMPORTANT**: Remove these variables if they exist (they're for frontend only):
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
-
-Only keep these backend variables:
+### **Step 4: Environment Variables**
+In Railway dashboard → Variables, add only these:
 ```bash
-PYTHON_VERSION=3.10.12
 FLASK_ENV=production
 ```
+
+**Note**: 
+- Railway automatically provides PORT
+- Python version is set in Dockerfile (3.10)
+- Remove any VITE_* variables (frontend only)
 
 ### **Step 5: Deploy & Get URL**
 1. Railway will build and deploy automatically
