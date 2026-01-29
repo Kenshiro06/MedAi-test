@@ -19,7 +19,8 @@ from PIL import Image
 
 app = Flask(__name__)
 CORS(app, origins=[
-    'https://medaifrontend-tan.vercel.app',                           # Your production domain
+    'https://medai-usim.vercel.app',                                 # NEW production domain
+    'https://medaifrontend-tan.vercel.app',                          # Old production domain
     'https://medaifrontend-git-main-musabsahrim-3331s-projects.vercel.app',  # Git branch domain
     'https://medaifrontend-9ctokrh8g-musabsahrim-3331s-projects.vercel.app', # Preview domain
     'https://medaifrontend-*.vercel.app',                            # Any other Vercel previews
