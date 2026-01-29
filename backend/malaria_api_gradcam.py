@@ -21,7 +21,7 @@ app = Flask(__name__)
 CORS(app, origins=[
     'https://medai-usim.vercel.app',                                 # Production domain
     'https://medaifrontend-git-main-musabsahrim-3331s-projects.vercel.app',  # Git branch domain
-    'https://medaifrontend-mea73suxh-musabsahrim-3331s-projects.vercel.app', # Preview domain
+    'https://medaifrontend-f5hmqpqcq-musabsahrim-3331s-projects.vercel.app', # Preview domain
     'https://medaifrontend-tan.vercel.app',                          # Old production domain (backup)
     'https://medaifrontend-*.vercel.app',                            # Any other Vercel previews
     'http://localhost:5173',                                         # Local Vite dev server
